@@ -34,12 +34,53 @@ Every project that does this ends up rebuilding the same scaffolding: material c
 
 Because it's just a serializable record, it can be authored by hand, generated automatically (via [`BindingBuilder`](/reference/binding-builder), which traverses a GLB/GLTF asset and produces starter bindings), stored in a database, and round-tripped through `onObjectBindingsChange` to keep your app state and the 3D scene in sync. `objectBindings` is the single source of truth, so React's normal data flow ("state in, callbacks out") works for a 3D scene the same way it would for any other component.
 
+## Why It Is Worth The Setup
+
+At first glance, `objectBindings` can look like extra work compared to simply
+loading a model and rendering it. That instinct is understandable, but it only
+holds if the model is purely visual.
+
+If the model is part of a real product experience, the "extra work" is actually
+the structure that prevents everything else from turning into ad-hoc scene
+mutation:
+
+- Without bindings, a model is just a rendered asset
+- With bindings, the model becomes part of your application state
+
+That distinction is what makes it possible to build maintainable 3D product
+flows. Instead of scattering logic across mesh refs, custom raycasters, material
+mutations, and one-off UI handlers, you keep the important decisions in a single
+serializable record.
+
+In other words, `objectBindings` is not extra work for rendering. It is the
+abstraction that makes interaction, customization, persistence, and app-level
+logic manageable after rendering.
+
+<Callout type="info">
+  If you only need to display a model, you probably do not need
+  <code>objectBindings</code>. If you need the model to behave like part of your
+  app, bindings are the right tradeoff.
+</Callout>
+
 ## When This Package Fits
 
 - **Product configurators** — let users recolor or retexture parts of a car, piece of furniture, or apparel
 - **Interactive room/scene tours** — click walls, furniture, or fixtures to see info or toggle visibility
 - **Asset inspection tools** — [`SimpleModelViewer`](/reference/simple-model-viewer) for quickly browsing a GLB/GLTF mesh hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
 - **Anything needing "click a 3D part to show a panel with data and actions"** without hand-rolling raycasting, highlighting, and UI panels
+
+## Example Applications Where Bindings Shine
+
+- **Product configurators** — cars, furniture, kitchens, appliances, apparel, or footwear where each part can be selected, recolored, retextured, upgraded, or hidden
+- **E-commerce customization flows** — "build your own" experiences where a mesh maps to a product option, add-on, or purchasable variant
+- **CPQ and sales tools** — enterprise configuration flows where 3D parts correspond to real options, compatibility rules, and pricing decisions
+- **Interior design and real estate tools** — rooms, walls, fixtures, finishes, and furniture that need labels, toggles, metadata, and saved viewpoints
+- **Industrial and engineering viewers** — machines, assemblies, equipment, and plant layouts where users isolate parts, inspect metadata, and follow maintenance flows
+- **Training and guided walkthroughs** — medical, hardware, aviation, or manufacturing education where each part can own annotations, steps, and camera presets
+- **Digital twins and operational dashboards** — buildings, assets, or devices where visual parts correspond to live entities with status, metrics, and alerts
+
+The common pattern is simple: if a user needs to say "this exact part of the
+model does something special," bindings usually make sense.
 
 ## When It Probably Doesn't Fit
 

@@ -1,12 +1,8 @@
-import React from "react";
 import type { DocsThemeConfig } from "nextra-theme-docs";
 
 const DOCS_REPO_URL =
   "https://github.com/liveroom-technologies/react-immersive-docs";
 const DOCS_ISSUES_URL = `${DOCS_REPO_URL}/issues`;
-const DOCS_DISCUSSIONS_URL = `${DOCS_REPO_URL}/discussions`;
-const PRIVATE_SUPPORT_URL =
-  "mailto:developers@liveroom.xyz?subject=React%20Immersive%20Support";
 
 const config: DocsThemeConfig = {
   logo: (
@@ -42,21 +38,9 @@ const config: DocsThemeConfig = {
   editLink: {
     text: "Edit this page on GitHub",
   },
-  docsRepositoryBase: `${DOCS_REPO_URL}/blob/main/pages`,
+  docsRepositoryBase: `${DOCS_REPO_URL}/blob/main`,
   footer: {
-    text: (
-      <span>
-        {new Date().getFullYear()} © Liveroom.{" "}
-        <a href={DOCS_ISSUES_URL} target="_blank" rel="noreferrer">
-          Report an issue
-        </a>{" "}
-        ·{" "}
-        <a href={DOCS_DISCUSSIONS_URL} target="_blank" rel="noreferrer">
-          Discussions
-        </a>{" "}
-        · <a href={PRIVATE_SUPPORT_URL}>Private support</a>
-      </span>
-    ),
+    text: <span>{new Date().getFullYear()} © Liveroom. </span>,
   },
   useNextSeoProps() {
     return {
