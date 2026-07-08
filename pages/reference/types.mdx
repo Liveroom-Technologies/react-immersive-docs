@@ -1,0 +1,292 @@
+---
+title: Types Reference
+---
+
+# Types Reference
+
+## `ObjectBinding`
+
+The core data record for each interactive mesh in the viewer.
+
+```ts
+type ObjectBinding = {
+  id: string;
+  type: ObjectBindingType;
+  modelObjectId: string;
+  label?: string;
+  visible?: boolean;
+  selectable?: boolean;
+  hoverable?: boolean;
+  style?: ObjectBindingStyle;
+  actions?: ObjectBindingAction[];
+  metrics?: Record<string, number>;
+  metadata?: Record<string, unknown>;
+  cameraState?: ObjectBindingCameraState;
+};
+```
+
+### Key Notes
+
+- The `objectBindings` record is **keyed by node name**, not by `id`
+- `visible` is live render state, not just an initial default
+- `style.material.baseColor` is the committed source of truth for color picks
+- `style.material.texture.path` is the committed source of truth for texture uploads
+- If no `texture.path` and no `style.material.baseColor` are set, the viewer falls back to the original GLB/GLTF material
+- See [`ObjectBindingMaterial`](#objectbindingmaterial) for the full set of per-object material overrides
+- `metrics` and `metadata` are displayed in the side panel JSON preview
+- `cameraState` stores a saved camera view for the object; when both `position` and `target` are set, the viewer uses that view when the object is focused or selected instead of falling back to `fitToBox`
+
+---
+
+## `ObjectBindingType`
+
+A large union covering vehicles, rooms, furniture, characters, weapons, environment, and more.
+
+```ts
+type ObjectBindingType =
+  | "body"
+  | "light"
+  | "wheel"
+  | "glass"
+  | "interior"
+  | "floor"
+  | "wall"
+  | "door"
+  | "furniture"
+  | "decor"
+  | "electronics"
+  | "other";
+// ... and more
+```
+
+---
+
+## `ObjectBindingStyle`
+
+Controls the visual appearance of a mesh. All visual overrides live under
+`material` (an `ObjectBindingMaterial`); there are no style-level `color` /
+`metalness` / `roughness` fields.
+
+```ts
+type ObjectBindingStyle = {
+  material?: ObjectBindingMaterial;
+};
+```
+
+---
+
+## `ObjectBindingMaterial`
+
+Per-object overrides applied on top of the mesh's original GLB/GLTF material as a
+`MeshPhysicalMaterial`. Every field is optional — only the fields you set are
+overridden; everything else falls back to the model-authored value. Texture slots
+are `{ path: string }` objects.
+
+```ts
+type TextureSlot = { path: string };
+
+type ObjectBindingMaterial = {
+  // ── Base / PBR ──────────────────────────────────────────────
+  texture?: TextureSlot; // base color (albedo) map
+  baseColor?: string; // hex, e.g. "#ff0000"
+  metalness?: number; // 0–1
+  metalnessMap?: TextureSlot;
+  roughness?: number; // 0–1
+  roughnessMap?: TextureSlot;
+  reflectivity?: number; // 0–1 (specular F0)
+  specularIntensity?: number; // 0–1
+  specularIntensityMap?: TextureSlot;
+  specularColor?: string; // hex
+  specularColorMap?: TextureSlot;
+
+  // ── Emission ────────────────────────────────────────────────
+  emissive?: string; // hex
+  emissiveIntensity?: number; // 0–10
+  emissiveMap?: TextureSlot;
+
+  // ── Opacity / blending ──────────────────────────────────────
+  opacity?: number; // 0–1
+  alphaMap?: TextureSlot;
+  alphaTest?: number; // 0–1
+  alphaHash?: boolean;
+  dithering?: boolean; // banding reduction on gradients
+  blendingMode?: "normal" | "additive";
+
+  // ── Normal / bump ───────────────────────────────────────────
+  normalMap?: TextureSlot;
+  normalScale?: number;
+  flipNormalY?: boolean;
+  bumpMap?: TextureSlot;
+  bumpScale?: number;
+
+  // ── Displacement ────────────────────────────────────────────
+  displacementMap?: TextureSlot;
+  displacementScale?: number;
+  displacementBias?: number;
+
+  // ── Ambient occlusion ───────────────────────────────────────
+  aoMap?: TextureSlot;
+  aoMapIntensity?: number;
+
+  // ── Clearcoat ───────────────────────────────────────────────
+  clearcoat?: number; // 0–1
+  clearcoatMap?: TextureSlot;
+  clearcoatRoughness?: number; // 0–1
+  clearcoatRoughnessMap?: TextureSlot;
+  clearcoatNormalMap?: TextureSlot;
+  clearcoatNormalScale?: number;
+  flipClearcoatNormalY?: boolean;
+
+  // ── Sheen ───────────────────────────────────────────────────
+  sheen?: number; // 0–1
+  sheenColor?: string; // hex
+  sheenColorMap?: TextureSlot;
+  sheenRoughness?: number; // 0–1
+  sheenRoughnessMap?: TextureSlot;
+
+  // ── Anisotropy ──────────────────────────────────────────────
+  anisotropy?: number; // 0–1
+  anisotropyRotation?: number; // radians
+  anisotropyMap?: TextureSlot;
+
+  // ── Transmission / volume ───────────────────────────────────
+  transmission?: number; // 0–1
+  transmissionMap?: TextureSlot;
+  thickness?: number;
+  thicknessMap?: TextureSlot;
+  attenuationColor?: string; // hex (volume tint)
+  attenuationDistance?: number;
+
+  // ── Faces ───────────────────────────────────────────────────
+  side?: "front" | "back" | "double";
+};
+```
+
+### Texture color space
+
+Texture slots are decoded with the correct color space automatically, so maps
+render at the right brightness:
+
+- **sRGB (color) maps:** `texture` (base color/albedo), `emissiveMap`,
+  `sheenColorMap`, `specularColorMap`
+- **Linear (data) maps:** everything else — `normalMap`, `roughnessMap`,
+  `metalnessMap`, `aoMap`, `displacementMap`, `bumpMap`, `alphaMap`,
+  `clearcoat*Map`, `anisotropyMap`, `transmissionMap`, `thicknessMap`,
+  `sheenRoughnessMap`, `specularIntensityMap`
+
+The shared texture cache is keyed by URL **and** color space, so the same image
+URL can be used safely as both a color map and a data map.
+
+---
+
+## `ObjectBindingAction`
+
+Defines an action button shown in the side panel.
+
+```ts
+type ObjectBindingAction = {
+  id: string;
+  label: string;
+  type: "command";
+};
+```
+
+Built-in action IDs:
+
+| ID                  | Behavior               |
+| ------------------- | ---------------------- |
+| `toggle-visibility` | Toggle mesh visibility |
+| `change-color`      | Open color picker      |
+| `change-material`   | Open texture upload    |
+
+---
+
+## `ObjectBindingCameraState`
+
+Saved camera state for zooming to an object.
+
+```ts
+type ObjectBindingCameraState = {
+  position?: [number, number, number];
+  target?: [number, number, number];
+  fov?: number;
+  zoom?: number;
+};
+```
+
+When both `position` and `target` are set on a binding's `cameraState`, the viewer uses that saved view when the object is focused or selected instead of falling back to `fitToBox`.
+
+---
+
+## `ObjectActionEvent`
+
+The event shape emitted by `onAction` and `useViewerActions.runAction`.
+
+```ts
+type ObjectActionEvent = {
+  objectId: string;
+  action: ObjectBindingAction;
+  binding?: ObjectBinding;
+  screenX?: number;
+  screenY?: number;
+};
+```
+
+---
+
+## `AnimationControls`
+
+Provided via `onAnimationsReady`.
+
+```ts
+type AnimationPlaybackState = {
+  currentClip: string | null;
+  isPlaying: boolean;
+  speed: number;
+  time: number; // live position of the current clip, in seconds
+  duration: number; // length of the current clip, in seconds
+};
+
+type AnimationControls = {
+  clips: string[];
+  clipDetails?: { sourceName: string; duration: number }[];
+  play: (clipName: string) => void;
+  pause: () => void;
+  stop: () => void;
+  setSpeed: (speed: number) => void;
+  seek?: (time: number) => void; // scrub the current clip to an absolute time (seconds)
+  getState?: () => AnimationPlaybackState;
+  subscribe?: (listener: (state: AnimationPlaybackState) => void) => () => void;
+};
+```
+
+---
+
+## `CustomObjectBindingDataPanelProps`
+
+Props passed to a `customObjectBindingDataPanel` render prop.
+
+```ts
+type CustomObjectBindingDataPanelProps = {
+  isOpen: boolean;
+  selectedObject: ObjectBinding | null;
+  currentAction: ObjectActionEvent | null;
+  onClose: () => void;
+  onAction: (event: ObjectActionEvent) => void;
+};
+```
+
+---
+
+## `CustomSceneObjectsPanelProps`
+
+Props passed to a `customSceneObjectsPanel` render prop.
+
+```ts
+type CustomSceneObjectsPanelProps = {
+  objectBindings: Record<string, ObjectBinding>;
+  onAction?: (event: ObjectActionEvent) => void;
+  onFocus?: (binding: ObjectBinding) => void;
+  onHover?: (binding: ObjectBinding | null) => void;
+};
+```

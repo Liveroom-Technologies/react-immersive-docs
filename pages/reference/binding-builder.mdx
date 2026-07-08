@@ -1,0 +1,110 @@
+---
+title: BindingBuilder
+---
+
+import { Callout } from "nextra/components";
+
+# `BindingBuilder`
+
+A design-time helper component for authoring `objectBindings` and `sceneConfig` in the browser. Load a GLB/GLTF asset, inspect its mesh nodes, edit binding fields, configure the scene, preview the result live, and export as JSON or TypeScript.
+
+Try the public editor at [react-immersive.liveroom.dev/editor](https://react-immersive.liveroom.dev/editor).
+
+## Usage
+
+```tsx
+import { BindingBuilder } from "@live_room/react-immersive";
+
+export default function App() {
+  return <BindingBuilder licenseKey="your_license_key" />;
+}
+```
+
+## Props
+
+```ts
+type BindingBuilderProps = {
+  licenseKey: string;
+};
+```
+
+`licenseKey` is **required** and is validated the same way as [`ModelViewer`](/reference/model-viewer)'s — see [Licensing & plan tiers](#licensing--plan-tiers) below. While the key is being checked, `BindingBuilder` renders a "Verifying license…" placeholder; if the key is invalid, it renders an error message instead of the editor.
+
+## Capabilities
+
+### Object tab
+
+- Upload a `.glb`, standalone/data-URI `.gltf`, or `.zip` containing a `.gltf` plus its referenced `.bin` and texture files
+- Traverse renderable mesh nodes and generate starter bindings automatically
+- Edit binding fields: identity, label, type, status, booleans, style, actions, metrics, metadata, and saved camera state
+- Author a full per-object material in the **Material** panel — a one-click
+  preset gallery (wood, metal, chrome, glass, plastic, fabric, ceramic,
+  concrete, etc.) plus collapsible sub-panels for PBR maps, roughness,
+  emission, opacity, normal & bump, displacement, ambient occlusion,
+  clearcoat, sheen, anisotropy, transmission & volume, and faces rendering.
+  Each sub-panel has an enable toggle, and every field maps to a
+  `style.material` override (see
+  [`ObjectBindingMaterial`](/reference/types#objectbindingmaterial))
+- Undo/redo the current bindings (toolbar buttons, or `Cmd/Ctrl+Z` /
+  `Cmd/Ctrl+Shift+Z` while the Object tab is active) — rapid edits like
+  slider drags coalesce into a single undo step
+- Import a previously exported `objectBindings.json` and merge it back onto
+  the current model (matched by `modelObjectId`, so re-imports survive
+  hand edits or partial files)
+- Export the current bindings as **JSON** or **TypeScript**
+
+### Scene tab
+
+- Configure scene-wide settings (lighting, environment, background, ground
+  shadows, wireframe, post-processing, annotations, and per-clip animation
+  options) — the same `SceneConfig` shape consumed by `ModelViewer`'s
+  `sceneConfig` prop
+- Undo/redo the scene config independently of the Object tab's bindings
+  history
+- Import a previously exported `sceneConfig.json`, merged by top-level
+  section so a partial file doesn't wipe sections it doesn't include
+- Export the current scene config as **JSON** or **TypeScript**
+
+### Preview
+
+- Live preview of the selected node in an embedded `ModelViewer`
+
+<Callout type="info">
+  **Picking a texture map** stores the durable path `materials/<filename>` in
+  the binding (this is what's exported), and shows the image immediately in
+  the live preview via an in-memory `blob:` URL — so you can author without
+  first copying files into `public/`.
+
+**Exporting bundles the files automatically:** if any material field was
+filled by uploading a file, clicking **Export**
+downloads a `.zip` instead of a single `.json`/`.ts` — containing the
+export file plus a `materials/` folder with every uploaded image. Unzip it
+into your app's `public/` folder and the exported bindings resolve as-is.
+Two different uploads that happen to share a filename are kept distinct
+(`materials/wood.jpg`, `materials/wood-2.jpg`, ...) rather than one
+overwriting the other. If nothing was uploaded, Export downloads a plain
+`.json`/`.ts` file exactly as before.
+
+</Callout>
+
+## Licensing & plan tiers
+
+`BindingBuilder` validates `licenseKey` the same way `ModelViewer` does, and additionally gates some editor features by the license's plan tier:
+
+| Tier      | Unlocks                                                                                                                                                     |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `free`    | Base color, metalness/roughness sliders, basic scene settings                                                                                               |
+| `starter` | + Texture maps, the specular workflow, reflectivity, environment lighting, environment backgrounds, wireframe preview, animation configuration, annotations |
+| `growth`  | + Post-processing effects                                                                                                                                   |
+
+A locked feature is shown in place (not hidden) with a message naming the required plan, so the feature stays discoverable while editing. Get a license key at the [Liveroom Developer Portal](https://react-immersive.liveroom.dev).
+
+## Typical Workflow
+
+1. Mount `<BindingBuilder />` in a dev-only route (e.g. `/dev/bindings`)
+2. Upload your `.glb`, `.gltf`, or `.zip`
+3. Select mesh nodes in the sidebar and edit their binding fields, or apply a material preset
+4. Configure scene-wide settings in the **Scene** tab
+5. Preview the interactive result in the embedded viewer
+6. Click **Export → JSON** or **Export → TypeScript** to download the bindings (and, if you uploaded any textures, a `.zip` with them included)
+7. Drop the exported file (and any `materials/` folder) into your app as the initial `objectBindings` / `sceneConfig` state

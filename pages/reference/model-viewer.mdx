@@ -1,0 +1,833 @@
+---
+title: ModelViewer
+---
+
+import { Callout } from "nextra/components";
+
+# `ModelViewer`
+
+The primary exported component. Renders a GLB/GLTF model with orbit/pan/zoom controls, built-in side panels, and a full callback API.
+
+## Props
+
+```ts
+type Props = {
+  modelUrl: string;
+  licenseKey: string;
+  objectBindings: Record<string, ObjectBinding>;
+  selectedObject?: ObjectBinding | null;
+  onObjectBindingsChange?: (next: Record<string, ObjectBinding>) => void;
+  onObjectSelect?: (binding: ObjectBinding | null) => void;
+  onObjectHover?: (binding: ObjectBinding | null) => void;
+  onModelLoaded?: (scene: Object3D) => void;
+  onLoadError?: (error: unknown) => void;
+  onAction?: (event: ObjectActionEvent) => void;
+  onHiddenObjectsChange?: (next: Record<string, boolean>) => void;
+  onCameraChange?: (camera: Camera, controls: CameraControls) => void;
+  onViewerReady?: (viewer: ViewerReadyState) => void;
+  onTextureUpload?: (file: File, objectId: string) => Promise<string>;
+  onAnimationsReady?: (controls: AnimationControls) => void;
+  onAnnotationsChange?: (annotations: AnnotationMarker[]) => void;
+  activeAnnotation?: AnnotationMarker | null;
+  onActiveAnnotationChange?: (annotation: AnnotationMarker | null) => void;
+  lights?: React.ReactNode;
+  camera?: React.ComponentProps<typeof Canvas>["camera"];
+  backgroundColor?: string;
+  shadows?: boolean;
+  showObjectBindingDataPanel?: boolean;
+  customObjectBindingDataPanel?: (
+    props: CustomObjectBindingDataPanelProps,
+  ) => React.ReactNode;
+  customSceneObjectsPanel?: (
+    props: CustomSceneObjectsPanelProps,
+  ) => React.ReactNode;
+  showSceneObjectsPanel?: boolean;
+  showDownloadButton?: boolean;
+  downloadFilename?: string;
+  showResetButton?: boolean;
+  showDownloadButtons?: boolean;
+  showLoadingOverlay?: boolean;
+  showMouseController?: boolean;
+  mouseControllerPosition?:
+    | "bottom-left"
+    | "bottom-right"
+    | "top-left"
+    | "top-right"
+    | "center"
+    | "center-bottom"
+    | "center-top";
+  mouseControllerOpacity?: number;
+  moveSensitivity?: number;
+  zoomSensitivity?: number;
+  sceneConfig?: SceneConfig;
+  disableZoom?: boolean;
+  zoomOnSelected?: boolean;
+  onAutoFit?: () => Promise<boolean>;
+  refitOnResize?: boolean;
+  renderMode?: "always" | "demand";
+  maxDpr?: number;
+  performanceProfile?: "auto" | "high" | "low";
+  dracoDecoderPath?: string | false;
+  ktx2TranscoderPath?: string | false;
+  meshopt?: boolean;
+  showMeasureTools?: boolean;
+  measurementUnit?: string;
+  enableXR?: boolean;
+  usdzUrl?: string;
+  showAnnotationNavigation?: boolean;
+};
+```
+
+---
+
+### `modelUrl`
+
+**Required.** URL or public path to the `.glb` or `.gltf` model file. For `.gltf` URLs with external `.bin` or texture files, those files must be served at the relative paths declared in the `.gltf`.
+
+```tsx
+<ModelViewer modelUrl="/model.glb" ... />
+```
+
+---
+
+### `licenseKey`
+
+**Required.** License key for the library.
+
+```tsx
+<ModelViewer licenseKey="your-license-key" ... />
+```
+
+To get a license key, sign in at the [Liveroom Developer Portal](https://react-immersive.liveroom.dev), choose a plan, and generate a key from your dashboard.
+
+---
+
+### `objectBindings`
+
+**Required.** A map keyed by the model node name. Each key should match a mesh name from the GLB/GLTF file.
+
+`objectBindings` is the single source of truth for all visual state:
+
+| Field                                         | Effect                                                                        |
+| --------------------------------------------- | ----------------------------------------------------------------------------- |
+| `visible`                                     | Controls mesh visibility                                                      |
+| `style.material.baseColor`                    | Sets mesh color (committed by the built-in color picker on close)             |
+| `style.material.texture.path`                 | Sets the base color (albedo) texture                                          |
+| `style.material.*`                            | Per-object `MeshPhysicalMaterial` overrides — see below                       |
+| `cameraState.position` / `cameraState.target` | Camera view to use when this object is focused or selected from the viewer UI |
+
+All visual overrides live under `style.material` (an `ObjectBindingMaterial`).
+It covers base color/PBR, emission, opacity & blending, normal/bump,
+displacement, ambient occlusion, clearcoat, sheen, anisotropy,
+transmission/volume, and face sidedness — plus a texture-map slot for each.
+See [`ObjectBindingMaterial`](/reference/types#objectbindingmaterial) for the
+full field list and the per-slot color-space handling (color maps are decoded
+as sRGB, data maps stay linear).
+
+```ts
+const objectBindings = {
+  Object_2: {
+    id: "obj-2",
+    modelObjectId: "Object_2",
+    type: "body",
+    visible: true,
+    cameraState: {
+      position: [2.8, 1.6, 4.2],
+      target: [0, 0.8, 0],
+    },
+    style: {
+      material: {
+        baseColor: "#ff0000",
+        texture: { path: "/materials/body-finish.jpg" },
+        roughness: 0.4,
+        clearcoat: 1,
+      },
+    },
+    actions: [
+      { id: "change-color", label: "Change Color", type: "command" },
+      { id: "toggle-visibility", label: "Toggle Visibility", type: "command" },
+    ],
+    metrics: {},
+    metadata: {},
+  },
+};
+```
+
+---
+
+### `selectedObject`
+
+Optional currently selected object binding, or `null` when nothing is selected.
+
+When provided, `ModelViewer` behaves as a **controlled component**. When omitted, it manages its own selection state internally.
+
+When the selected object has a `cameraState` with both `position` and `target`, the viewer uses that saved camera view for focus/select behavior instead of falling back to `fitToBox`.
+
+---
+
+### `onObjectSelect`
+
+Called when the user clicks a mesh or closes the side panel.
+
+```ts
+onObjectSelect?: (binding: ObjectBinding | null) => void
+```
+
+- Clicking a mesh → `onObjectSelect(binding)`
+- Closing the panel → `onObjectSelect(null)`
+- Clicking the same mesh again still fires; selection is not toggled off automatically
+- If the binding includes `cameraState.position` and `cameraState.target`, the viewer moves the camera to that saved view when focusing that object
+
+---
+
+### `onObjectHover`
+
+Called when the user hovers a mesh.
+
+```ts
+onObjectHover?: (binding: ObjectBinding | null) => void
+```
+
+- Pointer over a mesh → `onObjectHover(binding)`
+- Pointer out → `onObjectHover(null)`
+
+---
+
+### `onObjectBindingsChange`
+
+Fired when the viewer's built-in UI updates binding data. Wire this back into your state to keep the viewer and your app in sync.
+
+```ts
+onObjectBindingsChange?: (next: Record<string, ObjectBinding>) => void
+```
+
+Fires for:
+
+- Visibility toggles (`binding.visible`)
+- Color picks (`binding.style.material.baseColor`) — committed when the color picker closes
+- Texture uploads (`binding.style.material.texture.path`)
+- Texture removal
+
+---
+
+### `onHiddenObjectsChange`
+
+Fired with the derived hidden-object map whenever binding visibility state changes.
+
+```ts
+onHiddenObjectsChange?: (next: Record<string, boolean>) => void
+```
+
+---
+
+### `onModelLoaded`
+
+Called after the GLB/GLTF scene has been loaded.
+
+```ts
+onModelLoaded?: (scene: Object3D) => void
+```
+
+---
+
+### `onLoadError`
+
+Called if the model fails to load or render.
+
+```ts
+onLoadError?: (error: unknown) => void
+```
+
+---
+
+### `onAction`
+
+Called when a built-in action button is clicked from the side panel.
+
+```ts
+type ObjectActionEvent = {
+  objectId: string;
+  action: ObjectBindingAction;
+  binding?: ObjectBinding;
+  screenX?: number;
+  screenY?: number;
+};
+
+onAction?: (event: ObjectActionEvent) => void
+```
+
+---
+
+### `onViewerReady`
+
+Called once camera controls are available and again when the viewer publishes updated ready-state data (for example after model load, camera changes, or binding changes).
+
+```ts
+onViewerReady?: (viewer: ViewerReadyState) => void
+
+type ViewerReadyState = {
+  controls: CameraControls;
+  scene: Object3D | null;
+  objectBindings: Record<string, ObjectBinding>;
+  nodeRefs: Record<string, Object3D>;
+  captureImage: (options?: CaptureImageOptions) => Promise<string>;
+};
+
+type CaptureImageOptions = {
+  width?: number;
+  height?: number;
+  transparent?: boolean;
+};
+```
+
+`captureImage` forces a render and resolves with a `data:image/png` URL of the canvas. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG has an alpha channel. It rejects if called before the viewer is ready.
+
+```tsx
+onViewerReady={(viewer) => {
+  viewer
+    .captureImage({ width: 1920, height: 1080, transparent: true })
+    .then((dataUrl) => {
+      // upload, preview, etc.
+    });
+}}
+```
+
+For turning the current camera/visibility/selection into a shareable link, see [`useShareableViewerState`](/hooks/use-shareable-viewer-state).
+
+---
+
+### `onCameraChange`
+
+Called whenever the camera controls update.
+
+```ts
+onCameraChange?: (camera: Camera, controls: CameraControls) => void
+```
+
+---
+
+### `onTextureUpload`
+
+Optional async callback for handling texture file uploads. Use it to upload to your own storage (S3, Cloudinary, CDN, etc.) and return a durable URL.
+
+```ts
+onTextureUpload?: (file: File, objectId: string) => Promise<string>
+```
+
+When omitted, the viewer falls back to `URL.createObjectURL(file)` — a session-scoped blob URL that is lost on reload.
+
+```tsx
+<ModelViewer
+  onTextureUpload={async (file, objectId) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("objectId", objectId);
+    const res = await fetch("/api/upload-texture", {
+      method: "POST",
+      body: formData,
+    });
+    const { url } = await res.json();
+    return url;
+  }}
+/>
+```
+
+---
+
+### `onAnimationsReady`
+
+Called after the GLB/GLTF model is loaded, providing animation controls. Called even if the model has no animations (empty `clips` array, no-op functions).
+
+```ts
+type AnimationControls = {
+  clips: string[];
+  clipDetails?: { sourceName: string; duration: number }[];
+  play: (clipName: string) => void;
+  pause: () => void;
+  stop: () => void;
+  setSpeed: (speed: number) => void;
+  seek?: (time: number) => void; // scrub the current clip to an absolute time (seconds)
+  getState?: () => AnimationPlaybackState; // includes live time + duration
+  subscribe?: (listener: (state: AnimationPlaybackState) => void) => () => void;
+};
+
+onAnimationsReady?: (controls: AnimationControls) => void
+```
+
+See [`AnimationControls`](/reference/types#animationcontrols) for the full
+`AnimationPlaybackState` shape (`currentClip`, `isPlaying`, `speed`, `time`,
+`duration`).
+
+Wire to `useViewerAnimations().handleAnimationsReady` for the simplest integration.
+
+---
+
+### `lights`
+
+Optional custom lighting rendered inside the scene. When omitted, `ModelViewer` uses its default light rig.
+
+```tsx
+function CustomLights() {
+  return (
+    <>
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[4, 8, 4]} intensity={1.6} castShadow />
+      <pointLight position={[-3, 3, 2]} intensity={0.8} />
+    </>
+  );
+}
+
+<ModelViewer lights={<CustomLights />} ... />
+```
+
+---
+
+### `camera`
+
+Optional camera configuration passed through to the underlying React Three Fiber `Canvas`.
+
+`ModelViewer` only sets a default `fov: 50` — it does not set a default position, so an unset position falls back to React Three Fiber's own `Canvas` default (`[0, 0, 5]`). Pass an explicit `position` for predictable framing.
+
+```tsx
+<ModelViewer
+  camera={{ position: [0, 2.2, 7], fov: 40, near: 0.1, far: 1000 }}
+  ...
+/>
+```
+
+---
+
+### `backgroundColor`
+
+Optional background color for the viewer canvas.
+
+```tsx
+<ModelViewer backgroundColor="#0f172a" ... />
+```
+
+---
+
+### `shadows`
+
+Controls whether the viewer renders shadows. Default: `true`.
+
+When `true`, the canvas renders soft shadows: the default light rig casts a directional key-light shadow, furniture/decor meshes cast and receive shadows, and ambient occlusion is applied via post-processing. When `false`, shadow-map rendering is disabled on the canvas — no shadow-pass cost, and per-mesh/light `castShadow` flags are ignored.
+
+```tsx
+<ModelViewer shadows={false} ... />
+```
+
+<Callout type="info">
+  **Interior models (rooms, dollhouses):** the large mesh that forms the
+  walls/ceiling enclosure is detected by its bounding-box size and automatically
+  excluded from **casting** shadows (it still **receives** them). Without this,
+  a closed shell would block a top-down light and seal the interior in darkness.
+  Furniture and decor then cast realistic contact shadows onto the floor. Pass a
+  custom [`lights`](#lights) rig to fully override the default lighting.
+</Callout>
+
+---
+
+### `showObjectBindingDataPanel`
+
+Controls whether the built-in left object details panel is rendered. Default: `true`.
+
+---
+
+### `customObjectBindingDataPanel`
+
+Render prop for replacing the built-in left object details panel.
+
+```ts
+type CustomObjectBindingDataPanelProps = {
+  isOpen: boolean;
+  selectedObject: ObjectBinding | null;
+  currentAction: ObjectActionEvent | null;
+  onClose: () => void;
+  onAction: (event: ObjectActionEvent) => void;
+};
+```
+
+---
+
+### `showSceneObjectsPanel`
+
+Controls whether the built-in right scene objects panel is rendered. Default: `true`.
+
+---
+
+### `customSceneObjectsPanel`
+
+Render prop for replacing the built-in right scene objects panel.
+
+```ts
+type CustomSceneObjectsPanelProps = {
+  objectBindings: Record<string, ObjectBinding>;
+  onAction?: (event: ObjectActionEvent) => void;
+  onFocus?: (binding: ObjectBinding) => void;
+  onHover?: (binding: ObjectBinding | null) => void;
+};
+```
+
+---
+
+### `showDownloadButton`
+
+Enables the download split-button (export GLB / export PNG screenshot). Default: `true`.
+
+The bottom-right action bar only renders at all when at least one of `showResetButton`, `showDownloadButtons`, or (`showAnnotationNavigation` with annotations present) is `true`. Within that bar, the download button itself requires **both** `showDownloadButtons` and `showDownloadButton` to be `true`.
+
+---
+
+### `downloadFilename`
+
+Filename stem for the built-in model export button. Default: `"model"`.
+
+---
+
+### `showResetButton`
+
+Shows the "reset camera view" button in the bottom-right action bar. Default: `true`.
+
+---
+
+### `showDownloadButtons`
+
+Master toggle for the download split-button area in the bottom-right action bar. Set to `false` to hide it regardless of `showDownloadButton`. Default: `true`.
+
+---
+
+### `showLoadingOverlay`
+
+Controls whether the built-in loading overlay is shown while the model is loading and the initial camera fit is settling. Default: `true`.
+
+---
+
+### `showMouseController`
+
+Renders an on-screen joystick/zoom controller for moving the camera with a mouse or touch — useful on touch devices or kiosk layouts. Default: `false`.
+
+```tsx
+<ModelViewer
+  showMouseController
+  mouseControllerPosition="bottom-right"
+  mouseControllerOpacity={0.8}
+  moveSensitivity={0.1}
+  zoomSensitivity={1.2}
+  ...
+/>
+```
+
+---
+
+### `mouseControllerPosition`
+
+Placement of the on-screen controller. Default: `"center-bottom"`.
+
+```ts
+type MouseControllerPosition =
+  | "bottom-left"
+  | "bottom-right"
+  | "top-left"
+  | "top-right"
+  | "center"
+  | "center-bottom"
+  | "center-top";
+```
+
+---
+
+### `mouseControllerOpacity`
+
+Opacity of the on-screen controller. Default: `1`.
+
+---
+
+### `moveSensitivity`
+
+Movement sensitivity for the on-screen controller. Default: `0.08`.
+
+---
+
+### `zoomSensitivity`
+
+Zoom sensitivity for the on-screen controller. Default: `1.0`.
+
+---
+
+### `sceneConfig`
+
+Optional scene-wide configuration object — model, camera, lighting, wireframe,
+shadows, environment, background, ground shadows, post-processing, animations,
+and annotations. This is the same `SceneConfig` shape authored by
+`BindingBuilder`'s **Scene** tab. If omitted, the viewer uses its built-in
+default scene config.
+
+`sceneConfig.animations` drives autoplay and per-clip playback (see
+[`onAnimationsReady`](#onanimationsready)), and `sceneConfig.annotations` seeds
+the annotation markers rendered on the model.
+
+---
+
+### `disableZoom`
+
+Optional boolean. When `true`, the viewer never zooms the camera to an object
+on selection (selection still highlights and fires callbacks). Default: `false`.
+
+---
+
+### `zoomOnSelected`
+
+Optional boolean controlling whether selecting an object zooms/fits the camera
+to it. Set to `false` to keep the current camera framing on selection. Default:
+`true`. (Zooming is also skipped when `disableZoom` is `true`.)
+
+---
+
+### `onAutoFit`
+
+Optional async callback invoked once the model has loaded and the scene is
+ready. When provided, it is called so consumers can run their own
+fit-to-scene logic (e.g. an animated fit); if omitted, the viewer falls back to
+its internal `fitScene`.
+
+```ts
+onAutoFit?: () => Promise<boolean>
+```
+
+---
+
+### `refitOnResize`
+
+Optional boolean controlling whether the camera re-frames the model to fit
+whenever the canvas is resized — a browser window resize, a device rotation, or
+a side panel opening/closing (which changes how much width the canvas has). Set
+to `false` to preserve the user's current orbit/zoom across resizes; the camera
+aspect stays correct either way, so the model never distorts, it just isn't
+re-centered. Only affects re-fits _after_ the initial mount-time auto-fit.
+Default: `true`.
+
+---
+
+### `onAnnotationsChange`
+
+Optional callback fired when the annotation markers on the model change (added,
+edited, or removed through the viewer UI).
+
+```ts
+(annotations: AnnotationMarker[]) => void
+```
+
+`AnnotationMarker` is the `SceneAnnotationMarker` shape:
+
+```ts
+type AnnotationMarker = {
+  id: number;
+  worldPosition: [number, number, number];
+  localPosition: [number, number, number];
+  title: string;
+  description: string;
+};
+```
+
+---
+
+### `activeAnnotation` / `onActiveAnnotationChange`
+
+Optional controlled state for which annotation is currently open. Pass
+`activeAnnotation` to control it from your app, and `onActiveAnnotationChange`
+to be notified when the viewer wants to open (`AnnotationMarker`) or close
+(`null`) one. If `activeAnnotation` is left `undefined`, the viewer manages this
+state internally (uncontrolled).
+
+```ts
+activeAnnotation?: AnnotationMarker | null;
+onActiveAnnotationChange?: (annotation: AnnotationMarker | null) => void;
+```
+
+### `renderMode`
+
+`"demand"` (default) only re-renders the canvas when something changes (camera move, state update, animation frame); `"always"` runs a continuous render loop. Leave at `"demand"` for lower GPU/battery cost unless you have a custom scene that mutates outside React/animation state.
+
+---
+
+### `maxDpr`
+
+Upper bound for the device pixel ratio used when rendering, so retina/4K displays don't render at full 2–3x cost. Default: `2`.
+
+---
+
+### `performanceProfile`
+
+Optional control over how aggressively the viewer trades visual fidelity for a
+stable WebGL context on constrained GPUs.
+
+```ts
+performanceProfile?: "auto" | "high" | "low";
+```
+
+- `"auto"` (default) applies a reduced profile on handheld/mobile browsers and
+  other low-power touch devices: the postprocessing pipeline is skipped, soft
+  shadows are disabled, and the device pixel ratio is capped. Desktop-class
+  touch devices may still keep the higher-quality path when they advertise
+  plenty of memory.
+- `"high"` always renders at full quality.
+- `"low"` always applies the reduced profile.
+
+Default: `"auto"`.
+
+---
+
+### `dracoDecoderPath` / `ktx2TranscoderPath` / `meshopt`
+
+Control the compressed-asset decoders used when loading the GLB/GLTF asset.
+
+```ts
+dracoDecoderPath?: string | false;
+ktx2TranscoderPath?: string | false;
+meshopt?: boolean;
+```
+
+DRACO, Meshopt, and KTX2 decoding are enabled by default via hosted decoder/transcoder bundles, fetched lazily only when the model actually needs them. Pass a path to self-host the decoder/transcoder files, or `false` to disable that decoder entirely.
+
+---
+
+### `showMeasureTools`
+
+Shows a click-to-measure toolbar over the canvas: click two points on the model to get a distance readout, plus a toggleable bounding-box dimensions overlay (width/height/depth). Default: `false`.
+
+```tsx
+<ModelViewer showMeasureTools measurementUnit="m" ... />
+```
+
+---
+
+### `measurementUnit`
+
+Unit suffix appended to measurement readouts. glTF models are authored in meters by spec, so values are not converted — this only changes the displayed label. Default: `"m"`.
+
+---
+
+### `enableXR`
+
+Optional boolean that enables XR entry points. On WebXR-capable browsers, the
+viewer shows an AR and/or VR button once the relevant immersive session support
+is confirmed. On iPhone/iPad, WebXR AR is not available, but if you also pass
+[`usdzUrl`](#usdzUrl), the viewer shows a **"View in AR"**
+button that launches Apple Quick Look instead.
+
+Default: `false`.
+
+---
+
+### `usdzUrl`
+
+Optional `USDZ` URL used as an Apple-device AR fallback when `enableXR` is
+`true`.
+
+```ts
+usdzUrl?: string;
+```
+
+- Point this to a `.usdz` file Safari can fetch directly.
+- iPhone/iPad will show a **"View in AR"** button that launches Apple Quick
+  Look when WebXR AR is unavailable.
+- Android / WebXR-capable devices ignore this prop and continue using the
+  normal WebXR AR flow.
+
+---
+
+### `showAnnotationNavigation`
+
+Shows the "Guided Tour" control cluster (left side of the bottom action bar) when the model has at least one annotation: a single "Guided Tour" button that, once started, becomes Previous/Stop/Next controls for stepping through annotations in order. Default: `true`.
+
+---
+
+## Theming
+
+The scene objects panel and object binding data panel read their colors,
+borders, shadows, and fonts from CSS custom properties instead of hardcoded
+values. Set them on a `.ri-viewer` ancestor (or any element wrapping the
+viewer) to re-skin those panels without overriding individual classes —
+every variable already has the current default baked in as a fallback, so
+you only need to set the ones you actually want to change.
+
+```css
+.my-app .ri-viewer {
+  --ri-sidepanel-bg: #1a0033;
+  --ri-sidepanel-accent: #ff2d75;
+  --ri-sidepanel-accent-soft: rgba(255, 45, 117, 0.25);
+  --ri-sidepanel-text: #ffe8f5;
+}
+```
+
+```tsx
+<div className="my-app">
+  <ModelViewer ... />
+</div>
+```
+
+### Scene objects panel — `--ri-sidepanel-*`
+
+| Variable                           | Default                                           |
+| ---------------------------------- | ------------------------------------------------- |
+| `--ri-sidepanel-font-family`       | `Inter, "Segoe UI", Helvetica, Arial, sans-serif` |
+| `--ri-sidepanel-bg`                | `#141824`                                         |
+| `--ri-sidepanel-open-btn-bg`       | `rgba(20, 20, 20, 0.82)`                          |
+| `--ri-sidepanel-open-btn-bg-hover` | `#27282b7e`                                       |
+| `--ri-sidepanel-border`            | `rgba(255, 255, 255, 0.06)`                       |
+| `--ri-sidepanel-divider`           | `rgba(255, 255, 255, 0.04)`                       |
+| `--ri-sidepanel-border-strong`     | `rgba(255, 255, 255, 0.08)`                       |
+| `--ri-sidepanel-border-active`     | `rgba(255, 255, 255, 0.18)`                       |
+| `--ri-sidepanel-shadow-left`       | `4px 0 24px rgba(0, 0, 0, 0.35)`                  |
+| `--ri-sidepanel-shadow-right`      | `-4px 0 24px rgba(0, 0, 0, 0.35)`                 |
+| `--ri-sidepanel-text`              | `#f1f5f9`                                         |
+| `--ri-sidepanel-text-emphasis`     | `#ffffff`                                         |
+| `--ri-sidepanel-text-muted`        | `#94a3b8`                                         |
+| `--ri-sidepanel-text-subtle`       | `#64748b`                                         |
+| `--ri-sidepanel-placeholder`       | `#475569`                                         |
+| `--ri-sidepanel-surface`           | `rgba(255, 255, 255, 0.05)`                       |
+| `--ri-sidepanel-surface-hover`     | `rgba(255, 255, 255, 0.1)`                        |
+| `--ri-sidepanel-accent`            | `#3b82f6`                                         |
+| `--ri-sidepanel-accent-soft`       | `rgba(59, 130, 246, 0.12)`                        |
+
+### Object binding data panel — `--ri-databinding-*`
+
+| Variable                                  | Default                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------- |
+| `--ri-databinding-bg`                     | `#111318`                                                        |
+| `--ri-databinding-border`                 | `rgba(255, 255, 255, 0.06)`                                      |
+| `--ri-databinding-border-strong`          | `rgba(255, 255, 255, 0.08)`                                      |
+| `--ri-databinding-border-hover`           | `rgba(255, 255, 255, 0.15)`                                      |
+| `--ri-databinding-shadow`                 | `4px 0 24px rgba(0, 0, 0, 0.35)`                                 |
+| `--ri-databinding-font-family`            | `"Inter", "Segoe UI", sans-serif`                                |
+| `--ri-databinding-mono-font-family`       | `"JetBrains Mono", "Fira Code", "Menlo", monospace`              |
+| `--ri-databinding-text`                   | `#f1f5f9`                                                        |
+| `--ri-databinding-text-muted`             | `#94a3b8`                                                        |
+| `--ri-databinding-text-subtle`            | `#64748b`                                                        |
+| `--ri-databinding-text-faint`             | `#475569`                                                        |
+| `--ri-databinding-text-hover`             | `#cbd5e1`                                                        |
+| `--ri-databinding-surface`                | `rgba(255, 255, 255, 0.03)`                                      |
+| `--ri-databinding-surface-hover`          | `rgba(255, 255, 255, 0.06)`                                      |
+| `--ri-databinding-accent`                 | `#93c5fd`                                                        |
+| `--ri-databinding-accent-glow`            | `rgba(147, 197, 253, 0.8)`                                       |
+| `--ri-databinding-accent-border`          | `rgba(96, 165, 250, 0.55)`                                       |
+| `--ri-databinding-accent-gradient`        | `linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%)` |
+| `--ri-databinding-accent-gradient-active` | `linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)`              |
+
+<Callout type="info">
+  `ModelViewer.css` also declares the original `--ri-panel-*` and
+  `--ri-license-overlay-*` variables for its other surfaces — the two sets above
+  are specifically for the scene objects panel and the object binding data
+  panel.
+</Callout>
+
+---
+
+## Built-In Actions
+
+| Action ID           | Behavior                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------ |
+| `toggle-visibility` | Hides or shows the selected mesh via `binding.visible` + `onObjectBindingsChange`    |
+| `change-color`      | Opens the color picker; hex committed to `binding.style.material.baseColor` on close |
+| `change-material`   | Opens the texture upload popup; URL stored in `binding.style.material.texture.path`  |

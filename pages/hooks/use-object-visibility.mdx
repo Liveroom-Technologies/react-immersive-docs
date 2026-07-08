@@ -1,0 +1,72 @@
+---
+title: useObjectVisibility
+---
+
+import { Callout } from "nextra/components";
+
+# `useObjectVisibility`
+
+A stateless utility hook for controlling object visibility outside the viewer.
+
+<Callout type="info">
+  `useObjectVisibility` does not own its own copy of `objectBindings` — the
+  consumer owns the state and passes both the current value and its setter. The
+  hook's methods call the setter directly, so the hook and the viewer stay in
+  sync automatically.
+</Callout>
+
+## Usage
+
+```tsx
+import { useObjectVisibility } from "@live_room/react-immersive";
+
+const [objectBindings, setObjectBindings] = useState(initialBindings);
+
+const {
+  hiddenObjects,
+  hiddenObjectIds,
+  hideObject,
+  showObject,
+  toggleObjectVisibility,
+  isObjectHidden,
+  clearHiddenObjects,
+} = useObjectVisibility(objectBindings, setObjectBindings);
+
+<ModelViewer
+  objectBindings={objectBindings}
+  onObjectBindingsChange={setObjectBindings}
+  ...
+/>
+```
+
+## Parameters
+
+| Name                | Type                                            | Description                                  |
+| ------------------- | ----------------------------------------------- | -------------------------------------------- |
+| `objectBindings`    | `Record<string, ObjectBinding>`                 | The current bindings map (owned by consumer) |
+| `setObjectBindings` | `(next: Record<string, ObjectBinding>) => void` | State setter from `useState`                 |
+
+## Returns
+
+| Name                     | Type                            | Description                                                     |
+| ------------------------ | ------------------------------- | --------------------------------------------------------------- |
+| `hiddenObjects`          | `Record<string, ObjectBinding>` | Derived map of hidden bindings                                  |
+| `hiddenObjectIds`        | `string[]`                      | IDs of currently hidden bindings                                |
+| `hideObject`             | `(id: string) => void`          | Hide a binding by key, `binding.id`, or `binding.modelObjectId` |
+| `showObject`             | `(id: string) => void`          | Show a binding                                                  |
+| `toggleObjectVisibility` | `(id: string) => void`          | Toggle visibility of a binding                                  |
+| `isObjectHidden`         | `(id: string) => boolean`       | Check if a binding is currently hidden                          |
+| `clearHiddenObjects`     | `() => void`                    | Show all objects                                                |
+
+## Example
+
+```tsx
+<button onClick={() => toggleObjectVisibility("some-object-id")}>
+  Toggle Visibility
+</button>
+<button onClick={() => clearHiddenObjects()}>
+  Show All
+</button>
+
+<p>Hidden: {hiddenObjectIds.join(", ")}</p>
+```

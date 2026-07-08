@@ -1,0 +1,29 @@
+---
+title: useViewerHover
+---
+
+# `useViewerHover`
+
+Tracks which mesh the user is currently hovering in the viewer.
+
+## Usage
+
+```tsx
+import { useViewerHover } from "@live_room/react-immersive";
+
+const { hoveredObjectBinding, handleHoveredObject } = useViewerHover();
+
+<ModelViewer
+  onObjectHover={handleHoveredObject}
+  ...
+/>
+
+// hoveredObjectBinding is the currently hovered binding or null
+```
+
+## Returns
+
+| Name | Type | Description |
+|------|------|-------------|
+| `hoveredObjectBinding` | `ObjectBinding \| null` | The currently hovered binding, or `null` |
+| `handleHoveredObject` | `(binding: ObjectBinding \| null) => void` | Callback to pass to `onObjectHover` |

@@ -1,0 +1,1082 @@
+{
+  "Abajour_Abadour2_0": {
+    "id": "abajour-abadour2-0",
+    "modelObjectId": "Abajour_Abadour2_0",
+    "type": "other",
+    "label": "Abajour Abadour2 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Abajour_Abajour1_0": {
+    "id": "abajour-abajour1-0",
+    "modelObjectId": "Abajour_Abajour1_0",
+    "type": "other",
+    "label": "Abajour Abajour1 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Bed_Bed_0": {
+    "id": "bed-bed-0",
+    "modelObjectId": "Bed_Bed_0",
+    "type": "furniture",
+    "label": "Bed Bed 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Chair_Chair_0": {
+    "id": "chair-chair-0",
+    "modelObjectId": "Chair_Chair_0",
+    "type": "furniture",
+    "label": "Chair Chair 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Circle_LightRedCircle_0": {
+    "id": "circle-light-red-circle-0",
+    "modelObjectId": "Circle_LightRedCircle_0",
+    "type": "light",
+    "label": "Circle Light Red Circle 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "toggle-light",
+        "label": "Toggle Light",
+        "type": "command"
+      },
+      {
+        "id": "change-light-color",
+        "label": "Change Light Color",
+        "type": "command"
+      },
+      {
+        "id": "set-brightness",
+        "label": "Set Brightness",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Circle_LightRedCircle2_0": {
+    "id": "circle-light-red-circle2-0",
+    "modelObjectId": "Circle_LightRedCircle2_0",
+    "type": "light",
+    "label": "Circle Light Red Circle2 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "toggle-light",
+        "label": "Toggle Light",
+        "type": "command"
+      },
+      {
+        "id": "change-light-color",
+        "label": "Change Light Color",
+        "type": "command"
+      },
+      {
+        "id": "set-brightness",
+        "label": "Set Brightness",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Circle001_LightRedCircle_0": {
+    "id": "circle001-light-red-circle-0",
+    "modelObjectId": "Circle001_LightRedCircle_0",
+    "type": "light",
+    "label": "Circle001 Light Red Circle 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "toggle-light",
+        "label": "Toggle Light",
+        "type": "command"
+      },
+      {
+        "id": "change-light-color",
+        "label": "Change Light Color",
+        "type": "command"
+      },
+      {
+        "id": "set-brightness",
+        "label": "Set Brightness",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Circle001_LightRedCircle2_0": {
+    "id": "circle001-light-red-circle2-0",
+    "modelObjectId": "Circle001_LightRedCircle2_0",
+    "type": "light",
+    "label": "Circle001 Light Red Circle2 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "toggle-light",
+        "label": "Toggle Light",
+        "type": "command"
+      },
+      {
+        "id": "change-light-color",
+        "label": "Change Light Color",
+        "type": "command"
+      },
+      {
+        "id": "set-brightness",
+        "label": "Set Brightness",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Circle002_LightRedCircle_0": {
+    "id": "circle002-light-red-circle-0",
+    "modelObjectId": "Circle002_LightRedCircle_0",
+    "type": "light",
+    "label": "Circle002 Light Red Circle 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "toggle-light",
+        "label": "Toggle Light",
+        "type": "command"
+      },
+      {
+        "id": "change-light-color",
+        "label": "Change Light Color",
+        "type": "command"
+      },
+      {
+        "id": "set-brightness",
+        "label": "Set Brightness",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Circle002_LightRedCircle2_0": {
+    "id": "circle002-light-red-circle2-0",
+    "modelObjectId": "Circle002_LightRedCircle2_0",
+    "type": "light",
+    "label": "Circle002 Light Red Circle2 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "toggle-light",
+        "label": "Toggle Light",
+        "type": "command"
+      },
+      {
+        "id": "change-light-color",
+        "label": "Change Light Color",
+        "type": "command"
+      },
+      {
+        "id": "set-brightness",
+        "label": "Set Brightness",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Cortina_Low_Poly_Cortina_0": {
+    "id": "cortina-low-poly-cortina-0",
+    "modelObjectId": "Cortina_Low_Poly_Cortina_0",
+    "type": "other",
+    "label": "Cortina Low Poly Cortina 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Cortina_Low_Poly001_Cortina_0": {
+    "id": "cortina-low-poly001-cortina-0",
+    "modelObjectId": "Cortina_Low_Poly001_Cortina_0",
+    "type": "other",
+    "label": "Cortina Low Poly001 Cortina 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Door_DoorMetal_0": {
+    "id": "door-door-metal-0",
+    "modelObjectId": "Door_DoorMetal_0",
+    "type": "door",
+    "label": "Door Door Metal 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Door_Floor_0": {
+    "id": "door-floor-0",
+    "modelObjectId": "Door_Floor_0",
+    "type": "floor",
+    "label": "Door Floor 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Door002_DoorMetal_0": {
+    "id": "door002-door-metal-0",
+    "modelObjectId": "Door002_DoorMetal_0",
+    "type": "door",
+    "label": "Door002 Door Metal 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Door002_Floor_0": {
+    "id": "door002-floor-0",
+    "modelObjectId": "Door002_Floor_0",
+    "type": "floor",
+    "label": "Door002 Floor 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Door003_Floor_0": {
+    "id": "door003-floor-0",
+    "modelObjectId": "Door003_Floor_0",
+    "type": "floor",
+    "label": "Door003 Floor 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "DoorFrame_Floor_0": {
+    "id": "door-frame-floor-0",
+    "modelObjectId": "DoorFrame_Floor_0",
+    "type": "floor",
+    "label": "Door Frame Floor 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "DrawerLeft_Table_0": {
+    "id": "drawer-left-table-0",
+    "modelObjectId": "DrawerLeft_Table_0",
+    "type": "furniture",
+    "label": "Drawer Left Table 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "DrawerLeft_Table2_0": {
+    "id": "drawer-left-table2-0",
+    "modelObjectId": "DrawerLeft_Table2_0",
+    "type": "furniture",
+    "label": "Drawer Left Table2 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "DrawerRight_Table_0": {
+    "id": "drawer-right-table-0",
+    "modelObjectId": "DrawerRight_Table_0",
+    "type": "furniture",
+    "label": "Drawer Right Table 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "DrawerRight_Table2_0": {
+    "id": "drawer-right-table2-0",
+    "modelObjectId": "DrawerRight_Table2_0",
+    "type": "furniture",
+    "label": "Drawer Right Table2 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Quadro_Material003_0": {
+    "id": "quadro-material003-0",
+    "modelObjectId": "Quadro_Material003_0",
+    "type": "other",
+    "label": "Quadro Material003 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Quarto_Floor_0": {
+    "id": "quarto-floor-0",
+    "modelObjectId": "Quarto_Floor_0",
+    "type": "floor",
+    "label": "Quarto Floor 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Quarto_Light_0": {
+    "id": "quarto-light-0",
+    "modelObjectId": "Quarto_Light_0",
+    "type": "light",
+    "label": "Quarto Light 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "toggle-light",
+        "label": "Toggle Light",
+        "type": "command"
+      },
+      {
+        "id": "change-light-color",
+        "label": "Change Light Color",
+        "type": "command"
+      },
+      {
+        "id": "set-brightness",
+        "label": "Set Brightness",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Quarto_Wall_0": {
+    "id": "quarto-wall-0",
+    "modelObjectId": "Quarto_Wall_0",
+    "type": "wall",
+    "label": "Quarto Wall 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Rug_Rug_0": {
+    "id": "rug-rug-0",
+    "modelObjectId": "Rug_Rug_0",
+    "type": "other",
+    "label": "Rug Rug 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Table001_Table_0": {
+    "id": "table001-table-0",
+    "modelObjectId": "Table001_Table_0",
+    "type": "furniture",
+    "label": "Table001 Table 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Table001_Table2_0": {
+    "id": "table001-table2-0",
+    "modelObjectId": "Table001_Table2_0",
+    "type": "furniture",
+    "label": "Table001 Table2 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Travesseiro001_Travesseiro_0": {
+    "id": "travesseiro001-travesseiro-0",
+    "modelObjectId": "Travesseiro001_Travesseiro_0",
+    "type": "other",
+    "label": "Travesseiro001 Travesseiro 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Travesseiro002_Travesseiro_0": {
+    "id": "travesseiro002-travesseiro-0",
+    "modelObjectId": "Travesseiro002_Travesseiro_0",
+    "type": "other",
+    "label": "Travesseiro002 Travesseiro 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Travesseiro003_Travesseiro_0": {
+    "id": "travesseiro003-travesseiro-0",
+    "modelObjectId": "Travesseiro003_Travesseiro_0",
+    "type": "other",
+    "label": "Travesseiro003 Travesseiro 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "Travesseiro004_Travesseiro_0": {
+    "id": "travesseiro004-travesseiro-0",
+    "modelObjectId": "Travesseiro004_Travesseiro_0",
+    "type": "other",
+    "label": "Travesseiro004 Travesseiro 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "TV_LightTV_0": {
+    "id": "tv-light-tv-0",
+    "modelObjectId": "TV_LightTV_0",
+    "type": "light",
+    "label": "TV Light TV 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "toggle-light",
+        "label": "Toggle Light",
+        "type": "command"
+      },
+      {
+        "id": "change-light-color",
+        "label": "Change Light Color",
+        "type": "command"
+      },
+      {
+        "id": "set-brightness",
+        "label": "Set Brightness",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "TV_TV_0": {
+    "id": "tv-tv-0",
+    "modelObjectId": "TV_TV_0",
+    "type": "other",
+    "label": "TV TV 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  },
+  "TV_TV_Screen_0": {
+    "id": "tv-tv-screen-0",
+    "modelObjectId": "TV_TV_Screen_0",
+    "type": "other",
+    "label": "TV TV Screen 0",
+    "status": "normal",
+    "selectable": true,
+    "hoverable": true,
+    "visible": true,
+    "style": {},
+    "actions": [
+      {
+        "id": "change-color",
+        "label": "Change Color",
+        "type": "command"
+      },
+      {
+        "id": "change-material",
+        "label": "Change Material",
+        "type": "command"
+      },
+      {
+        "id": "toggle-visibility",
+        "label": "Toggle Visibility",
+        "type": "command"
+      }
+    ],
+    "metrics": {},
+    "metadata": {}
+  }
+}

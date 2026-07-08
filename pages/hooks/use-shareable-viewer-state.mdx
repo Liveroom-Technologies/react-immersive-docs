@@ -1,0 +1,118 @@
+---
+title: useShareableViewerState
+---
+
+import { Callout } from "nextra/components";
+
+# `useShareableViewerState`
+
+Serializes the current camera angle, hidden objects, and selection into a URL
+hash so a configured view can be copied as a link and restored exactly when
+opened.
+
+<Callout type="info">
+  The encoded state covers camera + visibility + selection for the
+  **currently loaded model** only — it doesn't carry the model URL itself, so
+  combine it with whatever query param already identifies which model to
+  load.
+</Callout>
+
+## Usage
+
+```tsx
+import {
+  ModelViewer,
+  useShareableViewerState,
+  useViewerCamera,
+  useViewerSelection,
+} from "@live_room/react-immersive";
+
+const [objectBindings, setObjectBindings] = useState(initialBindings);
+const { cameraState, setCameraState, handleCameraChange, handleViewerReady } =
+  useViewerCamera();
+const { selectedObjectBinding, setSelectedObjectBinding, handleObjectSelect } =
+  useViewerSelection();
+
+const { getShareUrl, restoreFromUrl } = useShareableViewerState({
+  cameraState,
+  setCameraState,
+  objectBindings,
+  onObjectBindingsChange: setObjectBindings,
+  selectedObjectBinding,
+  setSelectedObjectBinding,
+});
+
+<ModelViewer
+  modelUrl="/model.glb"
+  licenseKey="your-license-key"
+  objectBindings={objectBindings}
+  onObjectBindingsChange={setObjectBindings}
+  selectedObject={selectedObjectBinding}
+  onObjectSelect={handleObjectSelect}
+  onCameraChange={handleCameraChange}
+  onViewerReady={(viewer) => {
+    handleViewerReady(viewer);
+    restoreFromUrl();
+  }}
+/>;
+
+<button onClick={() => navigator.clipboard.writeText(getShareUrl())}>
+  Copy link
+</button>
+```
+
+<Callout type="warning">
+  `selectedObject={selectedObjectBinding}` is required for a restored
+  selection to actually appear in the viewer. Without it, `ModelViewer`
+  manages selection internally and `setSelectedObjectBinding` only updates
+  state used for serialization — it has no visible effect on its own.
+</Callout>
+
+## Parameters
+
+| Name                       | Type                                                          | Description                                                                       |
+| -------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `cameraState`               | `ViewerCameraState \| null`                                     | From `useViewerCamera()`                                                           |
+| `setCameraState`            | `(state: ViewerCameraState, enableTransition?: boolean) => Promise<boolean>` | From `useViewerCamera()`; used to restore a decoded camera state                    |
+| `objectBindings`            | `Record<string, ObjectBinding>`                                 | The current bindings map (owned by consumer)                                       |
+| `onObjectBindingsChange`    | `(next: Record<string, ObjectBinding>) => void`                 | State setter from `useState`                                                        |
+| `selectedObjectBinding`     | `ObjectBinding \| null`                                         | From `useViewerSelection()`                                                         |
+| `setSelectedObjectBinding`  | `(binding: ObjectBinding \| null) => void`                       | From `useViewerSelection()`                                                         |
+| `paramKey`                  | `string`                                                        | Hash key the state is stored under. Default `"view"`                               |
+| `debounceMs`                | `number`                                                        | Debounce before the URL hash updates after a state change. Default `400`           |
+| `autoSync`                  | `boolean`                                                       | Auto-write state to the URL hash on change. Default `true`                         |
+
+## Returns
+
+| Name             | Type                     | Description                                                                                          |
+| ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `getShareUrl`      | `() => string`           | Builds the full share URL for the current state, without touching the address bar                     |
+| `syncUrl`          | `() => void`             | Writes the current state into the URL hash via `history.replaceState` (no navigation, no history entry) |
+| `restoreFromUrl`   | `() => Promise<boolean>` | Reads state from the current URL hash, if any, and applies it. Safe to call from `onViewerReady`; only a new hash snapshot re-applies |
+
+## Notes
+
+- By default the hook keeps the URL hash in sync automatically (debounced) as
+  the camera moves or visibility/selection changes, so the address bar is
+  always a working link to the current view. Pass `autoSync: false` to only
+  update the hash explicitly — e.g. from a "Copy link" button via `syncUrl`
+  or `getShareUrl`.
+- **Auto-sync stays dormant until `restoreFromUrl` has been called at least
+  once.** `restoreFromUrl` only resolves once the viewer is ready (after the
+  model finishes loading), which takes far longer than the sync debounce —
+  without this guard, auto-sync's first write would overwrite an incoming
+  shared link with the app's default state before it was ever restored. If
+  you use `autoSync` but don't need restore-on-load, still call
+  `restoreFromUrl()` once (it's a no-op when there's nothing in the hash) —
+  otherwise auto-sync never activates.
+- `restoreFromUrl` depends on `viewer.controls` being available, so call it
+  from inside (or after) `onViewerReady` — not before the viewer has mounted.
+  It's also safe to call from there even though `onViewerReady` fires
+  repeatedly (camera changes, model load, binding changes): only the first
+  call for a given hash snapshot does anything, so a newer permalink can
+  still be applied later in the same tab.
+- The hook also listens for `hashchange`, so an already-open tab can respond
+  when the URL hash is replaced with a newer shared link.
+- Camera restoration snaps instantly (no fly-in transition) by design, so
+  opening a shared link doesn't make visitors wait through an animated
+  camera move.

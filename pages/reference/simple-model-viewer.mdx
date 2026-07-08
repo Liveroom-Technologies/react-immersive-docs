@@ -1,0 +1,224 @@
+---
+title: SimpleModelViewer
+---
+
+import { Callout } from "nextra/components";
+
+# `SimpleModelViewer`
+
+A lightweight viewer for cases where you want to load a GLB/GLTF asset, inspect meshes, and toggle visibility **without** building `objectBindings`. It can either load a fixed `modelUrl` or, when `enableModelUpload` is enabled, let the user drag-and-drop or choose a local model at runtime.
+
+## Usage
+
+```tsx
+import { SimpleModelViewer } from "@live_room/react-immersive";
+
+export default function App() {
+  return (
+    <div style={{ height: "100vh" }}>
+      <SimpleModelViewer modelUrl="/model.glb" />
+    </div>
+  );
+}
+```
+
+## Behavior
+
+- Discovers renderable meshes directly from the loaded GLB/GLTF scene
+- Renders a right-side scene objects panel with search and visibility toggles
+- Renders a left-side environment/scene settings panel (background color, environment preset, auto-rotate, exposure, ambient + directional light color/intensity), each seedable via props
+- Can swap `modelUrl` for a built-in drag-and-drop / file-picker upload flow
+- Lets users click a mesh or panel row to select and focus it
+- Fits the full scene on initial load, and re-fits when the canvas is resized (window resize, device rotation, or a panel opening/closing) — set `refitOnResize={false}` to instead preserve the user's orbit/zoom
+- Uses built-in ambient, directional, and environment lighting
+
+<Callout type="info">
+  Use `SimpleModelViewer` when you want a quick inspection viewer. Use
+  [`ModelViewer`](/reference/model-viewer) when you need binding-driven styling,
+  actions, metadata, custom panels, exports, or animation integrations.
+</Callout>
+
+## Props
+
+```ts
+type SimpleModelViewerProps = {
+  modelUrl: string;
+  backgroundColor?: string;
+  showSceneObjectsPanel?: boolean;
+  showSceneSettingsPanel?: boolean;
+  enableModelUpload?: boolean;
+  zoomOnSelected?: boolean;
+  highlightOnHover?: boolean;
+  showLoadingOverlay?: boolean;
+  refitOnResize?: boolean;
+  // Initial values for the scene settings (environment) panel
+  backgroundEnabled?: boolean;
+  autoRotate?: boolean;
+  envPreset?: PresetsType; // @react-three/drei environment preset
+  exposure?: number;
+  ambientIntensity?: number;
+  ambientColor?: string;
+  directionalIntensity?: number;
+  directionalColor?: string;
+  onModelLoaded?: (scene: Object3D) => void;
+  onLoadError?: (error: unknown) => void;
+};
+```
+
+<Callout type="info">
+  `SimpleModelViewer` does not take a `licenseKey` — licensing is enforced by
+  [`ModelViewer`](/reference/model-viewer) and [`BindingBuilder`](/reference/binding-builder).
+</Callout>
+
+---
+
+### `modelUrl`
+
+**Required.** URL or public path to the `.glb` or `.gltf` model to inspect. For `.gltf` URLs with external `.bin` or texture files, those files must be hosted at the relative paths declared in the `.gltf`.
+
+---
+
+### `backgroundColor`
+
+Optional canvas background color.
+
+Default:
+
+```ts
+"#1a1a1a";
+```
+
+---
+
+### `showSceneObjectsPanel`
+
+Optional boolean that controls whether the right-side scene objects panel is rendered.
+
+Default:
+
+```ts
+true;
+```
+
+---
+
+### `showSceneSettingsPanel`
+
+Optional boolean that controls whether the left-side environment/scene settings panel is rendered. It exposes background color/visibility, the `@react-three/drei` environment preset, auto-rotate, exposure, and ambient/directional light color and intensity.
+
+Default:
+
+```ts
+true;
+```
+
+---
+
+### Scene settings defaults
+
+The following optional props seed the initial values of the scene settings (environment) panel. Each maps to one control; the panel stays interactive, so the user can still adjust them at runtime. Changing one of these props after mount does **not** override a value the user has since changed in the panel (they are initial values, not controlled props) — the exception is `backgroundColor`, which is kept in sync live.
+
+| Prop | Type | Panel control | Default |
+| --- | --- | --- | --- |
+| `backgroundEnabled` | `boolean` | Background on/off | `false` |
+| `autoRotate` | `boolean` | Auto Rotate | `false` |
+| `envPreset` | `PresetsType` | Environment preset | `"city"` |
+| `exposure` | `number` | Exposure | `1` |
+| `ambientIntensity` | `number` | Ambient Light Intensity | `0.6` |
+| `ambientColor` | `string` | Ambient Light Color | `"#ffffff"` |
+| `directionalIntensity` | `number` | Direct Light Intensity | `1.2` |
+| `directionalColor` | `string` | Direct Light Color | `"#ffffff"` |
+
+`envPreset` accepts any `@react-three/drei` `PresetsType` (for example `"city"`, `"sunset"`, `"dawn"`, `"night"`, `"warehouse"`, `"forest"`, `"apartment"`, `"studio"`, `"park"`, `"lobby"`).
+
+```tsx
+<SimpleModelViewer
+  modelUrl="/model.glb"
+  backgroundEnabled
+  envPreset="sunset"
+  exposure={1.2}
+  ambientIntensity={0.4}
+  directionalColor="#fff4e0"
+  autoRotate
+/>
+```
+
+---
+
+### `zoomOnSelected`
+
+Optional boolean. When `true`, selecting a mesh (via click or the objects panel) zooms/frames the camera on it.
+
+Default:
+
+```ts
+false;
+```
+
+---
+
+### `highlightOnHover`
+
+Optional boolean. When `true`, hovering a mesh (in the viewport or the objects panel) highlights it.
+
+Default:
+
+```ts
+false;
+```
+
+---
+
+### `showLoadingOverlay`
+
+Optional boolean controlling whether the built-in loading overlay is shown while the model is loading, uploaded files are being prepared, and the initial camera fit is settling.
+
+Default:
+
+```ts
+true;
+```
+
+---
+
+### `refitOnResize`
+
+Optional boolean controlling whether the camera re-frames the model to fit whenever the canvas is resized — a browser window resize, a device rotation, or a side panel (scene settings / scene objects) opening or closing. Set to `false` to preserve the user's current orbit/zoom across resizes; the camera aspect stays correct either way, so the model never distorts, it just isn't re-centered.
+
+Default:
+
+```ts
+true;
+```
+
+---
+
+### `enableModelUpload`
+
+Optional boolean that swaps the fixed `modelUrl` workflow for a built-in upload UI. When enabled, the viewer starts with a drag-and-drop / file-picker empty state and loads the uploaded `.glb`, standalone/data-URI `.gltf`, or `.zip` containing a `.gltf` plus its referenced `.bin` and texture files.
+
+Default:
+
+```ts
+false;
+```
+
+---
+
+### `onModelLoaded`
+
+Optional callback fired after the GLB/GLTF scene has loaded.
+
+```ts
+onModelLoaded?: (scene: Object3D) => void
+```
+
+---
+
+### `onLoadError`
+
+Optional callback fired if the model fails to load or render.
+
+```ts
+onLoadError?: (error: unknown) => void
+```

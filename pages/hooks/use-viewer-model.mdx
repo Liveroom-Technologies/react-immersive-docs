@@ -1,0 +1,51 @@
+---
+title: useViewerModel
+---
+
+# `useViewerModel`
+
+Provides model lifecycle state and scene metadata: loading status, errors, scene bounds, and object count.
+
+## Usage
+
+```tsx
+import { useViewerModel } from "@live_room/react-immersive";
+
+const {
+  isLoading,
+  isReady,
+  error,
+  bounds,
+  objectCount,
+  handleModelLoaded,
+  handleLoadError,
+} = useViewerModel();
+
+<ModelViewer
+  onModelLoaded={handleModelLoaded}
+  onLoadError={handleLoadError}
+  ...
+/>
+```
+
+## Returns
+
+| Name | Type | Description |
+|------|------|-------------|
+| `isLoading` | `boolean` | `true` until the model has loaded or failed |
+| `isReady` | `boolean` | `true` after a successful model load |
+| `error` | `unknown \| null` | The most recent load/render error, or `null` |
+| `bounds` | `SceneBounds \| null` | Scene bounds: `min`, `max`, `center`, `size` |
+| `objectCount` | `number` | Number of mesh objects in the loaded scene |
+| `handleModelLoaded` | `(scene: Object3D) => void` | Callback to pass to `onModelLoaded` |
+| `handleLoadError` | `(error: unknown) => void` | Callback to pass to `onLoadError` |
+
+## Example: Loading States
+
+```tsx
+const { isLoading, isReady, error } = useViewerModel();
+
+if (isLoading) return <p>Loading model…</p>;
+if (error) return <p>Failed to load: {String(error)}</p>;
+if (isReady) return <p>Model ready with {objectCount} objects</p>;
+```

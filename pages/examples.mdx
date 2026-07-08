@@ -1,0 +1,71 @@
+---
+title: Examples
+---
+
+import { Callout } from "nextra/components";
+
+# Examples
+
+These public examples mirror the main demo surfaces from `dev-console` while
+staying safe to share in a standalone docs repo.
+
+## Included Demos
+
+### `simple-model-viewer-demo`
+
+A `SimpleModelViewer` demo that matches the hosted lightweight inspection page:
+
+- Upload-first workflow
+- Scene objects panel
+- Environment and lighting controls
+- Click-to-select focus flow
+
+Repo path:
+[examples/simple-model-viewer-demo](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/simple-model-viewer-demo)
+
+### `model-viewer-demo`
+
+A fuller `ModelViewer` example using the same red-room bindings and scene config
+shape as the internal demo:
+
+- Object bindings and per-object actions
+- Scene config wiring
+- Measurement tools
+- Annotation navigation
+- XR flags and performance tuning
+
+Repo path:
+[examples/model-viewer-demo](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/model-viewer-demo)
+
+### `binding-builder-demo`
+
+A public `BindingBuilder` starter that mirrors the internal editor route:
+
+- Desktop-first editor shell
+- License-key based access
+- Full-height authoring workspace
+
+Repo path:
+[examples/binding-builder-demo](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/binding-builder-demo)
+
+### `simple-viewer-upload`
+
+The lightweight upload-first starter remains available as the smallest possible
+example.
+
+Repo path:
+[examples/simple-viewer-upload](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/simple-viewer-upload)
+
+## Running Examples
+
+From an example directory:
+
+```bash
+npm install
+npm run dev
+```
+
+<Callout type="info">
+  `model-viewer-demo` and `binding-builder-demo` require a license key. Set
+  `VITE_LICENSE_KEY` in the example directory before running them.
+</Callout>

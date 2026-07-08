@@ -1,0 +1,52 @@
+---
+title: useViewerCamera
+---
+
+# `useViewerCamera`
+
+Provides camera state and imperative helpers for resetting, focusing, and fitting the scene.
+
+## Usage
+
+```tsx
+import { useViewerCamera } from "@live_room/react-immersive";
+
+const {
+  cameraState,
+  resetView,
+  focusObject,
+  fitScene,
+  setCameraTarget,
+  handleCameraChange,
+  handleViewerReady,
+} = useViewerCamera();
+
+<ModelViewer
+  onCameraChange={handleCameraChange}
+  onViewerReady={handleViewerReady}
+  ...
+/>
+```
+
+## Returns
+
+| Name                 | Type                                                 | Description                                                                   |
+| -------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `cameraState`        | `CameraState \| null`                                | Latest camera `position`, `target`, `fov`, `zoom`                             |
+| `resetView`          | `() => void`                                         | Resets the controls to their initial saved state                              |
+| `focusObject`        | `(id: string) => void`                               | Fits the camera to a binding by key, `binding.id`, or `binding.modelObjectId` |
+| `fitScene`           | `() => void`                                         | Fits the camera to the whole loaded scene                                     |
+| `setCameraTarget`    | `(target: [number, number, number]) => void`         | Sets the camera target to a given `[x, y, z]`                                 |
+| `handleCameraChange` | `(camera: Camera, controls: CameraControls) => void` | Callback to pass to `onCameraChange`                                          |
+| `handleViewerReady`  | `(viewer: ViewerReadyState) => void`                 | Callback to pass to `onViewerReady`                                           |
+
+## Example
+
+```tsx
+<button onClick={() => resetView()}>Reset Camera</button>
+<button onClick={() => focusObject("some-object-id")}>Focus Object</button>
+<button onClick={() => fitScene()}>Fit Scene</button>
+<button onClick={() => setCameraTarget([0, 0, 0])}>Target Origin</button>
+
+<pre>{JSON.stringify(cameraState, null, 2)}</pre>
+```

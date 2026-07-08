@@ -1,0 +1,33 @@
+name: Docs issue
+description: Report missing, confusing, or incorrect documentation.
+title: "[Docs]: "
+labels: ["docs"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Docs page
+      description: Link the docs page or file path if you know it.
+      placeholder: /docs/reference/model-viewer
+    validations:
+      required: true
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: What kind of docs issue is this?
+      options:
+        - Incorrect information
+        - Missing example
+        - Missing explanation
+        - Broken link
+        - Typo or copy issue
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Tell us what is unclear or incorrect, and what you expected to find.
+    validations:
+      required: true
+

@@ -1,0 +1,46 @@
+---
+title: useObjectBinding
+---
+
+# `useObjectBinding`
+
+Resolves a single binding from the `objectBindings` map by any of its identifiers.
+
+## Usage
+
+```tsx
+import { useObjectBinding } from "@live_room/react-immersive";
+
+const binding = useObjectBinding(objectBindings, "some-object-id");
+```
+
+## Resolution Order
+
+`useObjectBinding` checks, in order:
+
+1. The object binding map **key** (e.g. `"CarBody"`)
+2. `binding.id` (e.g. `"some-object-id"`)
+3. `binding.modelObjectId` (e.g. `"CarBody"`)
+
+This lets you pass any of the three identifiers and get back the same binding.
+
+## Parameters
+
+| Name             | Type                            | Description                                                               |
+| ---------------- | ------------------------------- | ------------------------------------------------------------------------- |
+| `objectBindings` | `Record<string, ObjectBinding>` | The current bindings map                                                  |
+| `id`             | `string`                        | Any binding identifier: map key, `binding.id`, or `binding.modelObjectId` |
+
+## Returns
+
+`ObjectBinding | undefined` — the resolved binding, or `undefined` if not found.
+
+## Example
+
+```tsx
+const focusedBinding = useObjectBinding(objectBindings, "some-object-id");
+
+if (focusedBinding) {
+  console.log(focusedBinding.label);
+}
+```

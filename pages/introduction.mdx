@@ -1,0 +1,102 @@
+---
+title: Introduction
+---
+
+import { Callout } from "nextra/components";
+
+# Introduction
+
+`@live_room/react-immersive` is a React-based 3D model viewer for interactive GLB/GLTF assets. It renders a model with React Three Fiber, lets users click named meshes, shows a built-in side panel for the selected object, and supports per-object actions such as color changes, texture uploads, and visibility toggles.
+
+## Why This Library Exists
+
+Rendering a GLB/GLTF model in Three.js/React Three Fiber is the easy part — `useGLTF` plus a `<primitive>` gets you a static model in a few lines. The hard part is everything layered on top once a model needs to be **interactive and configurable**:
+
+- Click a part of the model to show details about it
+- Let a user change a part's color or swap its texture
+- Toggle parts on/off (e.g. show/hide furniture, accessories, room walls)
+- Save a "good viewing angle" for each part and snap the camera to it
+- Track hover/selection state, animations, loading state, and camera state — all the bookkeeping around the 3D scene
+
+Every project that does this ends up rebuilding the same scaffolding: material cloning so edits don't bleed across objects, texture caching/disposal, raycasting and highlighting, side panels, color pickers, popovers, and animation mixers. `react-immersive` packages all of that once so consuming apps don't have to reinvent it.
+
+## Why `objectBindings` Exists
+
+`objectBindings` is the answer to one core problem: a GLB/GLTF file is just geometry — it has no concept of "this mesh is configurable, has these actions, and looks like this." Something has to bridge the gap between raw mesh node names (e.g. `"CarBody"`, `"BrickWall"`) and your application's domain model (a car's body panel, a room's wall, etc.).
+
+`objectBindings` is that bridge — a plain JS/TS record, keyed by mesh node name, that:
+
+- **Declares which meshes are interactive** (`selectable`, `hoverable`, `visible`) — meshes not listed aren't part of the interactive flow at all
+- **Carries live render state** (`visible` plus `style.material.*` overrides like `baseColor`, `texture.path`, `opacity`, `metalness`, `roughness`, `emissive`, and the full PBR/texture-map set) so the viewer can apply overrides without you touching Three.js objects directly
+- **Defines per-object actions** (`change-color`, `change-material`, `toggle-visibility`, etc.) that drive the built-in side panel buttons
+- **Stores domain data** (`metrics`, `metadata`) for display alongside the 3D view
+- **Saves camera framing** (`cameraState`) so clicking an object can snap to a curated view instead of a generic "fit to box"
+
+Because it's just a serializable record, it can be authored by hand, generated automatically (via [`BindingBuilder`](/reference/binding-builder), which traverses a GLB/GLTF asset and produces starter bindings), stored in a database, and round-tripped through `onObjectBindingsChange` to keep your app state and the 3D scene in sync. `objectBindings` is the single source of truth, so React's normal data flow ("state in, callbacks out") works for a 3D scene the same way it would for any other component.
+
+## When This Package Fits
+
+- **Product configurators** — let users recolor or retexture parts of a car, piece of furniture, or apparel
+- **Interactive room/scene tours** — click walls, furniture, or fixtures to see info or toggle visibility
+- **Asset inspection tools** — [`SimpleModelViewer`](/reference/simple-model-viewer) for quickly browsing a GLB/GLTF mesh hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
+- **Anything needing "click a 3D part to show a panel with data and actions"** without hand-rolling raycasting, highlighting, and UI panels
+
+## When It Probably Doesn't Fit
+
+- Pure visual/cinematic scenes with no interactivity — a plain `<Canvas><primitive object={scene} /></Canvas>` is simpler
+- Highly custom 3D UIs where the built-in panels/popovers would just be ripped out anyway, though [`customObjectBindingDataPanel`](/reference/model-viewer#customobjectbindingdatapanel) and [`customSceneObjectsPanel`](/reference/model-viewer#customsceneobjectspanel) cover a lot of that middle ground
+
+## How It Works
+
+At a high level, the viewer does the following:
+
+1. Creates a Three.js canvas; `ModelViewer` only defaults the `fov` (`50`) — the camera position falls back to React Three Fiber's own `Canvas` default (`[0, 0, 5]`) unless you pass `camera={{ position: [...] }}`
+2. Loads the GLB/GLTF asset with `useGLTF`
+3. Looks up meshes by the keys in `objectBindings` (resolving `modelObjectId` to find the actual model node)
+4. Clones each referenced material so edits stay isolated per object
+5. Applies runtime color, texture, and style overrides from `objectBindings` in a `useEffect`
+6. Manages a reference-counted texture cache so the same texture URL is decoded once and disposed when no longer referenced
+7. Adds hover, selected, and panel-hover emissive highlighting
+8. Creates an `AnimationMixer` for the loaded scene and exposes playback controls through `onAnimationsReady`
+9. Renders side panels for the selected object and its configured actions
+
+Only objects listed in `objectBindings` are rendered interactively.
+
+## Lighting & Shadows
+
+With the `shadows` prop enabled (the default), the viewer renders soft shadows and a post-processing stack (SSAO ambient occlusion, bloom, vignette, ACES filmic tone mapping). The default light rig uses ambient + hemisphere fill and a directional key light that casts shadows.
+
+Interior models (rooms, dollhouses) are a special case: the large mesh that forms the walls/ceiling enclosure is detected by its bounding-box size and excluded from **casting** shadows while still **receiving** them. This prevents a closed shell from blocking a top-down light and sealing the interior in darkness, so furniture and decor cast realistic contact shadows onto the floor. Pass `shadows={false}` to turn shadows off entirely, or a custom `lights` prop to replace the default rig.
+
+## UI Shell
+
+The component includes its own UI shell:
+
+- A full-height viewer layout with built-in styles
+- A sliding left side panel (~280 px wide) for the selected object's details and actions
+- A canvas area that fills the remaining width
+- A floating color picker popover
+- A floating texture upload popover
+- A right scene objects panel with search and per-object visibility toggles
+
+<Callout type="warning">
+  `ModelViewer` works best when mounted in a container that owns the full
+  viewport height.
+</Callout>
+
+## Model Requirements
+
+To use this library successfully, your GLB/GLTF asset should follow these conventions:
+
+- Mesh node names must match the keys in `objectBindings` (or be referenced via `binding.modelObjectId`)
+- Target nodes should have geometry and a `MeshStandardMaterial`
+- The file must be accessible from the browser at the path you pass to `modelUrl`; hosted `.gltf` files must also serve external `.bin` and texture files at their declared relative paths
+
+If a node name or material does not match, that object will not render through the interactive binding flow.
+
+## Peer Dependencies
+
+| Package     | Version |
+| ----------- | ------- |
+| `react`     | >= 17   |
+| `react-dom` | >= 17   |

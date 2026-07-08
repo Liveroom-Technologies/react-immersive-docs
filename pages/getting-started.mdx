@@ -1,0 +1,204 @@
+---
+title: Getting Started
+---
+
+import { Callout, Steps, Tabs } from "nextra/components";
+
+# Getting Started
+
+## Installation
+
+<Tabs items={["npm", "pnpm", "yarn"]}>
+  <Tabs.Tab>
+
+    ```bash
+    npm install @live_room/react-immersive
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+    ```bash
+    pnpm add @live_room/react-immersive
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+    ```bash
+    yarn add @live_room/react-immersive
+    ```
+
+  </Tabs.Tab>
+</Tabs>
+
+## Get a License Key
+
+`ModelViewer` and `BindingBuilder` require a `licenseKey`. (`SimpleModelViewer` does not — it's unlicensed.) To get one:
+
+1. Sign in (or sign up) at the [Liveroom Developer Portal](https://react-immersive.liveroom.dev)
+2. Choose a plan
+3. Generate a license key from your dashboard
+
+<Callout type="info">
+  Keep your license key out of public repositories. Load it from an environment
+  variable in your app.
+</Callout>
+
+## Quick Start
+
+<Steps>
+
+### Define your object bindings
+
+Each key in `objectBindings` must match a mesh name from your GLB/GLTF file.
+You can write the bindings by hand, or generate starter bindings in
+[`BindingBuilder`](/reference/binding-builder) and export them as
+`objectBindings.json` or a TypeScript file to import into your app.
+If you want a ready-to-run starter, download the sample
+[`red_room.glb`](/red_room.glb) model and
+[`objectBindings.ts`](/objectBindings.ts) bindings file from these docs. Put
+`red_room.glb` in your app's `public/` folder, and place `objectBindings.ts`
+in your source tree so you can import it into your viewer page.
+
+<Callout type="info">
+  <span style={{ fontSize: "0.875em", lineHeight: 1.5 }}>
+    Sample model credit: [“Red Room”](https://skfb.ly/6VBJR) by LaisLH, licensed
+    under [Creative Commons Attribution
+    4.0](http://creativecommons.org/licenses/by/4.0/).
+  </span>
+</Callout>
+
+```ts
+const objectBindings = {
+  BrickWall: {
+    id: "brick-wall",
+    modelObjectId: "BrickWall",
+    type: "wall",
+    label: "Room Walls",
+    selectable: true,
+    hoverable: true,
+    visible: true,
+    style: {},
+    metrics: {},
+    metadata: {},
+    cameraState: {
+      position: [-0.91, 0.87, 0.42],
+      target: [0.09, 0.98, 0.036],
+      fov: 45,
+    },
+    actions: [
+      { id: "change-color", label: "Change Color", type: "command" },
+      { id: "change-material", label: "Change Material", type: "command" },
+      { id: "toggle-visibility", label: "Toggle Visibility", type: "command" },
+    ],
+  },
+};
+```
+
+### Mount the viewer
+
+Wrap `ModelViewer` in a full-height container. The component owns its own layout.
+
+```tsx
+import { useState } from "react";
+import { ModelViewer } from "@live_room/react-immersive";
+import { objectBindings as initialBindings } from "./objectBindings.ts";
+
+export default function App() {
+  const [objectBindings, setObjectBindings] = useState(initialBindings);
+
+  return (
+    <div style={{ height: "100vh", overflow: "hidden" }}>
+      <ModelViewer
+        modelUrl="/red_room.glb"
+        licenseKey="your-license-key"
+        objectBindings={objectBindings}
+        onObjectBindingsChange={setObjectBindings}
+      />
+    </div>
+  );
+}
+```
+
+### Add hooks for external control
+
+Use the provided hooks to drive camera, selection, hover, animations, and more from outside the viewer.
+
+```tsx
+import { useState } from "react";
+import {
+  ModelViewer,
+  useViewerSelection,
+  useViewerCamera,
+  useViewerModel,
+  useObjectVisibility,
+  useViewerActions,
+  useViewerAnimations,
+  useViewerHover,
+  useObjectBinding,
+} from "@live_room/react-immersive";
+import { objectBindings as initialBindings } from "./objectBindings";
+
+export default function Example() {
+  const [objectBindings, setObjectBindings] = useState(initialBindings);
+
+  const { selectedObjectBinding, handleObjectSelect } = useViewerSelection();
+  const { hoveredObjectBinding, handleHoveredObject } = useViewerHover();
+  const {
+    cameraState,
+    resetView,
+    focusObject,
+    fitScene,
+    handleCameraChange,
+    handleViewerReady,
+  } = useViewerCamera();
+  const { isLoading, isReady, error, handleModelLoaded, handleLoadError } =
+    useViewerModel();
+  const { hiddenObjects, toggleObjectVisibility } = useObjectVisibility(
+    objectBindings,
+    setObjectBindings,
+  );
+  const { getActionsForObject, runAction } = useViewerActions(objectBindings, {
+    onAction: (event) => console.log(event),
+    onObjectBindingsChange: setObjectBindings,
+  });
+  const { clips, isPlaying, play, pause, handleAnimationsReady } =
+    useViewerAnimations();
+
+  return (
+    <div style={{ height: "100vh", overflow: "hidden" }}>
+      <ModelViewer
+        modelUrl="/red_room.glb"
+        licenseKey="your-license-key"
+        objectBindings={objectBindings}
+        selectedObject={selectedObjectBinding}
+        onObjectSelect={handleObjectSelect}
+        onObjectHover={handleHoveredObject}
+        onCameraChange={handleCameraChange}
+        onModelLoaded={handleModelLoaded}
+        onLoadError={handleLoadError}
+        onObjectBindingsChange={setObjectBindings}
+        onViewerReady={handleViewerReady}
+        onAnimationsReady={handleAnimationsReady}
+        onAction={(event) => console.log(event)}
+      />
+
+      <button onClick={() => toggleObjectVisibility("some-object-id")}>
+        Toggle Visibility
+      </button>
+      <button onClick={() => resetView()}>Reset Camera</button>
+      <button onClick={() => focusObject("some-object-id")}>
+        Focus Object
+      </button>
+      {clips.map((name) => (
+        <button key={name} onClick={() => play(name)}>
+          {name}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+</Steps>

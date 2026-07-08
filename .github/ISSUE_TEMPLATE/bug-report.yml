@@ -1,0 +1,71 @@
+name: Bug report
+description: Report a problem that is safe to discuss publicly.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. Please keep customer data, license keys, and proprietary assets out of public issues.
+  - type: input
+    id: package_version
+    attributes:
+      label: Package version
+      description: Which `@live_room/react-immersive` version are you using?
+      placeholder: 2.6.4
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - ModelViewer
+        - SimpleModelViewer
+        - BindingBuilder
+        - Docs
+        - Example app
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the bug and the visible impact.
+      placeholder: Selecting a mesh throws an error and the viewer stops rendering.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Share the smallest set of steps needed to reproduce the issue.
+      placeholder: |
+        1. Render ModelViewer with ...
+        2. Click ...
+        3. Notice ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, framework, OS, and any other relevant setup details.
+      placeholder: React 19, Next 16, Chrome 138, macOS
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: This report does not include secrets, customer data, or proprietary assets.
+          required: true
+

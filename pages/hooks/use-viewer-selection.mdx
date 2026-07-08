@@ -1,0 +1,35 @@
+---
+title: useViewerSelection
+---
+
+# `useViewerSelection`
+
+Manages selection state for the viewer. Pass `handleObjectSelect` to `onObjectSelect` and consume `selectedObjectBinding` wherever you need to react to the user's selection.
+
+## Usage
+
+```tsx
+import { useViewerSelection } from "@live_room/react-immersive";
+
+const {
+  selectedObjectBinding,
+  setSelectedObjectBinding,
+  handleObjectSelect,
+  clearSelection,
+} = useViewerSelection();
+
+<ModelViewer
+  onObjectSelect={handleObjectSelect}
+  selectedObject={selectedObjectBinding}
+  ...
+/>
+```
+
+## Returns
+
+| Name | Type | Description |
+|------|------|-------------|
+| `selectedObjectBinding` | `ObjectBinding \| null` | The currently selected binding, or `null` |
+| `setSelectedObjectBinding` | `(binding: ObjectBinding \| null) => void` | Set selection imperatively |
+| `handleObjectSelect` | `(binding: ObjectBinding \| null) => void` | Callback to pass to `onObjectSelect` |
+| `clearSelection` | `() => void` | Clears the current selection |

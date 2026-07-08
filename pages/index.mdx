@@ -1,0 +1,118 @@
+---
+title: Overview
+---
+
+import { Callout, Tabs } from "nextra/components";
+
+# `@live_room/react-immersive`
+
+A React 3D model viewer for interactive 3D assets — mesh selection, object bindings, built-in UI panels, and a full suite of hooks for camera, animations, visibility, and more.
+
+## Features
+
+- **GLB/GLTF rendering** via React Three Fiber and `@react-three/drei`
+- **Mesh selection** by object name with built-in side panels
+- **Object bindings** — drive color, texture, visibility, and actions from a plain data record
+- **Shadows & post-processing** — soft shadows (auto-tuned for interiors), SSAO, bloom, and ACES tone mapping, toggleable via the `shadows` prop
+- **SimpleModelViewer** — a lightweight GLB/GLTF inspection viewer with no `objectBindings` required
+- **BindingBuilder** — browser-based design-time tool for generating starter bindings from GLB/GLTF assets
+- **Hooks API**:
+  - [`useViewerCamera`](/hooks/use-viewer-camera)
+  - [`useViewerAnimations`](/hooks/use-viewer-animations)
+  - [`useViewerSelection`](/hooks/use-viewer-selection)
+  - [`useViewerHover`](/hooks/use-viewer-hover)
+  - [`useViewerModel`](/hooks/use-viewer-model)
+  - [`useViewerActions`](/hooks/use-viewer-actions)
+  - [`useObjectBinding`](/hooks/use-object-binding)
+  - [`useObjectVisibility`](/hooks/use-object-visibility)
+  - [`useShareableViewerState`](/hooks/use-shareable-viewer-state)
+
+## Quick Install
+
+<Tabs items={["npm", "pnpm", "yarn"]}>
+  <Tabs.Tab>
+
+    ```bash
+    npm install @live_room/react-immersive
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+    ```bash
+    pnpm add @live_room/react-immersive
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+    ```bash
+    yarn add @live_room/react-immersive
+    ```
+
+  </Tabs.Tab>
+</Tabs>
+
+## Minimal Example
+
+```tsx
+import objectBindings from "./objectBindings.json";
+import { ModelViewer, type ObjectBinding } from "@live_room/react-immersive";
+
+const initialBindings = objectBindings as Record<string, ObjectBinding>;
+
+export default function App() {
+  return (
+    <div style={{ height: "100vh" }}>
+      <ModelViewer
+        modelUrl="/model.glb"
+        licenseKey="your-license-key"
+        objectBindings={initialBindings}
+      />
+    </div>
+  );
+}
+```
+
+`objectBindings` is required. You can author it by hand, or generate starter
+bindings in [`BindingBuilder`](/reference/binding-builder) and export them as
+`objectBindings.json` or a TypeScript file to import into your app.
+
+<Callout type="info">
+  The component ships with its own internal UI styles. Tailwind is **not**
+  required in the consuming app.
+</Callout>
+
+## Quick Inspection With `SimpleModelViewer`
+
+If you don't need `objectBindings`-driven styling and actions, [`SimpleModelViewer`](/reference/simple-model-viewer) gives you a lightweight viewer for inspecting GLB/GLTF assets. It can also run in an upload-first mode for ad-hoc local model inspection:
+
+```tsx
+import { SimpleModelViewer } from "@live_room/react-immersive";
+
+export default function App() {
+  return (
+    <div style={{ height: "100vh" }}>
+      <SimpleModelViewer modelUrl="/model.glb" />
+    </div>
+  );
+}
+```
+
+## Exports
+
+```ts
+import {
+  BindingBuilder,
+  ModelViewer,
+  SimpleModelViewer,
+  useObjectBinding,
+  useObjectVisibility,
+  useViewerActions,
+  useViewerAnimations,
+  useViewerCamera,
+  useViewerHover,
+  useViewerModel,
+  useViewerSelection,
+} from "@live_room/react-immersive";
+```

@@ -1,0 +1,50 @@
+---
+title: useObjectBindingIds
+---
+
+# `useObjectBindingIds`
+
+Returns a memoized array of every `modelObjectId` across the current `objectBindings` map.
+
+## Usage
+
+```tsx
+import { useObjectBindingIds } from "@live_room/react-immersive";
+
+const ids = useObjectBindingIds(objectBindings);
+// → ["CarBody", "WheelFL", "WheelFR", ...]
+```
+
+## Parameters
+
+| Name             | Type                            | Description              |
+| ---------------- | ------------------------------- | ------------------------ |
+| `objectBindings` | `Record<string, ObjectBinding>` | The current bindings map |
+
+## Returns
+
+`string[]` — a stable memoized array of `modelObjectId` values, one per binding entry. Re-computed only when `objectBindings` changes.
+
+## Example
+
+```tsx
+import { useState } from "react";
+import { ModelViewer, useObjectBindingIds } from "@live_room/react-immersive";
+
+export default function Example() {
+  const [objectBindings, setObjectBindings] = useState(initialBindings);
+  const modelObjectIds = useObjectBindingIds(objectBindings);
+
+  return (
+    <>
+      <p>Bound objects: {modelObjectIds.join(", ")}</p>
+      <ModelViewer
+        modelUrl="/model.glb"
+        licenseKey="your-license-key"
+        objectBindings={objectBindings}
+        onObjectBindingsChange={setObjectBindings}
+      />
+    </>
+  );
+}
+```

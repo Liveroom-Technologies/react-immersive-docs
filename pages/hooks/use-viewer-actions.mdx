@@ -1,0 +1,44 @@
+---
+title: useViewerActions
+---
+
+# `useViewerActions`
+
+Resolves and dispatches object actions programmatically, outside of the built-in UI.
+
+## Usage
+
+```tsx
+import { useViewerActions } from "@live_room/react-immersive";
+
+const { getActionsForObject, runAction } = useViewerActions(objectBindings, {
+  onAction: (event) => console.log(event),
+  onObjectBindingsChange: setObjectBindings,
+});
+
+// Inspect actions for an object
+const actions = getActionsForObject("some-object-id");
+
+// Dispatch an action
+runAction("some-object-id", "toggle-visibility");
+```
+
+## Parameters
+
+| Name                             | Type                                            | Description                                                            |
+| -------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------- |
+| `objectBindings`                 | `Record<string, ObjectBinding>`                 | The current bindings map                                               |
+| `options.onAction`               | `(event: ObjectActionEvent) => void`            | Called when an action is dispatched                                    |
+| `options.onObjectBindingsChange` | `(next: Record<string, ObjectBinding>) => void` | Called when a binding-modifying action (e.g. `toggle-visibility`) runs |
+
+## Returns
+
+| Name                  | Type                                                          | Description                                                                                 |
+| --------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `getActionsForObject` | `(id: string) => ObjectBindingAction[]`                       | Resolves actions for a binding by key, `binding.id`, or `binding.modelObjectId`             |
+| `runAction`           | `(id: string, actionId: string) => ObjectActionEvent \| null` | Dispatches an action and returns its event, or `null` if the binding/action cannot be found |
+
+## Notes
+
+- `toggle-visibility` update binding data through `onObjectBindingsChange`
+- `change-color` and `change-material` dispatch the event but do **not** open the internal popover — they rely on `ModelViewer`'s built-in UI for that
