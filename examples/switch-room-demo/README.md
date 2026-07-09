@@ -18,4 +18,6 @@ npm install
 VITE_LICENSE_KEY=your-license-key npm run dev
 ```
 
+Create a key at [react-immersive.liveroom.dev/console](https://react-immersive.liveroom.dev/console).
+
 The room model is included locally in `public/switch-room.glb`.

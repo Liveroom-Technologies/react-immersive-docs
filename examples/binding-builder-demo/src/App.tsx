@@ -61,7 +61,7 @@ export default function App() {
       >
         {!licenseKey ? (
           <>
-            Set <code>VITE_LICENSE_KEY</code> before running this example. The
+            Set <code>VITE_LICENSE_KEY</code> before running this example. Create a key at <a href="https://react-immersive.liveroom.dev/console" target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>react-immersive.liveroom.dev/console</a>. The
             editor is desktop-first and works best on larger screens.
           </>
         ) : (

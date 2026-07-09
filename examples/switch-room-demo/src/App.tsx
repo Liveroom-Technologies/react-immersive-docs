@@ -166,7 +166,7 @@ export default function App() {
       <DemoHeader />
       {!licenseKey ? (
         <div style={styles.warning}>
-          Set <code>VITE_LICENSE_KEY</code> before running this example.
+          Set <code>VITE_LICENSE_KEY</code> before running this example. Create a key at <a href="https://react-immersive.liveroom.dev/console" target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>react-immersive.liveroom.dev/console</a>.
         </div>
       ) : null}
       <div style={styles.viewerShell}>

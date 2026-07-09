@@ -10,12 +10,10 @@ private, but this repo is where users can:
 - browse examples
 - open public issues
 - start discussions
-- submit docs-focused pull requests
 
 ## What Lives Here
 
-- Nextra docs pages under `pages/`
-- Public theme and docs shell configuration in `theme.config.tsx`
+- Documentation pages under `pages/`
 - Public sample assets in `public/`
 - Example apps in `examples/`
 
@@ -62,4 +60,4 @@ npm install
 npm run dev
 ```
 
-`model-viewer-demo` and `binding-builder-demo` require `VITE_LICENSE_KEY`.
+Some examples require `VITE_LICENSE_KEY`, which can be created at [react-immersive.liveroom.dev/console](https://react-immersive.liveroom.dev/console).

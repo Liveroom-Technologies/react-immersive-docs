@@ -119,7 +119,7 @@ export default function App() {
             fontSize: 12,
           }}
         >
-          Set <code>VITE_LICENSE_KEY</code> before running this example.
+          Set <code>VITE_LICENSE_KEY</code> before running this example. Create a key at <a href="https://react-immersive.liveroom.dev/console" target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>react-immersive.liveroom.dev/console</a>.
         </div>
       ) : null}
       <ViewerWindow>
