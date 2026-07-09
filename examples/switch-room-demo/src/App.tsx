@@ -4,8 +4,8 @@ import type {
   ModelViewerProps,
   ObjectActionEvent,
   ObjectBinding,
-} from "@live_room/react-immersive";
-import { ModelViewer } from "@live_room/react-immersive";
+} from "@liveroom-tech/react-immersive";
+import { ModelViewer } from "@liveroom-tech/react-immersive";
 import {
   objectBindings as initialObjectBindings,
   type DemoAction,

@@ -1,4 +1,4 @@
-import type { ObjectBinding } from "@live_room/react-immersive";
+import type { ObjectBinding } from "@liveroom-tech/react-immersive";
 
 export const objectBindings: Record<string, ObjectBinding> = {
   "black_floats_chrome_0": {

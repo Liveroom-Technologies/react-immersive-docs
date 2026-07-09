@@ -1,7 +1,7 @@
 # Code Of Conduct
 
 This repo is intended to be a respectful, useful public space for customers and
-developers using `@live_room/react-immersive`.
+developers using `@liveroom-tech/react-immersive`.
 
 ## Expected Behavior
 

@@ -1,7 +1,7 @@
 {
   "name": "react-immersive-docs",
   "version": "0.0.1",
-  "description": "Documentation for @liveroom/react-immersive",
+  "description": "Documentation for @liveroom-tech/react-immersive",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

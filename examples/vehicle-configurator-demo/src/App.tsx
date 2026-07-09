@@ -3,8 +3,8 @@ import type { CSSProperties, ReactNode } from "react";
 import type {
   ObjectActionEvent,
   ObjectBinding,
-} from "@live_room/react-immersive";
-import { ModelViewer } from "@live_room/react-immersive";
+} from "@liveroom-tech/react-immersive";
+import { ModelViewer } from "@liveroom-tech/react-immersive";
 import { objectBindings as initialObjectBindings } from "./objectBindings";
 
 const MODEL_URL = "/cartoon_car.glb";

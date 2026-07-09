@@ -1,4 +1,4 @@
-import { BindingBuilder } from "@live_room/react-immersive";
+import { BindingBuilder } from "@liveroom-tech/react-immersive";
 
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";

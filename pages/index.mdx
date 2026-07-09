@@ -4,7 +4,7 @@ title: Overview
 
 import { Callout, Tabs } from "nextra/components";
 
-# `@live_room/react-immersive`
+# `@liveroom-tech/react-immersive`
 
 A React 3D model viewer for interactive 3D assets — mesh selection, object bindings, built-in UI panels, and a full suite of hooks for camera, animations, visibility, and more.
 
@@ -33,21 +33,21 @@ A React 3D model viewer for interactive 3D assets — mesh selection, object bin
   <Tabs.Tab>
 
     ```bash
-    npm install @live_room/react-immersive
+    npm install @liveroom-tech/react-immersive
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    pnpm add @live_room/react-immersive
+    pnpm add @liveroom-tech/react-immersive
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    yarn add @live_room/react-immersive
+    yarn add @liveroom-tech/react-immersive
     ```
 
   </Tabs.Tab>
@@ -57,7 +57,7 @@ A React 3D model viewer for interactive 3D assets — mesh selection, object bin
 
 ```tsx
 import objectBindings from "./objectBindings.json";
-import { ModelViewer, type ObjectBinding } from "@live_room/react-immersive";
+import { ModelViewer, type ObjectBinding } from "@liveroom-tech/react-immersive";
 
 const initialBindings = objectBindings as Record<string, ObjectBinding>;
 
@@ -88,7 +88,7 @@ bindings in [`BindingBuilder`](/reference/binding-builder) and export them as
 If you don't need `objectBindings`-driven styling and actions, [`SimpleModelViewer`](/reference/simple-model-viewer) gives you a lightweight viewer for inspecting GLB/GLTF assets. It can also run in an upload-first mode for ad-hoc local model inspection:
 
 ```tsx
-import { SimpleModelViewer } from "@live_room/react-immersive";
+import { SimpleModelViewer } from "@liveroom-tech/react-immersive";
 
 export default function App() {
   return (
@@ -114,5 +114,5 @@ import {
   useViewerHover,
   useViewerModel,
   useViewerSelection,
-} from "@live_room/react-immersive";
+} from "@liveroom-tech/react-immersive";
 ```

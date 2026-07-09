@@ -1,4 +1,4 @@
-import type { ObjectBinding } from "@live_room/react-immersive";
+import type { ObjectBinding } from "@liveroom-tech/react-immersive";
 
 export type ActionEffect = {
   targetObjectId: string;

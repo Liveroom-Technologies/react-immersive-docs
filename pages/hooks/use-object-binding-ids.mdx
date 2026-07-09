@@ -9,7 +9,7 @@ Returns a memoized array of every `modelObjectId` across the current `objectBind
 ## Usage
 
 ```tsx
-import { useObjectBindingIds } from "@live_room/react-immersive";
+import { useObjectBindingIds } from "@liveroom-tech/react-immersive";
 
 const ids = useObjectBindingIds(objectBindings);
 // → ["CarBody", "WheelFL", "WheelFR", ...]
@@ -29,7 +29,7 @@ const ids = useObjectBindingIds(objectBindings);
 
 ```tsx
 import { useState } from "react";
-import { ModelViewer, useObjectBindingIds } from "@live_room/react-immersive";
+import { ModelViewer, useObjectBindingIds } from "@liveroom-tech/react-immersive";
 
 export default function Example() {
   const [objectBindings, setObjectBindings] = useState(initialBindings);

@@ -1,7 +1,7 @@
 # `react-immersive-docs`
 
 `react-immersive-docs` is the public documentation and feedback surface for
-`@live_room/react-immersive`.
+`@liveroom-tech/react-immersive`.
 
 The package itself is commercially maintained and the core source remains
 private, but this repo is where users can:

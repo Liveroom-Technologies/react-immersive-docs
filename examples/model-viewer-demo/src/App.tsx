@@ -1,5 +1,5 @@
-import type { ObjectBinding, SceneConfig } from "@live_room/react-immersive";
-import { ModelViewer } from "@live_room/react-immersive";
+import type { ObjectBinding, SceneConfig } from "@liveroom-tech/react-immersive";
+import { ModelViewer } from "@liveroom-tech/react-immersive";
 
 import objectBindings from "./objectBindings.json";
 import sceneConfig from "./sceneConfig.json";

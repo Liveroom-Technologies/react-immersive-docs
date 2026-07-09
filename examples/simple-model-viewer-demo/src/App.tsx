@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SimpleModelViewer } from "@live_room/react-immersive";
+import { SimpleModelViewer } from "@liveroom-tech/react-immersive";
 
 function DemoHeader() {
   const features = [

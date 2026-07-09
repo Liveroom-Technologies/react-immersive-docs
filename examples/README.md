@@ -1,6 +1,6 @@
 # Examples
 
-These examples are safe-to-share public starters for `@live_room/react-immersive`.
+These examples are safe-to-share public starters for `@liveroom-tech/react-immersive`.
 
 - `simple-model-viewer-demo` mirrors the internal lightweight viewer demo page.
 - `model-viewer-demo` mirrors the full binding-driven `ModelViewer` demo.
