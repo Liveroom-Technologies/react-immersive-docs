@@ -10,6 +10,8 @@ These examples are safe-to-share public starters for `@liveroom-tech/react-immer
 - `vehicle-configurator-demo` shows grouped paint, wheel, trim, aero-kit,
   window-tint, and headlight configurator flows driven by exported object
   bindings.
+- `shareable-view-demo` shows `useShareableViewerState` restoring an exact
+  camera, selection, and visibility state from a share URL.
 
 When adding examples, keep them minimal and avoid committing proprietary models,
 textures, or private customer data.
