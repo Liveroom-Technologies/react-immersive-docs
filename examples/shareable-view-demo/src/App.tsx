@@ -10,51 +10,7 @@ import {
 
 const MODEL_URL =
   "https://pub-231330919f51417f9bc6a239010def9a.r2.dev/red-room/red_room.glb";
-
-const initialBindings: Record<string, ObjectBinding> = {
-  Bed_Bed_0: {
-    id: "bed-bed-0",
-    modelObjectId: "Bed_Bed_0",
-    type: "furniture",
-    label: "Bed",
-    status: "normal",
-    selectable: true,
-    hoverable: true,
-    visible: true,
-    style: {},
-    actions: [],
-    metrics: {},
-    metadata: {},
-  },
-  Chair_Chair_0: {
-    id: "chair-chair-0",
-    modelObjectId: "Chair_Chair_0",
-    type: "furniture",
-    label: "Chair",
-    status: "normal",
-    selectable: true,
-    hoverable: true,
-    visible: true,
-    style: {},
-    actions: [],
-    metrics: {},
-    metadata: {},
-  },
-  Abajour_Abadour2_0: {
-    id: "lamp",
-    modelObjectId: "Abajour_Abadour2_0",
-    type: "other",
-    label: "Lamp",
-    status: "normal",
-    selectable: true,
-    hoverable: true,
-    visible: true,
-    style: {},
-    actions: [],
-    metrics: {},
-    metadata: {},
-  },
-};
+import initialBindings from "./objectBindings.json";
 
 const panelStyle: React.CSSProperties = {
   position: "absolute",
@@ -71,7 +27,8 @@ const panelStyle: React.CSSProperties = {
 
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
-  const [objectBindings, setObjectBindings] = useState(initialBindings);
+  const [objectBindings, setObjectBindings] =
+    useState<Record<string, ObjectBinding>>(initialBindings);
   const {
     cameraState,
     focusObject,
@@ -123,7 +80,9 @@ export default function App() {
   const copyLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(getShareUrl());
-      window.alert("Share link copied. Open it in a new tab to restore this view.");
+      window.alert(
+        "Share link copied. Open it in a new tab to restore this view.",
+      );
     } catch {
       window.prompt("Copy this share link:", getShareUrl());
     }
@@ -140,17 +99,43 @@ export default function App() {
       }}
     >
       <header style={{ padding: "24px 20px", background: "#0f172a" }}>
-        <p style={{ margin: 0, color: "#7dd3fc", fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+        <p
+          style={{
+            margin: 0,
+            color: "#7dd3fc",
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}
+        >
           React Immersive example
         </p>
-        <h1 style={{ margin: "10px 0", fontSize: 32 }}>Shareable View / Deep Link</h1>
-        <p style={{ margin: 0, maxWidth: 780, lineHeight: 1.55, color: "#cbd5e1" }}>
+        <h1 style={{ margin: "10px 0", fontSize: 32 }}>
+          Shareable View / Deep Link
+        </h1>
+        <p
+          style={{
+            margin: 0,
+            maxWidth: 780,
+            lineHeight: 1.55,
+            color: "#cbd5e1",
+          }}
+        >
           Build an exact walkthrough state for a client. The share URL restores
           the camera, selected object, and hidden objects.
         </p>
       </header>
       {!licenseKey ? (
-        <p style={{ margin: 0, padding: "10px 20px", background: "#78350f", color: "#fef3c7", fontSize: 13 }}>
+        <p
+          style={{
+            margin: 0,
+            padding: "10px 20px",
+            background: "#78350f",
+            color: "#fef3c7",
+            fontSize: 13,
+          }}
+        >
           Set <code>VITE_LICENSE_KEY</code> before running this example.
         </p>
       ) : null}
@@ -172,14 +157,26 @@ export default function App() {
           refitOnResize={false}
         />
         <section style={panelStyle}>
-          <strong style={{ display: "block", marginBottom: 8 }}>Walkthrough controls</strong>
-          <p style={{ margin: "0 0 14px", fontSize: 13, lineHeight: 1.5, color: "#cbd5e1" }}>
+          <strong style={{ display: "block", marginBottom: 8 }}>
+            Walkthrough controls
+          </strong>
+          <p
+            style={{
+              margin: "0 0 14px",
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: "#cbd5e1",
+            }}
+          >
             Select an object to fly there. Hide an object, then copy and open
             the URL to confirm the full state comes back.
           </p>
           {Object.entries(objectBindings).map(([key, binding]) => (
             <div key={key} style={{ display: "flex", gap: 8, marginTop: 8 }}>
-              <button style={{ flex: 1 }} onClick={() => void focusBinding(binding)}>
+              <button
+                style={{ flex: 1 }}
+                onClick={() => void focusBinding(binding)}
+              >
                 {selectedObjectBinding?.id === binding.id ? "✓ " : ""}
                 {binding.label}
               </button>
@@ -190,7 +187,11 @@ export default function App() {
           ))}
           <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
             <button onClick={() => void copyLink()}>Copy link</button>
-            <button onClick={() => window.open(getShareUrl(), "_blank", "noopener,noreferrer")}>
+            <button
+              onClick={() =>
+                window.open(getShareUrl(), "_blank", "noopener,noreferrer")
+              }
+            >
               Open link
             </button>
           </div>
