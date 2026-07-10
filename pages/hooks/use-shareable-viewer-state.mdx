@@ -10,11 +10,13 @@ Serializes the current camera angle, hidden objects, and selection into a URL
 hash so a configured view can be copied as a link and restored exactly when
 opened.
 
+Try the complete [Shareable View / Deep Link demo](https://react-immersive.liveroom.dev/examples/shareable-view)
+to create a walkthrough, copy its link, and open it in a new tab.
+
 <Callout type="info">
-  The encoded state covers camera + visibility + selection for the
-  **currently loaded model** only — it doesn't carry the model URL itself, so
-  combine it with whatever query param already identifies which model to
-  load.
+  The encoded state covers camera + visibility + selection for the **currently
+  loaded model** only — it doesn't carry the model URL itself, so combine it
+  with whatever query param already identifies which model to load.
 </Callout>
 
 ## Usage
@@ -54,41 +56,42 @@ const { getShareUrl, restoreFromUrl } = useShareableViewerState({
     handleViewerReady(viewer);
     restoreFromUrl();
   }}
+  refitOnResize={false}
 />;
 
 <button onClick={() => navigator.clipboard.writeText(getShareUrl())}>
   Copy link
-</button>
+</button>;
 ```
 
 <Callout type="warning">
-  `selectedObject={selectedObjectBinding}` is required for a restored
-  selection to actually appear in the viewer. Without it, `ModelViewer`
-  manages selection internally and `setSelectedObjectBinding` only updates
-  state used for serialization — it has no visible effect on its own.
+  `selectedObject={selectedObjectBinding}` is required for a restored selection
+  to actually appear in the viewer. Without it, `ModelViewer` manages selection
+  internally and `setSelectedObjectBinding` only updates state used for
+  serialization — it has no visible effect on its own.
 </Callout>
 
 ## Parameters
 
-| Name                       | Type                                                          | Description                                                                       |
-| -------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `cameraState`               | `ViewerCameraState \| null`                                     | From `useViewerCamera()`                                                           |
-| `setCameraState`            | `(state: ViewerCameraState, enableTransition?: boolean) => Promise<boolean>` | From `useViewerCamera()`; used to restore a decoded camera state                    |
-| `objectBindings`            | `Record<string, ObjectBinding>`                                 | The current bindings map (owned by consumer)                                       |
-| `onObjectBindingsChange`    | `(next: Record<string, ObjectBinding>) => void`                 | State setter from `useState`                                                        |
-| `selectedObjectBinding`     | `ObjectBinding \| null`                                         | From `useViewerSelection()`                                                         |
-| `setSelectedObjectBinding`  | `(binding: ObjectBinding \| null) => void`                       | From `useViewerSelection()`                                                         |
-| `paramKey`                  | `string`                                                        | Hash key the state is stored under. Default `"view"`                               |
-| `debounceMs`                | `number`                                                        | Debounce before the URL hash updates after a state change. Default `400`           |
-| `autoSync`                  | `boolean`                                                       | Auto-write state to the URL hash on change. Default `true`                         |
+| Name                       | Type                                                                         | Description                                                              |
+| -------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `cameraState`              | `ViewerCameraState \| null`                                                  | From `useViewerCamera()`                                                 |
+| `setCameraState`           | `(state: ViewerCameraState, enableTransition?: boolean) => Promise<boolean>` | From `useViewerCamera()`; used to restore a decoded camera state         |
+| `objectBindings`           | `Record<string, ObjectBinding>`                                              | The current bindings map (owned by consumer)                             |
+| `onObjectBindingsChange`   | `(next: Record<string, ObjectBinding>) => void`                              | State setter from `useState`                                             |
+| `selectedObjectBinding`    | `ObjectBinding \| null`                                                      | From `useViewerSelection()`                                              |
+| `setSelectedObjectBinding` | `(binding: ObjectBinding \| null) => void`                                   | From `useViewerSelection()`                                              |
+| `paramKey`                 | `string`                                                                     | Hash key the state is stored under. Default `"view"`                     |
+| `debounceMs`               | `number`                                                                     | Debounce before the URL hash updates after a state change. Default `400` |
+| `autoSync`                 | `boolean`                                                                    | Auto-write state to the URL hash on change. Default `true`               |
 
 ## Returns
 
-| Name             | Type                     | Description                                                                                          |
-| ----------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `getShareUrl`      | `() => string`           | Builds the full share URL for the current state, without touching the address bar                     |
-| `syncUrl`          | `() => void`             | Writes the current state into the URL hash via `history.replaceState` (no navigation, no history entry) |
-| `restoreFromUrl`   | `() => Promise<boolean>` | Reads state from the current URL hash, if any, and applies it. Safe to call from `onViewerReady`; only a new hash snapshot re-applies |
+| Name             | Type                     | Description                                                                                                                           |
+| ---------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `getShareUrl`    | `() => string`           | Builds the full share URL for the current state, without touching the address bar                                                     |
+| `syncUrl`        | `() => void`             | Writes the current state into the URL hash via `history.replaceState` (no navigation, no history entry)                               |
+| `restoreFromUrl` | `() => Promise<boolean>` | Reads state from the current URL hash, if any, and applies it. Safe to call from `onViewerReady`; only a new hash snapshot re-applies |
 
 ## Notes
 
