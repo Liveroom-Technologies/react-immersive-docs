@@ -69,6 +69,69 @@ type BindingBuilderProps = {
 
 - Live preview of the selected node in an embedded `ModelViewer`
 
+## Exporting and Reusing Files
+
+BindingBuilder has separate toolbars for bindings and scene settings, so export
+the data from the tab that owns it:
+
+1. Load your model first. The import and export controls become available once
+   BindingBuilder has inspected its nodes.
+2. Open the **Object** tab to work with `objectBindings`. In that tab's toolbar,
+   use **Export → JSON** or **Export → TypeScript**.
+3. Open the **Scene** tab to work with `sceneConfig`. Its toolbar has the same
+   **Export** menu, producing `sceneConfig.json` or `sceneConfig.ts`.
+4. Choose **TypeScript** for a file you will import into your application.
+   Choose **JSON** for a portable snapshot that you want to bring back into
+   BindingBuilder later.
+
+We recommend keeping TypeScript exports alongside the viewer route, for example:
+
+```text
+src/immersive/objectBindings.ts
+src/immersive/sceneConfig.ts
+public/model.glb
+public/materials/... (when the export includes uploaded textures)
+```
+
+The TypeScript exports already include the correct type and named export. Import
+them directly and pass them to `ModelViewer`:
+
+```tsx
+import { useState } from "react";
+import { ModelViewer } from "@liveroom-tech/react-immersive";
+import { objectBindings as initialObjectBindings } from "./objectBindings";
+import { sceneConfig } from "./sceneConfig";
+
+export default function ProductViewer() {
+  const [objectBindings, setObjectBindings] = useState(initialObjectBindings);
+
+  return (
+    <ModelViewer
+      modelUrl="/model.glb"
+      licenseKey="your-license-key"
+      objectBindings={objectBindings}
+      sceneConfig={sceneConfig}
+      onObjectBindingsChange={setObjectBindings}
+    />
+  );
+}
+```
+
+### Importing Back into BindingBuilder
+
+Use the **Import** button in the same toolbar as the matching export:
+
+- **Object tab → Import** accepts an `objectBindings.json` file. Load the model
+  first; incoming records are matched by `modelObjectId`, so bindings for nodes
+  absent from the current model are safely skipped.
+- **Scene tab → Import** accepts a `sceneConfig.json` file. Included top-level
+  sections are merged into the current scene config, which lets you restore a
+  partial scene preset without resetting the other settings.
+
+TypeScript exports are deliberately for your application source code, not for
+the editor's import button. Keep a JSON export whenever you expect to reopen or
+share the configuration in BindingBuilder.
+
 <Callout type="info">
   **Picking a texture map** stores the durable path `materials/<filename>` in
   the binding (this is what's exported), and shows the image immediately in

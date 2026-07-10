@@ -395,6 +395,11 @@ Optional camera configuration passed through to the underlying React Three Fiber
 />
 ```
 
+Passing an explicit `camera` counts as choosing the initial view yourself, so
+the mount-time auto-fit (see [`onAutoFit`](#onautofit)) is skipped automatically
+and your `position`/`fov` stick. Provide `onAutoFit` as well only if you want
+to run your _own_ fit-to-scene logic instead.
+
 ---
 
 ### `backgroundColor`
@@ -563,6 +568,12 @@ and annotations. This is the same `SceneConfig` shape authored by
 `BindingBuilder`'s **Scene** tab. If omitted, the viewer uses its built-in
 default scene config.
 
+Use it to define the experience around the model, rather than individual model
+objects. For example, a guided tour can use `annotations` and saved world
+positions to direct the camera through a scene without requiring
+`objectBindings` for every tour stop. See the [`Guided Tour`](/examples/guided-tour)
+example.
+
 `sceneConfig.animations` drives autoplay and per-clip playback (see
 [`onAnimationsReady`](#onanimationsready)), and `sceneConfig.annotations` seeds
 the annotation markers rendered on the model.
@@ -589,7 +600,9 @@ to it. Set to `false` to keep the current camera framing on selection. Default:
 Optional async callback invoked once the model has loaded and the scene is
 ready. When provided, it is called so consumers can run their own
 fit-to-scene logic (e.g. an animated fit); if omitted, the viewer falls back to
-its internal `fitScene`.
+its internal `fitScene` — unless an explicit [`camera`](#camera) prop was
+given, in which case that position is treated as the chosen initial view and
+`fitScene` is skipped.
 
 ```ts
 onAutoFit?: () => Promise<boolean>

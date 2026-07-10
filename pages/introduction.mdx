@@ -62,6 +62,38 @@ logic manageable after rendering.
   app, bindings are the right tradeoff.
 </Callout>
 
+## Why `sceneConfig` Exists
+
+`objectBindings` describe what individual model nodes mean. `sceneConfig`
+describes the experience around the whole model: the initial camera view,
+lighting, environment, shadows, post-processing, animation behavior, and
+annotation markers. It keeps scene-wide decisions out of component props,
+ad-hoc Three.js setup, and one-off effects.
+
+That separation matters because not every interactive experience is about a
+specific mesh. A guided showroom tour, for example, can use annotation markers
+and saved camera positions to lead a visitor through a scene without binding a
+single exhibit. The [`Guided Tour`](/examples/guided-tour) demo uses exactly
+this pattern.
+
+- **Guided tours and onboarding** — define named stops and camera positions for a repeatable walkthrough
+- **Showrooms and product launches** — set the intended lighting, environment, and opening view for a model
+- **Architecture and real estate** — ship curated viewpoints, daylight mood, and annotations with a building or room
+- **Training and safety flows** — combine markers, camera positions, and animation playback into a consistent lesson
+- **XR and device experiences** — keep scene-level presentation and interaction settings together as the experience evolves
+- **Reusable model presets** — save a serializable scene setup that can be versioned, stored, and reused across applications
+
+In short: `objectBindings` make parts of a model behave like application data;
+`sceneConfig` makes the model behave like a designed 3D experience. Use one or
+both depending on what the experience needs.
+
+<Callout type="info">
+  Use <code>sceneConfig</code> whenever the default viewer presentation is not
+  the product you want to ship. It is valuable on its own for tours and curated
+  scenes, and it complements <code>objectBindings</code> when individual parts
+  also need application behavior.
+</Callout>
+
 ## When This Package Fits
 
 - **Product configurators** — let users recolor or retexture parts of a car, piece of furniture, or apparel

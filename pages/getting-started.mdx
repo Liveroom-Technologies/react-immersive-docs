@@ -55,6 +55,11 @@ Each key in `objectBindings` must match a mesh name from your GLB/GLTF file.
 You can write the bindings by hand, or generate starter bindings in
 [`BindingBuilder`](/reference/binding-builder) and export them as
 `objectBindings.json` or a TypeScript file to import into your app.
+For a configured scene, export `sceneConfig.ts` from BindingBuilder's **Scene**
+tab and pass its named `sceneConfig` export to `ModelViewer` as well. The
+[`BindingBuilder export and import guide`](/reference/binding-builder#exporting-and-reusing-files)
+explains where each toolbar action lives and when to choose JSON versus
+TypeScript.
 If you want a ready-to-run starter, download the sample
 [`red_room.glb`](/red_room.glb) model and
 [`objectBindings.ts`](/objectBindings.ts) bindings file from these docs. Put
