@@ -1,10 +1,12 @@
 import { useCallback, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import type {
-  ObjectActionEvent,
-  ObjectBinding,
+import {
+  ModelViewer,
+  useViewerCamera,
+  type ObjectActionEvent,
+  type ObjectBinding,
+  type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
-import { ModelViewer } from "@liveroom-tech/react-immersive";
 import { objectBindings as initialObjectBindings } from "./objectBindings";
 
 const MODEL_URL = "/cartoon_car.glb";
@@ -136,6 +138,20 @@ export default function App() {
   const [windowsDark, setWindowsDark] = useState(false);
   const [headlightsOn, setHeadlightsOn] = useState(false);
   const [headlightColorIndex, setHeadlightColorIndex] = useState(0);
+
+  const { handleViewerReady, setCameraTarget } = useViewerCamera();
+
+  // The car's bounding-box center sits above and slightly forward of the world
+  // origin (this asset has no floor-aligned pivot), so the default look-at
+  // target of [0, 0, 0] frames it high and off-center. Re-center the orbit
+  // target here; the deliberate camera position/fov below is left untouched.
+  const handleReady = useCallback(
+    (viewer: ViewerReadyState) => {
+      handleViewerReady(viewer);
+      setCameraTarget([-5.2, 3.5, 1], false);
+    },
+    [handleViewerReady, setCameraTarget],
+  );
 
   const applyPaint = useCallback((index: number) => {
     const color = PAINT_COLORS[index];
@@ -305,8 +321,9 @@ export default function App() {
             objectBindings={bindings}
             onObjectSelect={(binding) => setSelectedLabel(binding?.label ?? "Cartoon Car")}
             onAction={handleAction}
+            onViewerReady={handleReady}
             backgroundColor="#07111f"
-            camera={{ position: [12, 3.5, 9], fov: 38 }}
+            camera={{ position: [14, 5, 16], fov: 40 }}
             shadows
             showObjectBindingDataPanel={false}
             showSceneObjectsPanel

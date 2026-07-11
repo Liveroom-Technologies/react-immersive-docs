@@ -14,6 +14,12 @@ These examples are safe-to-share public starters for `@liveroom-tech/react-immer
   camera, selection, and visibility state from a share URL.
 - `ar-product-viewer-demo` is a minimal retail AR viewer using `enableXR` and
   `usdzUrl` to launch WebXR or iOS Quick Look.
+- `guided-tour-demo` shows an annotation-driven walkthrough where
+  `SceneAnnotationMarker` stops drive the built-in guided-tour camera
+  navigation, with no per-object bindings required.
+- `animation-studio-demo` shows `useViewerAnimations` driving a rigged GLB with
+  a clip picker, play/pause/stop, a scrubbable timeline, speed control, and a
+  loop-mode toggle.
 
 When adding examples, keep them minimal and avoid committing proprietary models,
 textures, or private customer data.

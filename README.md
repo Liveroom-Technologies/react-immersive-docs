@@ -48,10 +48,15 @@ npm run start
 
 Examples live in `examples/` as standalone Vite apps:
 
-- `simple-viewer-upload`
 - `simple-model-viewer-demo`
 - `model-viewer-demo`
 - `binding-builder-demo`
+- `switch-room-demo`
+- `vehicle-configurator-demo`
+- `guided-tour-demo`
+- `shareable-view-demo`
+- `ar-product-viewer-demo`
+- `animation-studio-demo`
 
 Run an example from its own folder:
 
