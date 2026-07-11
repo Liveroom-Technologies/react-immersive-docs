@@ -12,6 +12,8 @@ These examples are safe-to-share public starters for `@liveroom-tech/react-immer
   bindings.
 - `shareable-view-demo` shows `useShareableViewerState` restoring an exact
   camera, selection, and visibility state from a share URL.
+- `ar-product-viewer-demo` is a minimal retail AR viewer using `enableXR` and
+  `usdzUrl` to launch WebXR or iOS Quick Look.
 
 When adding examples, keep them minimal and avoid committing proprietary models,
 textures, or private customer data.
