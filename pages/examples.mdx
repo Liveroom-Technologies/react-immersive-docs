@@ -138,6 +138,22 @@ Live route:
 Starter app:
 [`examples/animation-studio-demo`](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/animation-studio-demo)
 
+### `Texture Upload / Custom Print`
+
+A custom-apparel demo where shoppers upload their own artwork onto a product:
+
+- The built-in Upload Artwork action hands the file to `onTextureUpload`
+- A real app uploads it to storage and returns a durable URL (here a data URL)
+- The returned URL is committed to `style.material.texture.path`
+- The print is broadcast across every mesh of the garment
+- Shirt color presets drive the same binding map
+
+Live route:
+[`/examples/texture-upload`](/examples/texture-upload)
+
+Starter app:
+[`examples/texture-upload-demo`](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/texture-upload-demo)
+
 ### `BindingBuilder`
 
 The hosted `BindingBuilder` surface for authoring bindings in the browser:

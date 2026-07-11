@@ -57,6 +57,7 @@ Examples live in `examples/` as standalone Vite apps:
 - `shareable-view-demo`
 - `ar-product-viewer-demo`
 - `animation-studio-demo`
+- `texture-upload-demo`
 
 Run an example from its own folder:
 

@@ -20,6 +20,9 @@ These examples are safe-to-share public starters for `@liveroom-tech/react-immer
 - `animation-studio-demo` shows `useViewerAnimations` driving a rigged GLB with
   a clip picker, play/pause/stop, a scrubbable timeline, speed control, and a
   loop-mode toggle.
+- `texture-upload-demo` shows `onTextureUpload` routing an uploaded image
+  through a storage step and applying it as a product's material texture across
+  the whole garment.
 
 When adding examples, keep them minimal and avoid committing proprietary models,
 textures, or private customer data.
