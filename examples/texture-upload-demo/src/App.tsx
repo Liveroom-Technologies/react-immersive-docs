@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import {
   ModelViewer,
@@ -9,6 +9,28 @@ import {
 import { objectBindings as initialBindings } from "./objectBindings";
 
 const MODEL_URL = "/t-shirt.glb";
+
+// Plain <style> media queries (no Tailwind/build step in this standalone demo):
+// collapses the print-studio panel behind a toggle on phones, so it doesn't
+// cover the shirt, and clamps the header description with a "Read more" toggle.
+const RESPONSIVE_CSS = `
+  .demo-panel-toggle { display: inline-flex; }
+  .demo-readmore { display: inline-block; }
+  @media (min-width: 641px) {
+    .demo-panel-toggle { display: none !important; }
+    .demo-readmore { display: none !important; }
+  }
+  @media (max-width: 640px) {
+    .demo-badges { display: none; }
+    .demo-panel--closed { display: none !important; }
+    .demo-desc:not(.demo-desc--expanded) {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+`;
 
 // The oversized-tshirt GLB is split into four meshes (front, back, and two
 // sleeves) that all share one material. Every bound mesh is part of the shirt,
@@ -43,19 +65,48 @@ function DemoHeader() {
     "Broadcast across all panels",
   ];
 
+  // On phones the description is clamped to two lines with a "Read more"
+  // toggle — shown only when the text is actually truncated.
+  const [expanded, setExpanded] = useState(false);
+  const [truncated, setTruncated] = useState(false);
+  const descRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el || expanded) return;
+    const check = () => setTruncated(el.scrollHeight > el.clientHeight + 1);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [expanded]);
+
   return (
     <section style={styles.header}>
       <div style={styles.headerInner}>
         <p style={styles.eyebrow}>React Immersive Example</p>
         <h1 style={styles.title}>Texture Upload / Custom Print</h1>
-        <p style={styles.description}>
+        <p
+          ref={descRef}
+          className={`demo-desc${expanded ? " demo-desc--expanded" : ""}`}
+          style={styles.description}
+        >
           Upload your own artwork onto a product. The viewer&apos;s built-in
           Change Material action hands the file to{" "}
           <code>onTextureUpload</code>, where a real app would push it to its own
           storage and return a durable URL — the returned URL is committed to the
           material and applied across the whole garment.
         </p>
-        <div style={styles.featureList}>
+        {(truncated || expanded) && (
+          <button
+            type="button"
+            className="demo-readmore"
+            onClick={() => setExpanded((v) => !v)}
+            style={styles.readMoreButton}
+          >
+            {expanded ? "Read less" : "Read more…"}
+          </button>
+        )}
+        <div className="demo-badges" style={styles.featureList}>
           {features.map((feature) => (
             <span key={feature} style={styles.featureBadge}>
               {feature}
@@ -73,6 +124,8 @@ export default function App() {
     structuredClone(initialBindings),
   );
   const [uploadedName, setUploadedName] = useState<string | null>(null);
+  // Mobile: the print-studio panel starts collapsed so it doesn't cover the shirt.
+  const [controlsOpen, setControlsOpen] = useState(false);
 
   const { handleViewerReady, setCameraTarget } = useViewerCamera();
 
@@ -171,6 +224,7 @@ export default function App() {
 
   return (
     <main style={styles.page}>
+      <style>{RESPONSIVE_CSS}</style>
       <DemoHeader />
       {!licenseKey ? (
         <div style={styles.warning}>
@@ -210,7 +264,19 @@ export default function App() {
             refitOnResize={false}
           />
 
-          <section style={styles.panel}>
+          <button
+            type="button"
+            className="demo-panel-toggle"
+            onClick={() => setControlsOpen((v) => !v)}
+            style={styles.panelToggle}
+          >
+            {controlsOpen ? "✕" : "☰ Print studio"}
+          </button>
+
+          <section
+            style={styles.panel}
+            className={controlsOpen ? "" : "demo-panel--closed"}
+          >
             <div style={styles.panelEyebrow}>Custom Print Studio</div>
             <p style={styles.panelCopy}>
               Click the shirt →{" "}
@@ -343,6 +409,17 @@ const styles = {
     padding: "8px 12px",
     fontSize: 12,
   },
+  readMoreButton: {
+    marginTop: 4,
+    border: "none",
+    background: "transparent",
+    color: "rgba(226, 232, 240, 0.85)",
+    fontSize: 12,
+    fontWeight: 700,
+    textDecoration: "underline",
+    cursor: "pointer",
+    padding: 0,
+  },
   warning: {
     background: "rgba(245, 158, 11, 0.16)",
     color: "#fef3c7",
@@ -371,6 +448,24 @@ const styles = {
     color: "#0f172a",
     backdropFilter: "blur(12px)",
     boxShadow: "0 18px 48px rgba(2, 6, 23, 0.28)",
+  },
+  // Mobile-only toggle (see .demo-panel-toggle in RESPONSIVE_CSS) that reveals
+  // the panel above; hidden entirely on desktop.
+  panelToggle: {
+    position: "absolute",
+    right: 16,
+    top: 16,
+    zIndex: 10002,
+    alignItems: "center",
+    gap: 6,
+    padding: "8px 14px",
+    borderRadius: 999,
+    border: "1px solid rgba(0,0,0,0.12)",
+    background: "rgba(15,23,42,0.9)",
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: "pointer",
   },
   panelEyebrow: {
     fontSize: 12,

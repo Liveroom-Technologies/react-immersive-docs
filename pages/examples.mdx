@@ -121,6 +121,23 @@ Live route:
 Starter app:
 [`examples/vehicle-configurator-demo`](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/vehicle-configurator-demo)
 
+### `Exploded View`
+
+An assembly-inspection demo that separates a multi-part model into its
+components with a single slider:
+
+- `showExplodeControls` renders the built-in explode slider in the viewer
+- Every bound mesh slides outward from the model center along its own direction
+- Nested parts ride their exploding parent instead of being displaced twice
+- Fully reversible — dragging back to zero reassembles the model exactly
+- Best suited to static product / CAD models (engines, gadgets, vehicles)
+
+Live route:
+[`/examples/exploded-view`](/examples/exploded-view)
+
+Starter app:
+[`examples/exploded-view-demo`](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/exploded-view-demo)
+
 ### `Cinematic Tour`
 
 An automatic camera that glides through a space on its own, like a film:

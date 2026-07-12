@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ModelViewer,
   useShareableViewerState,
@@ -11,6 +11,27 @@ import {
 const MODEL_URL =
   "https://pub-231330919f51417f9bc6a239010def9a.r2.dev/red-room/red_room.glb";
 import initialBindings from "./objectBindings.json";
+
+// Plain <style> media queries (no Tailwind/build step in this standalone demo):
+// collapses the controls panel behind a toggle on phones, so it doesn't cover
+// the model, and clamps the header description with a "Read more" toggle.
+const RESPONSIVE_CSS = `
+  .demo-panel-toggle { display: inline-flex; }
+  .demo-readmore { display: inline-block; }
+  @media (min-width: 641px) {
+    .demo-panel-toggle { display: none !important; }
+    .demo-readmore { display: none !important; }
+  }
+  @media (max-width: 640px) {
+    .demo-panel--closed { display: none !important; }
+    .demo-desc:not(.demo-desc--expanded) {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+`;
 
 const panelStyle: React.CSSProperties = {
   position: "absolute",
@@ -25,10 +46,55 @@ const panelStyle: React.CSSProperties = {
   boxShadow: "0 18px 48px rgba(2, 6, 23, 0.5)",
 };
 
+const panelToggleStyle: React.CSSProperties = {
+  position: "absolute",
+  zIndex: 21,
+  top: 16,
+  left: 16,
+  alignItems: "center",
+  gap: 6,
+  padding: "8px 14px",
+  borderRadius: 999,
+  border: "1px solid rgba(255,255,255,0.18)",
+  background: "rgba(15,23,42,0.9)",
+  color: "#fff",
+  fontSize: 12,
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const readMoreButtonStyle: React.CSSProperties = {
+  marginTop: 4,
+  border: "none",
+  background: "transparent",
+  color: "rgba(226, 232, 240, 0.85)",
+  fontSize: 12,
+  fontWeight: 700,
+  textDecoration: "underline",
+  cursor: "pointer",
+  padding: 0,
+};
+
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
   const [objectBindings, setObjectBindings] =
     useState<Record<string, ObjectBinding>>(initialBindings);
+  // Mobile: the controls panel starts collapsed so it doesn't cover the model.
+  const [controlsOpen, setControlsOpen] = useState(false);
+  // On phones the description is clamped to two lines with a "Read more"
+  // toggle — shown only when the text is actually truncated.
+  const [descExpanded, setDescExpanded] = useState(false);
+  const [descTruncated, setDescTruncated] = useState(false);
+  const descRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el || descExpanded) return;
+    const check = () => setDescTruncated(el.scrollHeight > el.clientHeight + 1);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [descExpanded]);
   const {
     cameraState,
     focusObject,
@@ -98,6 +164,7 @@ export default function App() {
         color: "#f8fafc",
       }}
     >
+      <style>{RESPONSIVE_CSS}</style>
       <header style={{ padding: "24px 20px", background: "#0f172a" }}>
         <p
           style={{
@@ -115,6 +182,8 @@ export default function App() {
           Shareable View / Deep Link
         </h1>
         <p
+          ref={descRef}
+          className={`demo-desc${descExpanded ? " demo-desc--expanded" : ""}`}
           style={{
             margin: 0,
             maxWidth: 780,
@@ -125,6 +194,16 @@ export default function App() {
           Build an exact walkthrough state for a client. The share URL restores
           the camera, selected object, and hidden objects.
         </p>
+        {(descTruncated || descExpanded) && (
+          <button
+            type="button"
+            className="demo-readmore"
+            onClick={() => setDescExpanded((v) => !v)}
+            style={readMoreButtonStyle}
+          >
+            {descExpanded ? "Read less" : "Read more…"}
+          </button>
+        )}
       </header>
       {!licenseKey ? (
         <p
@@ -156,7 +235,21 @@ export default function App() {
           showMouseController={false}
           refitOnResize={false}
         />
-        <section style={panelStyle}>
+        <button
+          type="button"
+          className="demo-panel-toggle"
+          onClick={() => setControlsOpen((v) => !v)}
+          style={{
+            ...panelToggleStyle,
+            ...(controlsOpen ? { left: "auto", right: 16 } : null),
+          }}
+        >
+          {controlsOpen ? "✕" : "☰ Controls"}
+        </button>
+        <section
+          style={panelStyle}
+          className={controlsOpen ? "" : "demo-panel--closed"}
+        >
           <strong style={{ display: "block", marginBottom: 8 }}>
             Walkthrough controls
           </strong>

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import {
   ModelViewer,
@@ -10,6 +10,28 @@ import {
 import { objectBindings as initialObjectBindings } from "./objectBindings";
 
 const MODEL_URL = "/cartoon_car.glb";
+
+// Plain <style> media queries (no Tailwind/build step in this standalone demo):
+// collapses the control panel behind a toggle on phones, so it doesn't cover
+// the model, and clamps the header description with a "Read more" toggle.
+const RESPONSIVE_CSS = `
+  .demo-panel-toggle { display: inline-flex; }
+  .demo-readmore { display: inline-block; }
+  @media (min-width: 641px) {
+    .demo-panel-toggle { display: none !important; }
+    .demo-readmore { display: none !important; }
+  }
+  @media (max-width: 640px) {
+    .demo-badges { display: none; }
+    .demo-panel--closed { display: none !important; }
+    .demo-desc:not(.demo-desc--expanded) {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+`;
 
 const PAINT_GROUP = [
   "body_car_body_0",
@@ -89,17 +111,46 @@ function DemoHeader() {
     "Headlight emissive toggle",
   ];
 
+  // On phones the description is clamped to two lines with a "Read more"
+  // toggle — shown only when the text is actually truncated.
+  const [expanded, setExpanded] = useState(false);
+  const [truncated, setTruncated] = useState(false);
+  const descRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el || expanded) return;
+    const check = () => setTruncated(el.scrollHeight > el.clientHeight + 1);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [expanded]);
+
   return (
     <section style={styles.header}>
       <div style={styles.headerInner}>
         <p style={styles.eyebrow}>React Immersive Example</p>
         <h1 style={styles.title}>Vehicle Configurator</h1>
-        <p style={styles.description}>
+        <p
+          ref={descRef}
+          className={`demo-desc${expanded ? " demo-desc--expanded" : ""}`}
+          style={styles.description}
+        >
           A car model where BindingBuilder-exported object bindings drive a real
           product configurator: grouped paint, wheel, and trim swatches, an
           aero-kit toggle, window tint, and clickable headlights.
         </p>
-        <div style={styles.featureList}>
+        {(truncated || expanded) && (
+          <button
+            type="button"
+            className="demo-readmore"
+            onClick={() => setExpanded((v) => !v)}
+            style={styles.readMoreButton}
+          >
+            {expanded ? "Read less" : "Read more…"}
+          </button>
+        )}
+        <div className="demo-badges" style={styles.featureList}>
           {features.map((feature) => (
             <span key={feature} style={styles.featureBadge}>
               {feature}
@@ -138,6 +189,8 @@ export default function App() {
   const [windowsDark, setWindowsDark] = useState(false);
   const [headlightsOn, setHeadlightsOn] = useState(false);
   const [headlightColorIndex, setHeadlightColorIndex] = useState(0);
+  // Mobile: the configurator panel starts collapsed so it doesn't cover the car.
+  const [controlsOpen, setControlsOpen] = useState(false);
 
   const { handleViewerReady, setCameraTarget } = useViewerCamera();
 
@@ -307,6 +360,7 @@ export default function App() {
 
   return (
     <main style={styles.page}>
+      <style>{RESPONSIVE_CSS}</style>
       <DemoHeader />
       {!licenseKey ? (
         <div style={styles.warning}>
@@ -336,7 +390,22 @@ export default function App() {
             refitOnResize={false}
           />
 
-          <section style={styles.panel}>
+          <button
+            type="button"
+            className="demo-panel-toggle"
+            onClick={() => setControlsOpen((v) => !v)}
+            style={{
+              ...styles.panelToggle,
+              ...(controlsOpen ? { left: "auto", right: 16 } : null),
+            }}
+          >
+            {controlsOpen ? "✕" : "☰ Configure"}
+          </button>
+
+          <section
+            style={styles.panel}
+            className={controlsOpen ? "" : "demo-panel--closed"}
+          >
             <div style={styles.panelHeader}>
               <div>
                 <p style={styles.panelEyebrow}>Configurator</p>
@@ -524,6 +593,17 @@ const styles = {
     padding: "8px 12px",
     fontSize: 12,
   },
+  readMoreButton: {
+    marginTop: 4,
+    border: "none",
+    background: "transparent",
+    color: "rgba(226, 232, 240, 0.85)",
+    fontSize: 12,
+    fontWeight: 700,
+    textDecoration: "underline",
+    cursor: "pointer",
+    padding: 0,
+  },
   warning: {
     background: "rgba(245, 158, 11, 0.16)",
     color: "#fef3c7",
@@ -558,6 +638,24 @@ const styles = {
     padding: 12,
     color: "#fff",
     backdropFilter: "blur(12px)",
+  },
+  // Mobile-only toggle (see .demo-panel-toggle in RESPONSIVE_CSS) that reveals
+  // the panel above; hidden entirely on desktop.
+  panelToggle: {
+    position: "absolute",
+    left: 16,
+    top: 16,
+    zIndex: 10002,
+    alignItems: "center",
+    gap: 6,
+    padding: "8px 14px",
+    borderRadius: 999,
+    border: "1px solid rgba(255,255,255,0.18)",
+    background: "rgba(15,23,42,0.9)",
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: "pointer",
   },
   panelHeader: {
     display: "flex",
