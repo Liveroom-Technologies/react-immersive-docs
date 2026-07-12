@@ -1,4 +1,7 @@
-import type { ObjectBinding, SceneConfig } from "@liveroom-tech/react-immersive";
+import type {
+  ObjectBinding,
+  SceneConfig,
+} from "@liveroom-tech/react-immersive";
 import { ModelViewer } from "@liveroom-tech/react-immersive";
 
 import objectBindings from "./objectBindings.json";
@@ -28,7 +31,9 @@ function DemoHeader() {
         color: "#f8fafc",
       }}
     >
-      <div style={{ margin: "0 auto", maxWidth: 1280, padding: "24px 20px 20px" }}>
+      <div
+        style={{ margin: "0 auto", maxWidth: 1280, padding: "24px 20px 20px" }}
+      >
         <p
           style={{
             margin: 0,
@@ -57,7 +62,9 @@ function DemoHeader() {
           visibility, and actions, with scene config, measurement tools, and XR
           support layered on top.
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}>
+        <div
+          style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}
+        >
           {features.map((feature) => (
             <span
               key={feature}
@@ -119,7 +126,17 @@ export default function App() {
             fontSize: 12,
           }}
         >
-          Set <code>VITE_LICENSE_KEY</code> before running this example. Create a key at <a href="https://react-immersive.liveroom.dev/console" target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>react-immersive.liveroom.dev/console</a>.
+          Set <code>VITE_LICENSE_KEY</code> before running this example. Create
+          a key at{" "}
+          <a
+            href="https://react-immersive.liveroom.dev/console"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "inherit", textDecoration: "underline" }}
+          >
+            react-immersive.liveroom.dev/console
+          </a>
+          .
         </div>
       ) : null}
       <ViewerWindow>
@@ -133,7 +150,7 @@ export default function App() {
           showDownloadButton
           downloadFilename="model"
           showResetButton
-          showDownloadButtons
+          showDownloadButton
           showMouseController={false}
           mouseControllerPosition="center-bottom"
           mouseControllerOpacity={1}
@@ -191,4 +208,3 @@ export default function App() {
     </main>
   );
 }
-

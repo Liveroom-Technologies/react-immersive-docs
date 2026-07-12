@@ -31,10 +31,10 @@ export default function App() {
           }}
         >
           An automatic camera that glides through the space on its own, like a
-          film. The path is a list of <strong>waypoints</strong> (camera position
-          + look-at keyframes) authored visually in BindingBuilder and carried on{" "}
-          <code>sceneConfig.cinematic</code>. Grab the model at any time to pause
-          and take over.
+          film. The path is a list of <strong>waypoints</strong> (camera
+          position + look-at keyframes) authored visually in BindingBuilder and
+          carried on <code>sceneConfig.cinematic</code>. Grab the model at any
+          time to pause and take over.
         </p>
       </header>
       {!licenseKey ? (
@@ -64,7 +64,7 @@ export default function App() {
           shadows
           showObjectBindingDataPanel={false}
           showSceneObjectsPanel={false}
-          showDownloadButtons={false}
+          showDownloadButton={false}
           showMouseController={false}
           showResetButton
           refitOnResize={false}
@@ -91,10 +91,10 @@ export default function App() {
               color: "#cbd5e1",
             }}
           >
-            The camera auto-plays along the authored waypoint path and loops. Use
-            the <strong style={{ color: "#fff" }}>play / pause</strong> control in
-            the top-left, or grab the model — touching the camera hands control
-            back to you.
+            The camera auto-plays along the authored waypoint path and loops.
+            Use the <strong style={{ color: "#fff" }}>play / pause</strong>{" "}
+            control in the top-left, or grab the model — touching the camera
+            hands control back to you.
           </p>
         </section>
       </div>

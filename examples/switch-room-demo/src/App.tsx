@@ -220,7 +220,17 @@ export default function App() {
       <DemoHeader />
       {!licenseKey ? (
         <div style={styles.warning}>
-          Set <code>VITE_LICENSE_KEY</code> before running this example. Create a key at <a href="https://react-immersive.liveroom.dev/console" target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>react-immersive.liveroom.dev/console</a>.
+          Set <code>VITE_LICENSE_KEY</code> before running this example. Create
+          a key at{" "}
+          <a
+            href="https://react-immersive.liveroom.dev/console"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "inherit", textDecoration: "underline" }}
+          >
+            react-immersive.liveroom.dev/console
+          </a>
+          .
         </div>
       ) : null}
       <div style={styles.viewerShell}>
@@ -240,7 +250,7 @@ export default function App() {
             showObjectBindingDataPanel={false}
             showSceneObjectsPanel
             showResetButton
-            showDownloadButtons={false}
+            showDownloadButton={false}
             showMouseController={false}
             renderMode="always"
             performanceProfile="auto"
@@ -276,7 +286,10 @@ export default function App() {
             </div>
 
             <div style={styles.metrics}>
-              <Metric label="Switches" value={`${SWITCHES.filter((item) => objectBindings[item.id]?.metadata?.state === "on").length}/2 on`} />
+              <Metric
+                label="Switches"
+                value={`${SWITCHES.filter((item) => objectBindings[item.id]?.metadata?.state === "on").length}/2 on`}
+              />
               <Metric label="Lights" value={`${lightsOn}/4 on`} />
               <Metric label="Scene" value={lightsOn > 0 ? "Bright" : "Dark"} />
             </div>
@@ -304,7 +317,9 @@ export default function App() {
                       type="button"
                       style={styles.button}
                       disabled={!action}
-                      onClick={() => action && applyAction(switchConfig.id, action)}
+                      onClick={() =>
+                        action && applyAction(switchConfig.id, action)
+                      }
                     >
                       {isOn ? "Turn Off" : "Turn On"}
                     </button>
@@ -340,7 +355,8 @@ const styles = {
   },
   header: {
     borderBottom: "1px solid rgba(148, 163, 184, 0.22)",
-    background: "linear-gradient(135deg, rgba(2,6,23,0.98), rgba(15,23,42,0.94))",
+    background:
+      "linear-gradient(135deg, rgba(2,6,23,0.98), rgba(15,23,42,0.94))",
   },
   headerInner: {
     margin: "0 auto",

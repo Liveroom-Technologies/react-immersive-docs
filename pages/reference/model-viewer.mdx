@@ -45,7 +45,6 @@ type Props = {
   showDownloadButton?: boolean;
   downloadFilename?: string;
   showResetButton?: boolean;
-  showDownloadButtons?: boolean;
   showLoadingOverlay?: boolean;
   showMouseController?: boolean;
   mouseControllerPosition?:
@@ -482,7 +481,7 @@ type CustomSceneObjectsPanelProps = {
 
 Enables the download split-button (export GLB / export PNG screenshot). Default: `true`.
 
-The bottom-right action bar only renders at all when at least one of `showResetButton`, `showDownloadButtons`, or (`showAnnotationNavigation` with annotations present) is `true`. Within that bar, the download button itself requires **both** `showDownloadButtons` and `showDownloadButton` to be `true`.
+The bottom-right action bar renders when at least one of `showResetButton`, `showDownloadButton`, or (`showAnnotationNavigation` with annotations present) is `true`.
 
 ---
 
@@ -495,12 +494,6 @@ Filename stem for the built-in model export button. Default: `"model"`.
 ### `showResetButton`
 
 Shows the "reset camera view" button in the bottom-right action bar. Default: `true`.
-
----
-
-### `showDownloadButtons`
-
-Master toggle for the download split-button area in the bottom-right action bar. Set to `false` to hide it regardless of `showDownloadButton`. Default: `true`.
 
 ---
 

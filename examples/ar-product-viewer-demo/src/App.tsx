@@ -99,7 +99,7 @@ export default function App() {
           shadows
           showObjectBindingDataPanel={false}
           showSceneObjectsPanel={false}
-          showDownloadButtons={false}
+          showDownloadButton={false}
           showMouseController={false}
           showResetButton
           refitOnResize={false}

@@ -327,10 +327,16 @@ export default function App() {
         return;
       }
 
-      if (event.action.id === "change-color" || event.action.id === "change-material") {
-        if (group === "paint") applyPaint((paintIndex + 1) % PAINT_COLORS.length);
-        if (group === "wheels") applyWheelFinish((wheelIndex + 1) % WHEEL_FINISHES.length);
-        if (group === "trim") applyTrimFinish((trimIndex + 1) % TRIM_FINISHES.length);
+      if (
+        event.action.id === "change-color" ||
+        event.action.id === "change-material"
+      ) {
+        if (group === "paint")
+          applyPaint((paintIndex + 1) % PAINT_COLORS.length);
+        if (group === "wheels")
+          applyWheelFinish((wheelIndex + 1) % WHEEL_FINISHES.length);
+        if (group === "trim")
+          applyTrimFinish((trimIndex + 1) % TRIM_FINISHES.length);
         return;
       }
 
@@ -340,7 +346,10 @@ export default function App() {
       }
 
       if (event.action.id === "change-light-color") {
-        applyHeadlights(headlightsOn, (headlightColorIndex + 1) % HEADLIGHT_COLORS.length);
+        applyHeadlights(
+          headlightsOn,
+          (headlightColorIndex + 1) % HEADLIGHT_COLORS.length,
+        );
       }
     },
     [
@@ -364,7 +373,17 @@ export default function App() {
       <DemoHeader />
       {!licenseKey ? (
         <div style={styles.warning}>
-          Set <code>VITE_LICENSE_KEY</code> before running this example. Create a key at <a href="https://react-immersive.liveroom.dev/console" target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>react-immersive.liveroom.dev/console</a>.
+          Set <code>VITE_LICENSE_KEY</code> before running this example. Create
+          a key at{" "}
+          <a
+            href="https://react-immersive.liveroom.dev/console"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "inherit", textDecoration: "underline" }}
+          >
+            react-immersive.liveroom.dev/console
+          </a>
+          .
         </div>
       ) : null}
       <div style={styles.viewerShell}>
@@ -373,7 +392,9 @@ export default function App() {
             modelUrl={MODEL_URL}
             licenseKey={licenseKey}
             objectBindings={bindings}
-            onObjectSelect={(binding) => setSelectedLabel(binding?.label ?? "Cartoon Car")}
+            onObjectSelect={(binding) =>
+              setSelectedLabel(binding?.label ?? "Cartoon Car")
+            }
             onAction={handleAction}
             onViewerReady={handleReady}
             backgroundColor="#07111f"
@@ -382,7 +403,7 @@ export default function App() {
             showObjectBindingDataPanel={false}
             showSceneObjectsPanel
             showResetButton
-            showDownloadButtons={false}
+            showDownloadButton={false}
             showMouseController={false}
             renderMode="always"
             performanceProfile="auto"
@@ -410,16 +431,26 @@ export default function App() {
               <div>
                 <p style={styles.panelEyebrow}>Configurator</p>
                 <h2 style={styles.panelTitle}>{selectedLabel}</h2>
-                <p style={styles.panelCopy}>Click any part in the scene, or use the controls below.</p>
+                <p style={styles.panelCopy}>
+                  Click any part in the scene, or use the controls below.
+                </p>
               </div>
             </div>
 
             <PanelSection title="Body Paint">
-              <SwatchRow options={PAINT_COLORS} selectedIndex={paintIndex} onSelect={applyPaint} />
+              <SwatchRow
+                options={PAINT_COLORS}
+                selectedIndex={paintIndex}
+                onSelect={applyPaint}
+              />
             </PanelSection>
 
             <PanelSection title="Wheels">
-              <SwatchRow options={WHEEL_FINISHES} selectedIndex={wheelIndex} onSelect={applyWheelFinish} />
+              <SwatchRow
+                options={WHEEL_FINISHES}
+                selectedIndex={wheelIndex}
+                onSelect={applyWheelFinish}
+              />
             </PanelSection>
 
             <PanelSection title="Trim Finish">
@@ -428,7 +459,11 @@ export default function App() {
                   <button
                     key={finish.name}
                     type="button"
-                    style={index === trimIndex ? styles.buttonPrimary : styles.buttonSecondary}
+                    style={
+                      index === trimIndex
+                        ? styles.buttonPrimary
+                        : styles.buttonSecondary
+                    }
                     onClick={() => applyTrimFinish(index)}
                   >
                     {finish.name}
@@ -440,11 +475,17 @@ export default function App() {
             <PanelSection title="Aero Kit">
               <div style={styles.rowBetween}>
                 <p style={styles.smallCopy}>Bumpers, fenders and side skirts</p>
-                <span style={styles.statusBadge}>{aeroInstalled ? "Installed" : "Removed"}</span>
+                <span style={styles.statusBadge}>
+                  {aeroInstalled ? "Installed" : "Removed"}
+                </span>
               </div>
               <button
                 type="button"
-                style={aeroInstalled ? styles.buttonSecondaryWide : styles.buttonPrimaryWide}
+                style={
+                  aeroInstalled
+                    ? styles.buttonSecondaryWide
+                    : styles.buttonPrimaryWide
+                }
                 onClick={() => applyAeroVisibility(!aeroInstalled)}
               >
                 {aeroInstalled ? "Remove Aero Kit" : "Install Aero Kit"}
@@ -455,14 +496,18 @@ export default function App() {
               <div style={styles.buttonRow}>
                 <button
                   type="button"
-                  style={!windowsDark ? styles.buttonPrimary : styles.buttonSecondary}
+                  style={
+                    !windowsDark ? styles.buttonPrimary : styles.buttonSecondary
+                  }
                   onClick={() => applyWindowTint(false)}
                 >
                   Light Tint
                 </button>
                 <button
                   type="button"
-                  style={windowsDark ? styles.buttonPrimary : styles.buttonSecondary}
+                  style={
+                    windowsDark ? styles.buttonPrimary : styles.buttonSecondary
+                  }
                   onClick={() => applyWindowTint(true)}
                 >
                   Dark Tint
@@ -474,16 +519,29 @@ export default function App() {
               <div style={styles.buttonRow}>
                 <button
                   type="button"
-                  style={headlightsOn ? styles.buttonPrimary : styles.buttonSecondary}
-                  onClick={() => applyHeadlights(!headlightsOn, headlightColorIndex)}
+                  style={
+                    headlightsOn ? styles.buttonPrimary : styles.buttonSecondary
+                  }
+                  onClick={() =>
+                    applyHeadlights(!headlightsOn, headlightColorIndex)
+                  }
                 >
                   {headlightsOn ? "On" : "Off"}
                 </button>
                 <button
                   type="button"
-                  style={headlightsOn ? styles.buttonSecondary : styles.buttonDisabled}
+                  style={
+                    headlightsOn
+                      ? styles.buttonSecondary
+                      : styles.buttonDisabled
+                  }
                   disabled={!headlightsOn}
-                  onClick={() => applyHeadlights(headlightsOn, (headlightColorIndex + 1) % HEADLIGHT_COLORS.length)}
+                  onClick={() =>
+                    applyHeadlights(
+                      headlightsOn,
+                      (headlightColorIndex + 1) % HEADLIGHT_COLORS.length,
+                    )
+                  }
                 >
                   {HEADLIGHT_COLORS[headlightColorIndex].name}
                 </button>
@@ -533,7 +591,8 @@ function SwatchRow({
           style={{
             ...styles.swatch,
             backgroundColor: option.hex,
-            borderColor: index === selectedIndex ? "#67e8f9" : "rgba(255,255,255,0.22)",
+            borderColor:
+              index === selectedIndex ? "#67e8f9" : "rgba(255,255,255,0.22)",
             transform: index === selectedIndex ? "scale(1.08)" : "scale(1)",
           }}
         />
@@ -554,7 +613,8 @@ const styles = {
   },
   header: {
     borderBottom: "1px solid rgba(148, 163, 184, 0.22)",
-    background: "linear-gradient(135deg, rgba(17,24,39,0.97), rgba(30,41,59,0.94))",
+    background:
+      "linear-gradient(135deg, rgba(17,24,39,0.97), rgba(30,41,59,0.94))",
   },
   headerInner: {
     margin: "0 auto",

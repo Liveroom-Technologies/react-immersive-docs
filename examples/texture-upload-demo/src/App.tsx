@@ -46,7 +46,9 @@ const SHIRT_COLORS = [
   { name: "Navy", hex: "#1e3a8a" },
 ];
 
-type ShirtMaterial = NonNullable<NonNullable<ObjectBinding["style"]>["material"]>;
+type ShirtMaterial = NonNullable<
+  NonNullable<ObjectBinding["style"]>["material"]
+>;
 
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -91,10 +93,10 @@ function DemoHeader() {
           style={styles.description}
         >
           Upload your own artwork onto a product. The viewer&apos;s built-in
-          Change Material action hands the file to{" "}
-          <code>onTextureUpload</code>, where a real app would push it to its own
-          storage and return a durable URL — the returned URL is committed to the
-          material and applied across the whole garment.
+          Change Material action hands the file to <code>onTextureUpload</code>,
+          where a real app would push it to its own storage and return a durable
+          URL — the returned URL is committed to the material and applied across
+          the whole garment.
         </p>
         {(truncated || expanded) && (
           <button
@@ -228,8 +230,8 @@ export default function App() {
       <DemoHeader />
       {!licenseKey ? (
         <div style={styles.warning}>
-          Set <code>VITE_LICENSE_KEY</code> before running this example. Create a
-          key at{" "}
+          Set <code>VITE_LICENSE_KEY</code> before running this example. Create
+          a key at{" "}
           <a
             href="https://react-immersive.liveroom.dev/console"
             target="_blank"
@@ -256,7 +258,7 @@ export default function App() {
             showObjectBindingDataPanel
             showSceneObjectsPanel={false}
             showResetButton
-            showDownloadButtons={false}
+            showDownloadButton={false}
             showMouseController={false}
             renderMode="always"
             performanceProfile="auto"
@@ -283,8 +285,8 @@ export default function App() {
               <span style={{ fontWeight: 600, color: "#0f172a" }}>
                 Change Material
               </span>{" "}
-              to print your image. <code>onTextureUpload</code> returns a durable
-              URL, applied across the whole shirt.
+              to print your image. <code>onTextureUpload</code> returns a
+              durable URL, applied across the whole shirt.
             </p>
 
             <div style={styles.colorRow}>

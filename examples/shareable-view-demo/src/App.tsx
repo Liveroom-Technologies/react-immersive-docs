@@ -231,7 +231,7 @@ export default function App() {
           backgroundColor="#07111f"
           showObjectBindingDataPanel={false}
           showSceneObjectsPanel={false}
-          showDownloadButtons={false}
+          showDownloadButton={false}
           showMouseController={false}
           refitOnResize={false}
         />

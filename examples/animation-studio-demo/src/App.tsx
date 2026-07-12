@@ -45,7 +45,12 @@ function prettifyClip(sourceName: string): string {
   // Blender exports clip names like "Deer|Deer_WalkFast_F"; take the last
   // segment, drop a leading armature prefix, and space out the rest.
   const tail = sourceName.split("|").pop() ?? sourceName;
-  return tail.replace(/^Deer_/, "").replace(/_/g, " ").trim() || sourceName;
+  return (
+    tail
+      .replace(/^Deer_/, "")
+      .replace(/_/g, " ")
+      .trim() || sourceName
+  );
 }
 
 function formatTime(seconds: number): string {
@@ -220,8 +225,8 @@ export default function App() {
       <DemoHeader />
       {!licenseKey ? (
         <div style={styles.warning}>
-          Set <code>VITE_LICENSE_KEY</code> before running this example. Create a
-          key at{" "}
+          Set <code>VITE_LICENSE_KEY</code> before running this example. Create
+          a key at{" "}
           <a
             href="https://react-immersive.liveroom.dev/console"
             target="_blank"
@@ -248,7 +253,7 @@ export default function App() {
             showObjectBindingDataPanel={false}
             showSceneObjectsPanel={false}
             showResetButton
-            showDownloadButtons={false}
+            showDownloadButton={false}
             showMouseController={false}
             renderMode="demand"
             performanceProfile="auto"
@@ -295,7 +300,9 @@ export default function App() {
                       <button
                         key={clip}
                         type="button"
-                        style={active ? styles.clipButtonActive : styles.clipButton}
+                        style={
+                          active ? styles.clipButtonActive : styles.clipButton
+                        }
                         onClick={() => play(clip)}
                       >
                         <span>{labelFor(clip)}</span>

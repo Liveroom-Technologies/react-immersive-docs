@@ -26,8 +26,9 @@ function DemoHeader() {
         <p style={styles.description}>
           A gallery room where <code>SceneAnnotationMarker</code> stops — each
           just a world position, title, and description — drive a guided
-          walkthrough. Use the viewer&apos;s built-in <strong>Guided Tour</strong>{" "}
-          control to fly between stops; the panel reflects the active stop.
+          walkthrough. Use the viewer&apos;s built-in{" "}
+          <strong>Guided Tour</strong> control to fly between stops; the panel
+          reflects the active stop.
         </p>
         <div style={styles.featureList}>
           {features.map((feature) => (
@@ -56,8 +57,8 @@ export default function App() {
       <DemoHeader />
       {!licenseKey ? (
         <div style={styles.warning}>
-          Set <code>VITE_LICENSE_KEY</code> before running this example. Create a
-          key at{" "}
+          Set <code>VITE_LICENSE_KEY</code> before running this example. Create
+          a key at{" "}
           <a
             href="https://react-immersive.liveroom.dev/console"
             target="_blank"
@@ -84,7 +85,7 @@ export default function App() {
             showObjectBindingDataPanel={false}
             showSceneObjectsPanel={false}
             showResetButton
-            showDownloadButtons={false}
+            showDownloadButton={false}
             showMouseController={false}
             showAnnotationNavigation
             renderMode="always"
