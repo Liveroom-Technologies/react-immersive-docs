@@ -10,6 +10,8 @@ These examples are safe-to-share public starters for `@liveroom-tech/react-immer
 - `vehicle-configurator-demo` shows grouped paint, wheel, trim, aero-kit,
   window-tint, and headlight configurator flows driven by exported object
   bindings.
+- `exploded-view-demo` shows `showExplodeControls` adding an explode slider that
+  separates a multi-part model into its components and reassembles it.
 - `shareable-view-demo` shows `useShareableViewerState` restoring an exact
   camera, selection, and visibility state from a share URL.
 - `ar-product-viewer-demo` is a minimal retail AR viewer using `enableXR` and
