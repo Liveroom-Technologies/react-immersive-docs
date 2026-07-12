@@ -33,7 +33,7 @@ type ObjectBinding = {
 - `style.material.texture.path` is the committed source of truth for texture uploads
 - If no `texture.path` and no `style.material.baseColor` are set, the viewer falls back to the original GLB/GLTF material
 - See [`ObjectBindingMaterial`](#objectbindingmaterial) for the full set of per-object material overrides
-- `metrics` and `metadata` are displayed in the side panel JSON preview
+- `metrics` and `metadata` are displayed in the side panel as nested key/value fields (objects expand into indented child labels)
 - `cameraState` stores a saved camera view for the object; when both `position` and `target` are set, the viewer uses that view when the object is focused or selected instead of falling back to `fitToBox`
 
 ---
