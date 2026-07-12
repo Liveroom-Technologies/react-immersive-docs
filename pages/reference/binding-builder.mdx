@@ -56,9 +56,15 @@ type BindingBuilderProps = {
 ### Scene tab
 
 - Configure scene-wide settings (lighting, environment, background, ground
-  shadows, wireframe, post-processing, annotations, and per-clip animation
-  options) — the same `SceneConfig` shape consumed by `ModelViewer`'s
-  `sceneConfig` prop
+  shadows, wireframe, post-processing, annotations, per-clip animation options,
+  and a cinematic camera path) — the same `SceneConfig` shape consumed by
+  `ModelViewer`'s `sceneConfig` prop
+- Author a **cinematic camera path** visually in the **Cinematic** sub-tab:
+  frame the model in the preview, click **Add waypoint from current view** to
+  capture the camera pose, then reorder, fly-to-preview (📍), or delete
+  waypoints. Toggle Enable / Loop / Auto-play and the glide Duration. The path
+  is stored on `sceneConfig.cinematic` and replayed by
+  [`ModelViewer`'s `cinematic` prop](/reference/model-viewer#cinematic)
 - Undo/redo the scene config independently of the Object tab's bindings
   history
 - Import a previously exported `sceneConfig.json`, merged by top-level
@@ -157,7 +163,7 @@ overwriting the other. If nothing was uploaded, Export downloads a plain
 | Tier      | Unlocks                                                                                                                                                     |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `free`    | Base color, metalness/roughness sliders, basic scene settings                                                                                               |
-| `starter` | + Texture maps, the specular workflow, reflectivity, environment lighting, environment backgrounds, wireframe preview, animation configuration, annotations |
+| `starter` | + Texture maps, the specular workflow, reflectivity, environment lighting, environment backgrounds, wireframe preview, animation configuration, annotations, cinematic camera paths |
 | `growth`  | + Post-processing effects                                                                                                                                   |
 
 A locked feature is shown in place (not hidden) with a message naming the required plan, so the feature stays discoverable while editing. Get a license key at the [Liveroom console](https://react-immersive.liveroom.dev/console).

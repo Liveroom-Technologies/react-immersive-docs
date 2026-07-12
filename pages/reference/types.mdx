@@ -262,6 +262,51 @@ type AnimationControls = {
 
 ---
 
+## `CinematicConfig`
+
+Configures the [`cinematic`](/reference/model-viewer#cinematic) auto-camera on `ModelViewer`.
+
+```ts
+type CinematicConfig = {
+  waypoints?: CinematicWaypoint[]; // camera keyframes to glide through
+  duration?: number; // seconds for one full pass (auto-scales when omitted)
+  loop?: boolean; // default true
+  autoPlay?: boolean; // start once the model has loaded and framed (default false)
+};
+
+type CinematicWaypoint = {
+  position: [number, number, number];
+  target: [number, number, number]; // world-space look-at point
+};
+```
+
+With fewer than two waypoints the camera falls back to an auto-generated orbit around the model's bounding sphere.
+
+---
+
+## `SceneCinematicConfig`
+
+The persisted form of the cinematic path carried on `SceneConfig.cinematic`, authored visually in `BindingBuilder`'s Cinematic tab.
+
+```ts
+type SceneCinematicConfig = {
+  enabled: boolean; // turns the auto-camera on at runtime
+  waypoints: SceneCinematicWaypoint[];
+  duration?: number;
+  loop: boolean;
+  autoPlay: boolean;
+};
+
+type SceneCinematicWaypoint = {
+  position: [number, number, number];
+  target: [number, number, number];
+};
+```
+
+`ModelViewer` activates a `sceneConfig`-authored path when `enabled` is `true` and there are at least two waypoints. The [`cinematic`](/reference/model-viewer#cinematic) prop overrides it field-by-field.
+
+---
+
 ## `CustomObjectBindingDataPanelProps`
 
 Props passed to a `customObjectBindingDataPanel` render prop.

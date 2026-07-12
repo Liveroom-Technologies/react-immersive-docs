@@ -71,6 +71,8 @@ type Props = {
   ktx2TranscoderPath?: string | false;
   meshopt?: boolean;
   showMeasureTools?: boolean;
+  showExplodeControls?: boolean;
+  cinematic?: boolean | CinematicConfig;
   measurementUnit?: string;
   enableXR?: boolean;
   usdzUrl?: string;
@@ -398,7 +400,7 @@ Optional camera configuration passed through to the underlying React Three Fiber
 Passing an explicit `camera` counts as choosing the initial view yourself, so
 the mount-time auto-fit (see [`onAutoFit`](#onautofit)) is skipped automatically
 and your `position`/`fov` stick. Provide `onAutoFit` as well only if you want
-to run your _own_ fit-to-scene logic instead.
+to run your *own* fit-to-scene logic instead.
 
 ---
 
@@ -564,14 +566,14 @@ Zoom sensitivity for the on-screen controller. Default: `1.0`.
 
 Optional scene-wide configuration object — model, camera, lighting, wireframe,
 shadows, environment, background, ground shadows, post-processing, animations,
-and annotations. This is the same `SceneConfig` shape authored by
-`BindingBuilder`'s **Scene** tab. If omitted, the viewer uses its built-in
-default scene config.
+annotations, and a cinematic camera path. This is the same `SceneConfig` shape
+authored by `BindingBuilder`'s **Scene** tab. If omitted, the viewer uses its
+built-in default scene config.
 
 Use it to define the experience around the model, rather than individual model
 objects. For example, a guided tour can use `annotations` and saved world
 positions to direct the camera through a scene without requiring
-`objectBindings` for every tour stop. See the [`Guided Tour`](/examples/guided-tour)
+`objectBindings` for every tour stop. See the [`Guided Tour`](https://react-immersive.liveroom.dev/examples/guided-tour)
 example.
 
 `sceneConfig.animations` drives autoplay and per-clip playback (see
@@ -718,6 +720,88 @@ Shows a click-to-measure toolbar over the canvas: click two points on the model 
 ### `measurementUnit`
 
 Unit suffix appended to measurement readouts. glTF models are authored in meters by spec, so values are not converted — this only changes the displayed label. Default: `"m"`.
+
+---
+
+### `showExplodeControls`
+
+Shows an exploded-view control over the canvas: a slider that slides each bound
+part outward from the model center to reveal interior/assembly structure, then
+back to reassemble it. Best suited to static product/CAD models — the offset
+writes node positions each frame, so it conflicts with a playing skeletal
+animation. Default: `false`.
+
+```tsx
+<ModelViewer showExplodeControls ... />
+```
+
+See the [`Exploded View`](https://react-immersive.liveroom.dev/examples/exploded-view) example.
+
+---
+
+### `cinematic`
+
+Enables the cinematic auto-camera: the camera glides along a path on its own,
+like a film — ideal for showing off a gallery, apartment, or product with no user
+interaction. Renders a play/pause button over the canvas; grabbing the camera (or
+selecting a part) pauses it and hands control back.
+
+```ts
+cinematic?: boolean | CinematicConfig;
+
+type CinematicConfig = {
+  waypoints?: CinematicWaypoint[]; // camera keyframes to glide through
+  duration?: number; // seconds for one full pass (auto-scales when omitted)
+  loop?: boolean; // default true
+  autoPlay?: boolean; // start once the model has loaded and framed (default false)
+};
+
+type CinematicWaypoint = {
+  position: [number, number, number];
+  target: [number, number, number]; // world-space look-at point
+};
+```
+
+- Pass `cinematic` as boolean `true` (or an object with fewer than two
+  waypoints) to get a zero-config **showcase orbit** around the model's bounding
+  sphere.
+- Pass two or more `waypoints` to author a **walkthrough**: the camera follows a
+  smooth Catmull-Rom spline through them at a constant on-screen speed, looping
+  seamlessly.
+- Waypoints are easiest to capture visually in `BindingBuilder`'s **Cinematic**
+  tab (frame a view, click _Add waypoint_), which stores them on
+  `sceneConfig.cinematic`.
+
+**Precedence.** A path can also come from
+[`sceneConfig.cinematic`](#sceneconfig) (authored in BindingBuilder). The
+`cinematic` prop _overwrites_ it: a boolean toggles the feature (`true` keeps any
+authored waypoints, `false` forces it off), and an object overrides
+field-by-field — so you can keep the authored waypoints while overriding, say,
+`autoPlay` or `loop`.
+
+```tsx
+// Zero-config showcase orbit
+<ModelViewer cinematic ... />
+
+// Authored walkthrough
+<ModelViewer
+  cinematic={{
+    waypoints: [
+      { position: [4, 2, 6], target: [0, 1, 0] },
+      { position: [-3, 2, 4], target: [0, 1, 0] },
+      { position: [-5, 2, -2], target: [0, 1, 0] },
+    ],
+    loop: true,
+    autoPlay: true,
+  }}
+  ...
+/>
+
+// Keep the BindingBuilder-authored path, just autoplay it
+<ModelViewer sceneConfig={sceneConfig} cinematic={{ autoPlay: true }} ... />
+```
+
+Default: disabled.
 
 ---
 

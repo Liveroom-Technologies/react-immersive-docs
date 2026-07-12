@@ -121,6 +121,25 @@ Live route:
 Starter app:
 [`examples/vehicle-configurator-demo`](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/vehicle-configurator-demo)
 
+### `Cinematic Tour`
+
+An automatic camera that glides through a space on its own, like a film:
+
+- The `cinematic` prop takes a list of `waypoints` (camera position + look-at
+  keyframes)
+- The camera follows a smooth Catmull-Rom spline through them at a constant
+  on-screen speed, looping seamlessly
+- `autoPlay` starts the glide once the model has loaded and framed
+- A play / pause control appears in the viewer; grabbing the camera pauses it
+- Waypoints are authored visually in BindingBuilder's Cinematic tab and carried
+  on `sceneConfig.cinematic`
+
+Live route:
+[`/examples/cinematic-tour`](https://react-immersive.liveroom.dev/examples/cinematic-tour)
+
+Starter app:
+[`examples/cinematic-tour-demo`](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/cinematic-tour-demo)
+
 ### `Animation Studio`
 
 A playback studio for a rigged, animated GLB, driven entirely by
