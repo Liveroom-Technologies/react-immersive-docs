@@ -3,45 +3,7 @@ import {
   type ObjectBinding,
 } from "@liveroom-tech/react-immersive";
 import { DemoPageHeader, ViewerWindow } from "../../shared/DemoLayout";
-
-const makeBinding = (
-  id: string,
-  modelObjectId: string,
-  label: string,
-): ObjectBinding => ({
-  id,
-  modelObjectId,
-  type: "other",
-  label,
-  status: "normal",
-  selectable: true,
-  hoverable: true,
-  visible: true,
-  style: {},
-  actions: [],
-  metrics: {},
-  metadata: {},
-});
-const objectBindings: Record<string, ObjectBinding> = {
-  Object_4: makeBinding("glass", "Object_4", "Window glass"),
-  bake_1: makeBinding("baked-lighting", "bake_1", "Baked lighting"),
-  Object_6: makeBinding("shell", "Object_6", "Apartment shell"),
-  rendertotexture_2: makeBinding(
-    "textures",
-    "rendertotexture_2",
-    "Interior textures",
-  ),
-  Object_8: makeBinding("kitchen", "Object_8", "Kitchen"),
-  Object_9: makeBinding("living-area", "Object_9", "Living area"),
-  bakeplantas_3: makeBinding("plants", "bakeplantas_3", "Plants"),
-  Object_11: makeBinding("furniture", "Object_11", "Furniture"),
-  "B-ACC-06-Plant_4": makeBinding(
-    "accent-plant",
-    "B-ACC-06-Plant_4",
-    "Accent plant",
-  ),
-  Object_13: makeBinding("details", "Object_13", "Interior details"),
-};
+import { objectBindings } from "./objectBindings";
 
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
