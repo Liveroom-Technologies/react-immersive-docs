@@ -69,14 +69,24 @@ function DemoHeader() {
 
 function ViewerWindow({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ flex: 1, minHeight: 0, padding: 20, background: "#020617" }}>
+    <div
+      style={{
+        display: "flex",
+        flex: 1,
+        minHeight: 0,
+        padding: 0,
+        background: "#020617",
+      }}
+    >
       <div
         style={{
+          flex: 1,
+          minWidth: 0,
+          minHeight: 0,
           position: "relative",
           height: "100%",
-          minHeight: 520,
           overflow: "hidden",
-          border: "1px solid rgba(148, 163, 184, 0.18)",
+          border: "none",
           background: "#0f172a",
           boxShadow: "0 28px 80px rgba(2, 6, 23, 0.55)",
         }}
@@ -94,8 +104,10 @@ export default function App() {
     <main
       style={{
         display: "flex",
+        height: "100dvh",
         minHeight: "100vh",
         flexDirection: "column",
+        overflow: "hidden",
         background: "#020617",
       }}
     >
@@ -130,4 +142,3 @@ export default function App() {
     </main>
   );
 }
-

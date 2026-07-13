@@ -144,8 +144,10 @@ export default function App() {
 const styles = {
   page: {
     display: "flex",
+    height: "100dvh",
     minHeight: "100vh",
     flexDirection: "column",
+    overflow: "hidden",
     background: "#020617",
     color: "#f8fafc",
     fontFamily:
@@ -200,17 +202,20 @@ const styles = {
     fontSize: 12,
   },
   viewerShell: {
+    display: "flex",
     flex: 1,
     minHeight: 0,
-    padding: 20,
+    padding: 0,
     background: "#020617",
   },
   viewerWindow: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 0,
     position: "relative",
     height: "100%",
-    minHeight: 640,
     overflow: "hidden",
-    border: "1px solid rgba(148, 163, 184, 0.18)",
+    border: "none",
     background: "#0b0f14",
     boxShadow: "0 28px 80px rgba(2, 6, 23, 0.55)",
   },

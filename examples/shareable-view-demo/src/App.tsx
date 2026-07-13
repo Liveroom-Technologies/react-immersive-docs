@@ -8,8 +8,7 @@ import {
   type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 
-const MODEL_URL =
-  "https://pub-231330919f51417f9bc6a239010def9a.r2.dev/red-room/red_room.glb";
+const MODEL_URL = "/red-room.glb";
 import initialBindings from "./objectBindings.json";
 
 // Plain <style> media queries (no Tailwind/build step in this standalone demo):
@@ -158,8 +157,10 @@ export default function App() {
     <main
       style={{
         display: "flex",
+        height: "100dvh",
         minHeight: "100vh",
         flexDirection: "column",
+        overflow: "hidden",
         background: "#020617",
         color: "#f8fafc",
       }}
@@ -218,7 +219,7 @@ export default function App() {
           Set <code>VITE_LICENSE_KEY</code> before running this example.
         </p>
       ) : null}
-      <div style={{ position: "relative", flex: 1, minHeight: 620 }}>
+      <div style={{ position: "relative", flex: 1, minHeight: 0 }}>
         <ModelViewer
           modelUrl={MODEL_URL}
           licenseKey={licenseKey}

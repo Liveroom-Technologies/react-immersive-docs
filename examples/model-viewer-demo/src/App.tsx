@@ -7,10 +7,8 @@ import { ModelViewer } from "@liveroom-tech/react-immersive";
 import objectBindings from "./objectBindings.json";
 import sceneConfig from "./sceneConfig.json";
 
-const DEFAULT_MODEL_URL =
-  "https://pub-231330919f51417f9bc6a239010def9a.r2.dev/red-room/red_room.glb";
-const DEFAULT_MODEL_USDZ_URL =
-  "https://pub-231330919f51417f9bc6a239010def9a.r2.dev/red-room/red_room.usdz";
+const DEFAULT_MODEL_URL = "/red-room.glb";
+const DEFAULT_MODEL_USDZ_URL = "/red-room.usdz";
 
 function DemoHeader() {
   const features = [
@@ -32,7 +30,11 @@ function DemoHeader() {
       }}
     >
       <div
-        style={{ margin: "0 auto", maxWidth: 1280, padding: "24px 20px 20px" }}
+        style={{
+          margin: "0 auto",
+          maxWidth: 1440,
+          padding: "20px clamp(20px, 5vw, 72px) 18px",
+        }}
       >
         <p
           style={{
@@ -46,15 +48,15 @@ function DemoHeader() {
         >
           React Immersive Demo
         </p>
-        <h1 style={{ margin: "12px 0 10px", fontSize: 36, lineHeight: 1.05 }}>
+        <h1 style={{ margin: "5px 0 6px", fontSize: 32, lineHeight: 1.1 }}>
           ModelViewer
         </h1>
         <p
           style={{
             margin: 0,
-            maxWidth: 1000,
-            fontSize: 17,
-            lineHeight: 1.6,
+            maxWidth: "none",
+            fontSize: 15,
+            lineHeight: 1.45,
             color: "rgba(226, 232, 240, 0.92)",
           }}
         >
@@ -63,7 +65,7 @@ function DemoHeader() {
           support layered on top.
         </p>
         <div
-          style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}
+          style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 12 }}
         >
           {features.map((feature) => (
             <span
@@ -71,8 +73,10 @@ function DemoHeader() {
               style={{
                 border: "1px solid rgba(148, 163, 184, 0.28)",
                 background: "rgba(15, 23, 42, 0.36)",
-                padding: "8px 12px",
-                fontSize: 12,
+                borderRadius: 999,
+                padding: "5px 10px",
+                fontSize: 11,
+                fontWeight: 600,
               }}
             >
               {feature}
@@ -86,14 +90,23 @@ function DemoHeader() {
 
 function ViewerWindow({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ flex: 1, minHeight: 0, padding: 20, background: "#020617" }}>
+    <div
+      style={{
+        display: "flex",
+        flex: 1,
+        minHeight: 0,
+        width: "100%",
+        background: "#020617",
+      }}
+    >
       <div
         style={{
+          flex: 1,
+          minWidth: 0,
           position: "relative",
           height: "100%",
-          minHeight: 560,
           overflow: "hidden",
-          border: "1px solid rgba(148, 163, 184, 0.18)",
+          border: "none",
           background: "#0f172a",
           boxShadow: "0 28px 80px rgba(2, 6, 23, 0.55)",
         }}
@@ -111,8 +124,10 @@ export default function App() {
     <main
       style={{
         display: "flex",
-        minHeight: "100vh",
         flexDirection: "column",
+        height: "100dvh",
+        minHeight: "100vh",
+        overflow: "hidden",
         background: "#020617",
       }}
     >

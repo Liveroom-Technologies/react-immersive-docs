@@ -7,8 +7,10 @@ export default function App() {
     <main
       style={{
         display: "flex",
+        height: "100dvh",
         minHeight: "100vh",
         flexDirection: "column",
+        overflow: "hidden",
         background: "#020617",
       }}
     >
@@ -68,7 +70,7 @@ export default function App() {
           "The scene editor is built for larger screens. Open this page on desktop or tablet in landscape for the best experience."
         )}
       </div>
-      <div style={{ minHeight: 0, flex: 1 }}>
+      <div style={{ display: "flex", minHeight: 0, flex: 1 }}>
         <BindingBuilder licenseKey={licenseKey} />
       </div>
     </main>

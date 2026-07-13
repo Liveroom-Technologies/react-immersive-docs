@@ -5,7 +5,15 @@ export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
   return (
     <main
-      style={{ minHeight: "100vh", background: "#080b12", color: "#f8fafc" }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100dvh",
+        minHeight: "100vh",
+        overflow: "hidden",
+        background: "#080b12",
+        color: "#f8fafc",
+      }}
     >
       <header style={{ padding: "24px 20px", background: "#0f172a" }}>
         <p
@@ -49,7 +57,7 @@ export default function App() {
           Set <code>VITE_LICENSE_KEY</code> before running this example.
         </p>
       ) : null}
-      <div style={{ position: "relative", minHeight: "calc(100vh - 150px)" }}>
+      <div style={{ position: "relative", flex: 1, minHeight: 0 }}>
         <ModelViewer
           modelUrl="/cartoon_car.glb"
           licenseKey={licenseKey}
