@@ -8,6 +8,7 @@ import {
   type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import { objectBindings as initialObjectBindings } from "./objectBindings";
+import { DemoPageHeader } from "../../shared/DemoLayout";
 
 const MODEL_URL = "/cartoon_car.glb";
 
@@ -368,9 +369,20 @@ export default function App() {
   );
 
   return (
-    <main style={styles.page}>
+    <main className="demo-page" style={styles.page}>
       <style>{RESPONSIVE_CSS}</style>
-      <DemoHeader />
+      <DemoPageHeader
+        title="Vehicle Configurator"
+        description="A car model where BindingBuilder-exported object bindings drive a real product configurator: grouped paint, wheel, and trim swatches, an aero-kit visibility toggle, and clickable headlights — all wired to the same built-in change-color / toggle-visibility actions."
+        features={[
+          "Grouped material swatches",
+          "Built-in change-color action",
+          "Built-in toggle-visibility action",
+          "Aero kit install/remove",
+          "Clickable part selection",
+          "Emissive headlight toggle",
+        ]}
+      />
       {!licenseKey ? (
         <div style={styles.warning}>
           Set <code>VITE_LICENSE_KEY</code> before running this example. Create
@@ -386,8 +398,8 @@ export default function App() {
           .
         </div>
       ) : null}
-      <div style={styles.viewerShell}>
-        <div style={styles.viewerWindow}>
+      <div className="demo-viewer-shell" style={styles.viewerShell}>
+        <div className="demo-viewer-frame" style={styles.viewerWindow}>
           <ModelViewer
             modelUrl={MODEL_URL}
             licenseKey={licenseKey}

@@ -10,6 +10,7 @@ import {
   objectBindings as initialObjectBindings,
   type DemoAction,
 } from "./objectBindings";
+import { DemoPageHeader } from "../../shared/DemoLayout";
 
 const MODEL_URL = "/switch-room.glb";
 
@@ -215,9 +216,20 @@ export default function App() {
   );
 
   return (
-    <main style={styles.page}>
+    <main className="demo-page" style={styles.page}>
       <style>{RESPONSIVE_CSS}</style>
-      <DemoHeader />
+      <DemoPageHeader
+        title="Switch Demo"
+        description="A small room model where an exported objectBindings file defines two switches and four lights. Switch actions patch the relevant light bindings."
+        features={[
+          "BindingBuilder-style export",
+          "Plain objectBindings state",
+          "Switch action effects",
+          "Four stateful lights",
+          "Live material patches",
+          "Reactive scene lighting",
+        ]}
+      />
       {!licenseKey ? (
         <div style={styles.warning}>
           Set <code>VITE_LICENSE_KEY</code> before running this example. Create
@@ -233,8 +245,8 @@ export default function App() {
           .
         </div>
       ) : null}
-      <div style={styles.viewerShell}>
-        <div style={styles.viewerWindow}>
+      <div className="demo-viewer-shell" style={styles.viewerShell}>
+        <div className="demo-viewer-frame" style={styles.viewerWindow}>
           <ModelViewer
             modelUrl={MODEL_URL}
             licenseKey={licenseKey}
@@ -291,7 +303,6 @@ export default function App() {
                 value={`${SWITCHES.filter((item) => objectBindings[item.id]?.metadata?.state === "on").length}/2 on`}
               />
               <Metric label="Lights" value={`${lightsOn}/4 on`} />
-              <Metric label="Scene" value={lightsOn > 0 ? "Bright" : "Dark"} />
             </div>
 
             <div style={styles.switchList}>

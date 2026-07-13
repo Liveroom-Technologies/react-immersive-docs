@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { ModelViewer, type SceneConfig } from "@liveroom-tech/react-immersive";
 import { objectBindings } from "./objectBindings";
 import { sceneConfig } from "./sceneConfig";
+import { DemoPageHeader } from "../../shared/DemoLayout";
 
 const MODEL_URL = "/art_gallery.glb";
 
@@ -53,8 +54,17 @@ export default function App() {
     : -1;
 
   return (
-    <main style={styles.page}>
-      <DemoHeader />
+    <main className="demo-page" style={styles.page}>
+      <DemoPageHeader
+        title="Guided Showroom Tour"
+        description="A gallery room where SceneAnnotationMarker stops — each just a world position, title, and description — drive a guided walkthrough. The camera flies between stops via the built-in annotation navigation; no per-exhibit mesh binding required."
+        features={[
+          "SceneAnnotationMarker stops",
+          "Built-in annotation navigation",
+          "Camera flies to worldPosition",
+          "Position-only markers, no object binding needed",
+        ]}
+      />
       {!licenseKey ? (
         <div style={styles.warning}>
           Set <code>VITE_LICENSE_KEY</code> before running this example. Create
@@ -70,8 +80,8 @@ export default function App() {
           .
         </div>
       ) : null}
-      <div style={styles.viewerShell}>
-        <div style={styles.viewerWindow}>
+      <div className="demo-viewer-shell" style={styles.viewerShell}>
+        <div className="demo-viewer-frame" style={styles.viewerWindow}>
           <ModelViewer
             modelUrl={MODEL_URL}
             licenseKey={licenseKey}

@@ -9,6 +9,7 @@ import {
   type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import { sceneConfig as baseSceneConfig } from "./sceneConfig";
+import { DemoPageHeader } from "../../shared/DemoLayout";
 
 const MODEL_URL = "/deer.glb";
 
@@ -220,9 +221,20 @@ export default function App() {
   const hasClips = clips.length > 0;
 
   return (
-    <main style={styles.page}>
+    <main className="demo-page" style={styles.page}>
       <style>{RESPONSIVE_CSS}</style>
-      <DemoHeader />
+      <DemoPageHeader
+        title="Animation Studio"
+        description="A rigged, animated GLB driven entirely by useViewerAnimations: pick a clip, play/pause, stop, scrub the timeline, change playback speed, and toggle looping. Playback runs on the built-in mixer — the panel is just React state wired to the hook."
+        features={[
+          "Clip picker",
+          "Play / pause / stop",
+          "Scrubbable timeline",
+          "Live playback position",
+          "Speed control",
+          "Loop-mode toggle",
+        ]}
+      />
       {!licenseKey ? (
         <div style={styles.warning}>
           Set <code>VITE_LICENSE_KEY</code> before running this example. Create
@@ -238,8 +250,8 @@ export default function App() {
           .
         </div>
       ) : null}
-      <div style={styles.viewerShell}>
-        <div style={styles.viewerWindow}>
+      <div className="demo-viewer-shell" style={styles.viewerShell}>
+        <div className="demo-viewer-frame" style={styles.viewerWindow}>
           <ModelViewer
             modelUrl={MODEL_URL}
             licenseKey={licenseKey}

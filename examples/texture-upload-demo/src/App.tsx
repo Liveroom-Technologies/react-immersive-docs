@@ -7,6 +7,7 @@ import {
   type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import { objectBindings as initialBindings } from "./objectBindings";
+import { DemoPageHeader } from "../../shared/DemoLayout";
 
 const MODEL_URL = "/t-shirt.glb";
 
@@ -225,9 +226,20 @@ export default function App() {
   }, [applyToShirt]);
 
   return (
-    <main style={styles.page}>
+    <main className="demo-page" style={styles.page}>
       <style>{RESPONSIVE_CSS}</style>
-      <DemoHeader />
+      <DemoPageHeader
+        title="Texture Upload / Custom Print"
+        description="Upload your own artwork onto a product. The viewer's built-in Change Material action hands the file to onTextureUpload, where a real app would push it to its own storage and return a durable URL — the returned URL is committed to the material and applied across the whole garment."
+        features={[
+          "onTextureUpload integration",
+          "Durable URL, not a blob URL",
+          "Built-in Change Material action",
+          "Base-color texture applied",
+          "Broadcast across all panels",
+          "Shirt color presets",
+        ]}
+      />
       {!licenseKey ? (
         <div style={styles.warning}>
           Set <code>VITE_LICENSE_KEY</code> before running this example. Create
@@ -243,8 +255,8 @@ export default function App() {
           .
         </div>
       ) : null}
-      <div style={styles.viewerShell}>
-        <div style={styles.viewerWindow}>
+      <div className="demo-viewer-shell" style={styles.viewerShell}>
+        <div className="demo-viewer-frame" style={styles.viewerWindow}>
           <ModelViewer
             modelUrl={MODEL_URL}
             licenseKey={licenseKey}

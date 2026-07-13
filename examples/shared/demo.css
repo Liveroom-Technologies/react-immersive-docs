@@ -33,6 +33,51 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.demo-page {
+  display: flex;
+  height: 100dvh;
+  min-height: 100vh;
+  flex-direction: column;
+  overflow: hidden;
+  background: #080b12;
+  color: #f8fafc;
+}
+
+.demo-license-warning {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  background: rgba(245, 158, 11, 0.16);
+  color: #fef3c7;
+  font-size: 12px;
+}
+
+.demo-error {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  flex: none !important;
+  padding: 10px 12px;
+  background: rgba(127, 29, 29, 0.88);
+  color: #fee2e2;
+  font-size: 12px;
+}
+
+.demo-credit {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  z-index: 10001;
+  flex: none !important;
+  margin: 0;
+  padding: 0 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 10px;
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
 button,
 input,
 textarea,
@@ -42,4 +87,177 @@ select {
 
 a {
   color: inherit;
+}
+
+/* Shared with react-immersive-web/components/shared/{demo-page-header,viewer-window}. */
+.demo-page-header {
+  flex: 0 0 auto;
+  background: rgba(15, 23, 42, 0.95);
+  color: #f8fafc;
+  padding: 12px 16px;
+}
+
+.demo-page-header__content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 auto;
+}
+
+.demo-page-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.demo-description {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.demo-description.is-expanded {
+  display: block;
+}
+
+.demo-description__toggle {
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(248, 250, 252, 0.8);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.demo-page-header__features {
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.demo-badge--outline {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: #0f172a;
+  color: #94a3b8;
+}
+
+.demo-viewer-window-shell {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px;
+  background: #0f172a;
+}
+
+.demo-viewer-window {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: #0b0b12;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.demo-viewer-window > * {
+  position: relative;
+  min-height: 0;
+  flex: 1;
+}
+
+/* The interactive examples have side panels, so they use the same frame
+   without an extra React wrapper around their stateful overlays. */
+.demo-viewer-shell {
+  position: relative !important;
+  display: flex !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  padding: 16px !important;
+  background: #0f172a !important;
+}
+
+.demo-viewer-frame {
+  position: relative !important;
+  display: flex !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  background: #0b0b12 !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* The viewer's AR / VR control occupies the top-left. */
+@media (max-width: 640px) {
+  .ar-product-viewer-info {
+    display: none;
+  }
+}
+
+@media (min-width: 641px) {
+  .demo-page-header {
+    padding: 24px 32px;
+  }
+
+  .demo-page-header__content {
+    gap: 12px;
+  }
+
+  .demo-page-header h1 {
+    font-size: 30px;
+  }
+
+  .demo-description {
+    display: block;
+    font-size: 16px;
+  }
+
+  .demo-description__toggle {
+    display: none;
+  }
+
+  .demo-page-header__features {
+    display: flex;
+  }
+
+  .demo-viewer-window-shell {
+    padding: 12px;
+  }
+
+  .demo-viewer-shell {
+    padding: 12px !important;
+  }
 }
