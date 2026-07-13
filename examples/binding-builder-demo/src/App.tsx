@@ -1,5 +1,5 @@
 import { BindingBuilder } from "@liveroom-tech/react-immersive";
-import { DemoPageHeader, ViewerWindow } from "../../shared/DemoLayout";
+import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
 
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";

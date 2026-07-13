@@ -9,7 +9,7 @@ import {
   type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import { sceneConfig as baseSceneConfig } from "./sceneConfig";
-import { DemoPageHeader } from "../../shared/DemoLayout";
+import { DemoPageHeader } from "./DemoLayout";
 
 const MODEL_URL = "/deer.glb";
 

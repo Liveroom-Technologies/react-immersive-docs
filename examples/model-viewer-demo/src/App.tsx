@@ -3,7 +3,7 @@ import type {
   SceneConfig,
 } from "@liveroom-tech/react-immersive";
 import { ModelViewer } from "@liveroom-tech/react-immersive";
-import { DemoPageHeader, ViewerWindow } from "../../shared/DemoLayout";
+import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
 import objectBindings from "./objectBindings.json";
 import sceneConfig from "./sceneConfig.json";
 

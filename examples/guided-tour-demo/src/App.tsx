@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { ModelViewer, type SceneConfig } from "@liveroom-tech/react-immersive";
 import { objectBindings } from "./objectBindings";
 import { sceneConfig } from "./sceneConfig";
-import { DemoPageHeader } from "../../shared/DemoLayout";
+import { DemoPageHeader } from "./DemoLayout";
 
 const MODEL_URL = "/art_gallery.glb";
 

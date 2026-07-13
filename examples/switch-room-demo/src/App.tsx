@@ -10,7 +10,7 @@ import {
   objectBindings as initialObjectBindings,
   type DemoAction,
 } from "./objectBindings";
-import { DemoPageHeader } from "../../shared/DemoLayout";
+import { DemoPageHeader } from "./DemoLayout";
 
 const MODEL_URL = "/switch-room.glb";
 

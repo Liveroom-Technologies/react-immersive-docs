@@ -1,5 +1,5 @@
 import { ModelViewer } from "@liveroom-tech/react-immersive";
-import { DemoPageHeader, ViewerWindow } from "../../shared/DemoLayout";
+import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
 import { objectBindings } from "./objectBindings";
 import { sceneConfig } from "./sceneConfig";
 

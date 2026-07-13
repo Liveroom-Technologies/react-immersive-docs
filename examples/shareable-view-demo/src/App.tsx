@@ -18,7 +18,7 @@ import {
   type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import initialBindings from "./objectBindings.json";
-import { DemoPageHeader, ViewerWindow } from "../../shared/DemoLayout";
+import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
 
 const MODEL_URL = "/red-room.glb";
 const FEATURED_OBJECT_KEYS = [

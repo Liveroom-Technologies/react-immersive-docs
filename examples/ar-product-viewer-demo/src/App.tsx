@@ -2,7 +2,7 @@ import {
   ModelViewer,
   type ObjectBinding,
 } from "@liveroom-tech/react-immersive";
-import { DemoPageHeader, ViewerWindow } from "../../shared/DemoLayout";
+import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
 import { objectBindings } from "./objectBindings";
 
 export default function App() {

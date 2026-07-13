@@ -7,7 +7,7 @@ import {
   type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import { objectBindings as initialBindings } from "./objectBindings";
-import { DemoPageHeader } from "../../shared/DemoLayout";
+import { DemoPageHeader } from "./DemoLayout";
 
 const MODEL_URL = "/t-shirt.glb";
 

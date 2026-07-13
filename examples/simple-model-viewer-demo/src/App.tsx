@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SimpleModelViewer } from "@liveroom-tech/react-immersive";
-import { DemoPageHeader, ViewerWindow } from "../../shared/DemoLayout";
+import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
 
 export default function App() {
   const [error, setError] = useState<string | null>(null);
