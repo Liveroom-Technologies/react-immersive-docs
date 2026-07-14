@@ -1,0 +1,5 @@
+{
+  "name": "React Immersive example",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "forwardPorts": [2222]
+}
