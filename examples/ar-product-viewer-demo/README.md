@@ -10,5 +10,11 @@ npm install
 VITE_LICENSE_KEY=your-license-key npm run dev
 ```
 
-Open it on a supported phone or tablet and tap **View in AR**. The bundled GLB
-is used by the web viewer; the bundled USDZ model is handed to iOS Quick Look.
+On a desktop, use **Open on phone** to display a QR code, then scan it with a
+phone to continue in AR. On a supported phone or tablet, tap **View in AR**.
+The bundled GLB is used by the web viewer; the bundled USDZ model is handed to
+iOS Quick Look.
+
+The QR target must be a public URL that the phone can reach. A local Vite URL
+such as `http://localhost:2222` will not work unless you expose it through a
+secure tunnel.

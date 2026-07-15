@@ -827,6 +827,38 @@ usdzUrl?: string;
 
 ---
 
+### `mobileHandoffUrl`
+
+Optional public URL used for the desktop-to-phone AR handoff. When `enableXR`
+is `true`, desktop viewers show an **"Open on phone"** QR-code control. Scan it
+to open the experience on a phone, then use its AR control (or iOS Quick Look).
+
+```ts
+mobileHandoffUrl?: string;
+```
+
+```tsx
+<ModelViewer
+  modelUrl="/product.glb"
+  usdzUrl="/product.usdz"
+  licenseKey="your-license-key"
+  enableXR
+  mobileHandoffUrl="https://example.com/products/chair/ar"
+/>
+```
+
+- Omit it to encode the current page URL, including its hash. This works with
+  [`useShareableViewerState`](/hooks/use-shareable-viewer-state) so the phone
+  opens the same camera/visibility/selection state.
+- Pass a dedicated HTTPS mobile-viewer URL when desktop and mobile use
+  different routes.
+- The QR handoff is hidden on phones and tablets because they can enter AR
+  directly.
+- The target must be publicly reachable from the phone; `localhost` URLs will
+  not work.
+
+---
+
 ### `showAnnotationNavigation`
 
 Shows the "Guided Tour" control cluster (left side of the bottom action bar) when the model has at least one annotation: a single "Guided Tour" button that, once started, becomes Previous/Stop/Next controls for stepping through annotations in order. Default: `true`.

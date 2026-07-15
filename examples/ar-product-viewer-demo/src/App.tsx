@@ -17,6 +17,7 @@ export default function App() {
           "View in AR",
           "iOS Quick Look (USDZ)",
           "Android WebXR",
+          "Desktop QR handoff",
         ]}
       />
       {!licenseKey ? (
@@ -75,7 +76,9 @@ export default function App() {
               Explore the model, then use the viewer&apos;s{" "}
               <strong style={{ color: "#fff" }}>AR or VR control</strong>.
               Supported phones can use AR, while compatible headsets can view
-              the model in VR.
+              the model in VR. On desktop, choose{" "}
+              <strong style={{ color: "#fff" }}>Open on phone</strong> and
+              scan the QR code to continue in mobile AR.
             </p>
           </section>
         </div>
