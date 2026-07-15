@@ -827,6 +827,23 @@ usdzUrl?: string;
 
 ---
 
+### `arScaleMode`
+
+Controls the initial model size in WebXR AR and VR sessions.
+
+```ts
+arScaleMode?: "normalized" | "real-world";
+```
+
+- `"normalized"` (default) fits the longest model dimension to approximately
+  1 metre. Use this for arbitrary uploads and room-scale scenes.
+- `"real-world"` preserves the GLB's authored scale. glTF units are metres, so
+  use this for product models exported at their real dimensions.
+
+Users can still pinch to resize after placement in either mode.
+
+---
+
 ### `mobileHandoffUrl`
 
 Optional public URL used for the desktop-to-phone AR handoff. When `enableXR`
@@ -843,6 +860,7 @@ mobileHandoffUrl?: string;
   usdzUrl="/product.usdz"
   licenseKey="your-license-key"
   enableXR
+  arScaleMode="real-world"
   mobileHandoffUrl="https://example.com/products/chair/ar"
 />
 ```

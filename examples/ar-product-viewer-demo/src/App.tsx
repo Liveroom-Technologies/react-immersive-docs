@@ -17,6 +17,7 @@ export default function App() {
           "View in AR",
           "iOS Quick Look (USDZ)",
           "Android WebXR",
+          "Real-world scale",
           "Desktop QR handoff",
         ]}
       />
@@ -41,6 +42,7 @@ export default function App() {
             licenseKey={licenseKey}
             objectBindings={objectBindings}
             enableXR
+            arScaleMode="real-world"
             backgroundColor="#080b12"
             shadows
             showObjectBindingDataPanel={false}
