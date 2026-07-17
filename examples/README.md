@@ -12,6 +12,8 @@ These examples are safe-to-share public starters for `@liveroom-tech/react-immer
   bindings.
 - `exploded-view-demo` shows `showExplodeControls` adding an explode slider that
   separates a multi-part model into its components and reassembles it.
+- `mouse-controller-demo` shows the built-in on-screen controller, with runtime
+  controls for movement sensitivity, opacity, and placement.
 - `cinematic-tour-demo` shows the `cinematic` auto-camera gliding through a space
   along authored waypoints, with play/pause and grab-to-take-over.
 - `shareable-view-demo` shows `useShareableViewerState` restoring an exact
