@@ -99,7 +99,7 @@ type Props = {
 <ModelViewer licenseKey="your-license-key" ... />
 ```
 
-To get a license key, sign in at the [Liveroom console](https://react-immersive.liveroom.dev/console), choose a plan, and generate a key from your dashboard.
+To get a license key, sign in at the [React Immersive Console](https://react-immersive.liveroom.dev/console), choose a plan, and generate a key from your dashboard.
 
 ---
 
@@ -178,6 +178,8 @@ onObjectSelect?: (binding: ObjectBinding | null) => void
 - Closing the panel → `onObjectSelect(null)`
 - Clicking the same mesh again still fires; selection is not toggled off automatically
 - If the binding includes `cameraState.position` and `cameraState.target`, the viewer moves the camera to that saved view when focusing that object
+- Clicks resolve the front-most surface under the pointer; a mesh whose binding has `selectable: false` does not pass the click through to meshes behind it
+- On very large models, clicking meshes in the viewport is disabled entirely — see [Large models](#large-models). Selection through the scene objects panel (and this callback) still works
 
 ---
 
@@ -191,6 +193,7 @@ onObjectHover?: (binding: ObjectBinding | null) => void
 
 - Pointer over a mesh → `onObjectHover(binding)`
 - Pointer out → `onObjectHover(null)`
+- On very large models, viewport hover is disabled entirely — see [Large models](#large-models)
 
 ---
 
@@ -399,7 +402,7 @@ Optional camera configuration passed through to the underlying React Three Fiber
 Passing an explicit `camera` counts as choosing the initial view yourself, so
 the mount-time auto-fit (see [`onAutoFit`](#onautofit)) is skipped automatically
 and your `position`/`fov` stick. Provide `onAutoFit` as well only if you want
-to run your *own* fit-to-scene logic instead.
+to run your _own_ fit-to-scene logic instead.
 
 ---
 
@@ -854,17 +857,6 @@ to open the experience on a phone, then use its AR control (or iOS Quick Look).
 mobileHandoffUrl?: string;
 ```
 
-```tsx
-<ModelViewer
-  modelUrl="/product.glb"
-  usdzUrl="/product.usdz"
-  licenseKey="your-license-key"
-  enableXR
-  arScaleMode="real-world"
-  mobileHandoffUrl="https://example.com/products/chair/ar"
-/>
-```
-
 - Omit it to encode the current page URL, including its hash. This works with
   [`useShareableViewerState`](/hooks/use-shareable-viewer-state) so the phone
   opens the same camera/visibility/selection state.
@@ -880,6 +872,37 @@ mobileHandoffUrl?: string;
 ### `showAnnotationNavigation`
 
 Shows the "Guided Tour" control cluster (left side of the bottom action bar) when the model has at least one annotation: a single "Guided Tour" button that, once started, becomes Previous/Stop/Next controls for stepping through annotations in order. Default: `true`.
+
+---
+
+## Large models
+
+The viewer accelerates viewport picking by building a BVH (bounding volume
+hierarchy) index for the loaded model in a background worker. Models above
+roughly **12 million triangles** are too large to index without a significant
+memory cost, so the viewer degrades gracefully instead:
+
+- Viewport pointer interaction is disabled: clicking or hovering meshes in the
+  canvas does nothing, and `onObjectSelect` / `onObjectHover` do not fire from
+  the viewport. Selection through the scene objects panel still works and still
+  fires `onObjectSelect`.
+- A dismissible banner appears over the canvas telling the user the model is
+  very large, that it may render slowly on their device, and that selection is
+  available through the panel.
+- The loading overlay narrates the extra work ("Preparing large model…") —
+  uploading that much geometry to the GPU is a single synchronous operation
+  that can block the page for tens of seconds, on any WebGL viewer.
+
+Orbit, zoom, pan, animations, annotations, and the panels all keep working.
+
+There is no way to make a model of this size feel fast in a browser — the
+per-frame cost of tens of millions of triangles is inherent, and on mobile
+devices the decoded geometry alone can exceed the tab's memory budget. For
+assets like this, decimate at ingestion (for example to ~2–3M triangles) rather
+than shipping the raw export; a decimated model loads in seconds and keeps full
+interactivity. Note that Blender or native tooling is required for very large
+Draco-compressed files — the WASM builds of `gltf-transform` and `gltfpack`
+cannot decode them within their 4GB address space.
 
 ---
 
@@ -966,8 +989,8 @@ you only need to set the ones you actually want to change.
 
 ## Built-In Actions
 
-| Action ID           | Behavior                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------ |
-| `toggle-visibility` | Hides or shows the selected mesh via `binding.visible` + `onObjectBindingsChange`    |
+| Action ID           | Behavior                                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `toggle-visibility` | Hides or shows the selected mesh via `binding.visible` + `onObjectBindingsChange`                            |
 | `change-color`      | Opens the color picker inline under the action; hex committed to `binding.style.material.baseColor` on close |
 | `change-material`   | Opens the texture upload panel inline under the action; URL stored in `binding.style.material.texture.path`  |

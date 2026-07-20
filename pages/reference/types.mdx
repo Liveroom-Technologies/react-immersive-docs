@@ -29,6 +29,7 @@ type ObjectBinding = {
 
 - The `objectBindings` record is **keyed by node name**, not by `id`
 - `visible` is live render state, not just an initial default
+- `selectable: false` and `hoverable: false` make the mesh inert to viewport picking; clicks resolve the front-most surface under the pointer, so a non-selectable mesh does **not** pass the click through to meshes behind it
 - `style.material.baseColor` is the committed source of truth for color picks
 - `style.material.texture.path` is the committed source of truth for texture uploads
 - If no `texture.path` and no `style.material.baseColor` are set, the viewer falls back to the original GLB/GLTF material
