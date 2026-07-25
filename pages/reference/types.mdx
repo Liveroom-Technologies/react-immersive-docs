@@ -278,6 +278,8 @@ type CinematicConfig = {
 type CinematicWaypoint = {
   position: [number, number, number];
   target: [number, number, number]; // world-space look-at point
+  azimuthAngle?: number; // preserves orbit rotation at vertical poles
+  polarAngle?: number;
 };
 ```
 
@@ -301,6 +303,8 @@ type SceneCinematicConfig = {
 type SceneCinematicWaypoint = {
   position: [number, number, number];
   target: [number, number, number];
+  azimuthAngle?: number;
+  polarAngle?: number;
 };
 ```
 
