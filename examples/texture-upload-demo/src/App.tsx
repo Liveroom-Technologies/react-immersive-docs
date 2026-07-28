@@ -24,6 +24,7 @@ const RESPONSIVE_CSS = `
   @media (max-width: 640px) {
     .demo-badges { display: none; }
     .demo-panel--closed { display: none !important; }
+    .demo-panel-card { top: 60px !important; }
     .demo-desc:not(.demo-desc--expanded) {
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -270,7 +271,8 @@ export default function App() {
             showObjectBindingDataPanel
             showSceneObjectsPanel={false}
             showResetButton
-            showDownloadButton={false}
+            showDownloadButton
+            downloadFilename="t-shirt"
             showMouseController={false}
             renderMode="always"
             performanceProfile="auto"
@@ -289,7 +291,9 @@ export default function App() {
 
           <section
             style={styles.panel}
-            className={controlsOpen ? "" : "demo-panel--closed"}
+            className={`demo-panel-card ${
+              controlsOpen ? "" : "demo-panel--closed"
+            }`}
           >
             <div style={styles.panelEyebrow}>Custom Print Studio</div>
             <p style={styles.panelCopy}>
@@ -463,7 +467,7 @@ const styles = {
   panel: {
     position: "absolute",
     right: 16,
-    bottom: 40,
+    top: 16,
     zIndex: 10001,
     width: "min(340px, calc(100% - 32px))",
     border: "1px solid rgba(0,0,0,0.1)",

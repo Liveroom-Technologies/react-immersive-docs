@@ -188,7 +188,38 @@ export default function App() {
     [applyAction],
   );
 
-  const lightsOn = ["light_a_1", "light_a_2", "light_b_1", "light_b_2"].filter(
+  // Flip a switch from whatever its current state is, by running the matching
+  // turn-on / turn-off action already declared on its binding.
+  const toggleSwitch = useCallback(
+    (switchId: string) => {
+      const binding = objectBindings[switchId];
+      if (!binding) return;
+
+      const isOn = binding.metadata?.state === "on";
+      const action = binding.actions?.find((item) =>
+        item.id.includes(isOn ? "turn-off" : "turn-on"),
+      );
+      if (!action) return;
+
+      applyAction(switchId, action);
+    },
+    [applyAction, objectBindings],
+  );
+
+  const handleObjectSelect = useCallback(
+    (binding: ObjectBinding | null) => {
+      setSelectedLabel(binding?.label ?? "Room");
+
+      // Clicking a switch in the model does the same thing as its panel button.
+      const switchId = binding?.modelObjectId;
+      if (switchId && SWITCHES.some((item) => item.id === switchId)) {
+        toggleSwitch(switchId);
+      }
+    },
+    [toggleSwitch],
+  );
+
+  const lightsOn =["light_a_1", "light_a_2", "light_b_1", "light_b_2"].filter(
     (lightId) => objectBindings[lightId]?.metadata?.state === "on",
   ).length;
   const ambientIntensity = lightsOn === 0 ? 0.035 : 0.16 + lightsOn * 0.045;
@@ -253,12 +284,13 @@ export default function App() {
             objectBindings={objectBindings as Record<string, ObjectBinding>}
             lights={sceneLights}
             onAction={handleAction}
-            onObjectSelect={(binding) => {
-              setSelectedLabel(binding?.label ?? "Room");
-            }}
+            onObjectSelect={handleObjectSelect}
             backgroundColor="#07111f"
             camera={{ position: [8, 6, 8], fov: 48 }}
             shadows={false}
+            // Keep the room framed when a switch is clicked so the bulbs
+            // lighting up stay visible.
+            zoomOnSelected={false}
             showObjectBindingDataPanel={false}
             showSceneObjectsPanel
             showResetButton
@@ -328,9 +360,7 @@ export default function App() {
                       type="button"
                       style={styles.button}
                       disabled={!action}
-                      onClick={() =>
-                        action && applyAction(switchConfig.id, action)
-                      }
+                      onClick={() => toggleSwitch(switchConfig.id)}
                     >
                       {isOn ? "Turn Off" : "Turn On"}
                     </button>

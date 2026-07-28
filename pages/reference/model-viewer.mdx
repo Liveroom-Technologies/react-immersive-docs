@@ -76,6 +76,7 @@ type Props = {
   enableXR?: boolean;
   usdzUrl?: string;
   showAnnotationNavigation?: boolean;
+  showAnnotationOnHover?: boolean;
 };
 ```
 
@@ -482,7 +483,14 @@ type CustomSceneObjectsPanelProps = {
 
 ### `showDownloadButton`
 
-Enables the download split-button (export GLB / export PNG screenshot). Default: `true`.
+Enables the download split-button (export GLB, export PNG screenshot, or export
+the model's UV layout). Default: `true`.
+
+UV export downloads an editable 2048×2048 SVG UV-island outline when the model
+uses one material. For multi-material models it downloads a ZIP containing one
+SVG texture template per material. Meshes without a `uv` attribute are omitted;
+when the model has no UV coordinates, the viewer reports that no layout is
+available.
 
 The bottom-right action bar renders when at least one of `showResetButton`, `showDownloadButton`, or (`showAnnotationNavigation` with annotations present) is `true`.
 
@@ -874,6 +882,19 @@ mobileHandoffUrl?: string;
 ### `showAnnotationNavigation`
 
 Shows the "Guided Tour" control cluster (left side of the bottom action bar) when the model has at least one annotation: a single "Guided Tour" button that, once started, becomes Previous/Stop/Next controls for stepping through annotations in order. Default: `true`.
+
+---
+
+### `showAnnotationOnHover`
+
+Temporarily opens an annotation's detail popup when the pointer hovers over its
+marker. Moving the pointer away closes the hover popup after a short grace
+period. Clicking a marker still locks its popup open until it is closed.
+Default: `false`.
+
+```tsx
+<ModelViewer {...props} showAnnotationOnHover />
+```
 
 ---
 
