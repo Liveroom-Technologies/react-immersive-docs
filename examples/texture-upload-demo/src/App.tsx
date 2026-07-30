@@ -278,6 +278,7 @@ export default function App() {
             performanceProfile="auto"
             maxDpr={2}
             refitOnResize={false}
+            showUvCheckerButton
           />
 
           <button

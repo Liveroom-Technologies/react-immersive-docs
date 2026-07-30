@@ -263,6 +263,21 @@ type AnimationControls = {
 
 ---
 
+## `SceneModelRenderer`
+
+Selects the whole-model material renderer used by `SceneConfig.model.renderer`.
+
+```ts
+type SceneModelRenderer = "pbr" | "matcap" | "uv-checker";
+```
+
+- `"pbr"` renders the model-authored and binding-overridden physical materials.
+- `"matcap"` renders a lighting-independent studio material.
+- `"uv-checker"` renders a numbered directional UV0 test chart. Meshes without
+  UV0 coordinates appear magenta.
+
+---
+
 ## `CinematicConfig`
 
 Configures the [`cinematic`](/reference/model-viewer#cinematic) auto-camera on `ModelViewer`.

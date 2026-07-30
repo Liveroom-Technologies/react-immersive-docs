@@ -59,6 +59,9 @@ type BindingBuilderProps = {
   shadows, wireframe, post-processing, annotations, per-clip animation options,
   and a cinematic camera path) — the same `SceneConfig` shape consumed by
   `ModelViewer`'s `sceneConfig` prop
+- Switch the model renderer between **PBR**, **Matcap**, and **UV Checker**.
+  UV Checker overlays a numbered directional chart to diagnose stretching,
+  seams, rotation, texel-density differences, and missing UV0 coordinates
 - Author a **cinematic camera path** visually in the **Cinematic** sub-tab:
   frame the model in the preview, click **Add waypoint from current view** to
   capture the camera pose, then reorder, fly-to-preview (📍), or delete

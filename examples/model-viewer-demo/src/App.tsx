@@ -17,11 +17,12 @@ export default function App() {
     <main className="demo-page">
       <DemoPageHeader
         title="ModelViewer"
-        description="The full-featured viewer: object bindings drive color, texture, visibility and actions, with soft shadows, post-processing, animation playback, guided-tour annotations, measurement tools and WebXR AR/VR support."
+        description="The full-featured viewer: object bindings drive color, texture, visibility and actions, with soft shadows, post-processing, animation playback, UV diagnostics, guided-tour annotations, measurement tools and WebXR AR/VR support."
         features={[
           "Object bindings (color/texture/visibility/actions)",
           "Soft shadows & post-processing",
           "lighting, environment, animations",
+          "UV checker",
           "Guided-tour annotations",
           "Measurement tools",
           "WebXR AR/VR",
@@ -54,6 +55,7 @@ export default function App() {
           maxDpr={2}
           performanceProfile="auto"
           meshopt
+          showUvCheckerButton
           showMeasureTools
           measurementUnit="m"
           enableXR

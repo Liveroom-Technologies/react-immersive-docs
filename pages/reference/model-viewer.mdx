@@ -70,6 +70,7 @@ type Props = {
   ktx2TranscoderPath?: string | false;
   meshopt?: boolean;
   showMeasureTools?: boolean;
+  showUvCheckerButton?: boolean;
   showExplodeControls?: boolean;
   cinematic?: boolean | CinematicConfig;
   measurementUnit?: string;
@@ -584,6 +585,22 @@ example.
 [`onAnimationsReady`](#onanimationsready)), and `sceneConfig.annotations` seeds
 the annotation markers rendered on the model.
 
+`sceneConfig.model.renderer` accepts `"pbr"`, `"matcap"`, or `"uv-checker"`.
+UV Checker temporarily replaces every mesh material with an unlit numbered test
+chart without changing `objectBindings` or uploaded textures. Switching back
+restores the original material references. Meshes without UV0 coordinates appear
+magenta and trigger an explanatory notice.
+
+```tsx
+<ModelViewer
+  {...props}
+  sceneConfig={{
+    ...sceneConfig,
+    model: { ...sceneConfig.model, renderer: "uv-checker" },
+  }}
+/>
+```
+
 ---
 
 ### `disableZoom`
@@ -708,6 +725,19 @@ meshopt?: boolean;
 ```
 
 DRACO, Meshopt, and KTX2 decoding are enabled by default via hosted decoder/transcoder bundles, fetched lazily only when the model actually needs them. Pass a path to self-host the decoder/transcoder files, or `false` to disable that decoder entirely.
+
+---
+
+### `showUvCheckerButton`
+
+Shows a UV Checker toggle button over the canvas. Turning it on temporarily
+replaces the model's materials with the numbered diagnostic texture; turning it
+off restores the renderer configured by `sceneConfig`. Meshes without UV0
+coordinates appear magenta. Default: `false`.
+
+```tsx
+<ModelViewer showUvCheckerButton ... />
+```
 
 ---
 
