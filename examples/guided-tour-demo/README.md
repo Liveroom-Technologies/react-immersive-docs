@@ -1,8 +1,8 @@
 # guided-tour-demo
 
 A minimal Vite example of an annotation-driven guided walkthrough. Tour stops
-are `SceneAnnotationMarker`s in `sceneConfig.annotations` — each just a world
-position, title, and description — and the viewer's built-in **Guided Tour**
+are `SceneAnnotationMarker`s in `sceneConfig.annotations`, each just a world
+position, title, and description, and the viewer's built-in **Guided Tour**
 control flies the camera between them. No per-object bindings are required for
 the tour itself.
 

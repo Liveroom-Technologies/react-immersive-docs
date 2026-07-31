@@ -79,7 +79,7 @@ type ObjectBindingStyle = {
 ## `ObjectBindingMaterial`
 
 Per-object overrides applied on top of the mesh's original GLB/GLTF material as a
-`MeshPhysicalMaterial`. Every field is optional — only the fields you set are
+`MeshPhysicalMaterial`. Every field is optional, only the fields you set are
 overridden; everything else falls back to the model-authored value. Texture slots
 are `{ path: string }` objects.
 
@@ -170,7 +170,7 @@ render at the right brightness:
 
 - **sRGB (color) maps:** `texture` (base color/albedo), `emissiveMap`,
   `sheenColorMap`, `specularColorMap`
-- **Linear (data) maps:** everything else — `normalMap`, `roughnessMap`,
+- **Linear (data) maps:** everything else, `normalMap`, `roughnessMap`,
   `metalnessMap`, `aoMap`, `displacementMap`, `bumpMap`, `alphaMap`,
   `clearcoat*Map`, `anisotropyMap`, `transmissionMap`, `thicknessMap`,
   `sheenRoughnessMap`, `specularIntensityMap`

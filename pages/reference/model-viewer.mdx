@@ -116,13 +116,13 @@ To get a license key, sign in at the [React Immersive Console](https://react-imm
 | `visible`                                     | Controls mesh visibility                                                      |
 | `style.material.baseColor`                    | Sets mesh color (committed by the built-in color picker on close)             |
 | `style.material.texture.path`                 | Sets the base color (albedo) texture                                          |
-| `style.material.*`                            | Per-object `MeshPhysicalMaterial` overrides — see below                       |
+| `style.material.*`                            | Per-object `MeshPhysicalMaterial` overrides, see below                       |
 | `cameraState.position` / `cameraState.target` | Camera view to use when this object is focused or selected from the viewer UI |
 
 All visual overrides live under `style.material` (an `ObjectBindingMaterial`).
 It covers base color/PBR, emission, opacity & blending, normal/bump,
 displacement, ambient occlusion, clearcoat, sheen, anisotropy,
-transmission/volume, and face sidedness — plus a texture-map slot for each.
+transmission/volume, and face sidedness, plus a texture-map slot for each.
 See [`ObjectBindingMaterial`](/reference/types#objectbindingmaterial) for the
 full field list and the per-slot color-space handling (color maps are decoded
 as sRGB, data maps stay linear).
@@ -181,7 +181,7 @@ onObjectSelect?: (binding: ObjectBinding | null) => void
 - Clicking the same mesh again still fires; selection is not toggled off automatically
 - If the binding includes `cameraState.position` and `cameraState.target`, the viewer moves the camera to that saved view when focusing that object
 - Clicks resolve the front-most surface under the pointer; a mesh whose binding has `selectable: false` does not pass the click through to meshes behind it
-- On very large models, clicking meshes in the viewport is disabled entirely — see [Large models](#large-models). Selection through the scene objects panel (and this callback) still works
+- On very large models, clicking meshes in the viewport is disabled entirely, see [Large models](#large-models). Selection through the scene objects panel (and this callback) still works
 
 ---
 
@@ -195,7 +195,7 @@ onObjectHover?: (binding: ObjectBinding | null) => void
 
 - Pointer over a mesh → `onObjectHover(binding)`
 - Pointer out → `onObjectHover(null)`
-- On very large models, viewport hover is disabled entirely — see [Large models](#large-models)
+- On very large models, viewport hover is disabled entirely, see [Large models](#large-models)
 
 ---
 
@@ -210,7 +210,7 @@ onObjectBindingsChange?: (next: Record<string, ObjectBinding>) => void
 Fires for:
 
 - Visibility toggles (`binding.visible`)
-- Color picks (`binding.style.material.baseColor`) — committed when the color picker closes
+- Color picks (`binding.style.material.baseColor`), committed when the color picker closes
 - Texture uploads (`binding.style.material.texture.path`)
 - Texture removal
 
@@ -320,7 +320,7 @@ Optional async callback for handling texture file uploads. Use it to upload to y
 onTextureUpload?: (file: File, objectId: string) => Promise<string>
 ```
 
-When omitted, the viewer falls back to `URL.createObjectURL(file)` — a session-scoped blob URL that is lost on reload.
+When omitted, the viewer falls back to `URL.createObjectURL(file)`, a session-scoped blob URL that is lost on reload.
 
 ```tsx
 <ModelViewer
@@ -392,7 +392,7 @@ function CustomLights() {
 
 Optional camera configuration passed through to the underlying React Three Fiber `Canvas`.
 
-`ModelViewer` only sets a default `fov: 50` — it does not set a default position, so an unset position falls back to React Three Fiber's own `Canvas` default (`[0, 0, 5]`). Pass an explicit `position` for predictable framing.
+`ModelViewer` only sets a default `fov: 50`, it does not set a default position, so an unset position falls back to React Three Fiber's own `Canvas` default (`[0, 0, 5]`). Pass an explicit `position` for predictable framing.
 
 ```tsx
 <ModelViewer
@@ -422,7 +422,7 @@ Optional background color for the viewer canvas.
 
 Controls whether the viewer renders shadows. Default: `true`.
 
-When `true`, the canvas renders soft shadows: the default light rig casts a directional key-light shadow, furniture/decor meshes cast and receive shadows, and ambient occlusion is applied via post-processing. When `false`, shadow-map rendering is disabled on the canvas — no shadow-pass cost, and per-mesh/light `castShadow` flags are ignored.
+When `true`, the canvas renders soft shadows: the default light rig casts a directional key-light shadow, furniture/decor meshes cast and receive shadows, and ambient occlusion is applied via post-processing. When `false`, shadow-map rendering is disabled on the canvas, no shadow-pass cost, and per-mesh/light `castShadow` flags are ignored.
 
 ```tsx
 <ModelViewer shadows={false} ... />
@@ -517,7 +517,7 @@ Controls whether the built-in loading overlay is shown while the model is loadin
 
 ### `showMouseController`
 
-Renders an on-screen joystick/zoom controller for moving the camera with a mouse or touch — useful on touch devices or kiosk layouts. Default: `false`.
+Renders an on-screen joystick/zoom controller for moving the camera with a mouse or touch, useful on touch devices or kiosk layouts. Default: `false`.
 
 ```tsx
 <ModelViewer
@@ -569,7 +569,7 @@ Zoom sensitivity for the on-screen controller. Default: `1.0`.
 
 ### `sceneConfig`
 
-Optional scene-wide configuration object — model, camera, lighting, wireframe,
+Optional scene-wide configuration object, model, camera, lighting, wireframe,
 shadows, environment, background, ground shadows, post-processing, animations,
 annotations, and a cinematic camera path. This is the same `SceneConfig` shape
 authored by `BindingBuilder`'s **Scene** tab. If omitted, the viewer uses its
@@ -623,7 +623,7 @@ to it. Set to `false` to keep the current camera framing on selection. Default:
 Optional async callback invoked once the model has loaded and the scene is
 ready. When provided, it is called so consumers can run their own
 fit-to-scene logic (e.g. an animated fit); if omitted, the viewer falls back to
-its internal `fitScene` — unless an explicit [`camera`](#camera) prop was
+its internal `fitScene`, unless an explicit [`camera`](#camera) prop was
 given, in which case that position is treated as the chosen initial view and
 `fitScene` is skipped.
 
@@ -636,7 +636,7 @@ onAutoFit?: () => Promise<boolean>
 ### `refitOnResize`
 
 Optional boolean controlling whether the camera re-frames the model to fit
-whenever the canvas is resized — a browser window resize, a device rotation, or
+whenever the canvas is resized, a browser window resize, a device rotation, or
 a side panel opening/closing (which changes how much width the canvas has). Set
 to `false` to preserve the user's current orbit/zoom across resizes; the camera
 aspect stays correct either way, so the model never distorts, it just isn't
@@ -753,7 +753,7 @@ Shows a click-to-measure toolbar over the canvas: click two points on the model 
 
 ### `measurementUnit`
 
-Unit suffix appended to measurement readouts. glTF models are authored in meters by spec, so values are not converted — this only changes the displayed label. Default: `"m"`.
+Unit suffix appended to measurement readouts. glTF models are authored in meters by spec, so values are not converted, this only changes the displayed label. Default: `"m"`.
 
 ---
 
@@ -761,7 +761,7 @@ Unit suffix appended to measurement readouts. glTF models are authored in meters
 
 Shows an exploded-view control over the canvas: a slider that slides each bound
 part outward from the model center to reveal interior/assembly structure, then
-back to reassemble it. Best suited to static product/CAD models — the offset
+back to reassemble it. Best suited to static product/CAD models, the offset
 writes node positions each frame, so it conflicts with a playing skeletal
 animation. Default: `false`.
 
@@ -776,7 +776,7 @@ See the [`Exploded View`](https://react-immersive.liveroom.dev/examples/exploded
 ### `cinematic`
 
 Enables the cinematic auto-camera: the camera glides along a path on its own,
-like a film — ideal for showing off a gallery, apartment, or product with no user
+like a film, ideal for showing off a gallery, apartment, or product with no user
 interaction. Renders a play/pause button over the canvas; grabbing the camera (or
 selecting a part) pauses it and hands control back.
 
@@ -812,7 +812,7 @@ type CinematicWaypoint = {
 [`sceneConfig.cinematic`](#sceneconfig) (authored in BindingBuilder). The
 `cinematic` prop _overwrites_ it: a boolean toggles the feature (`true` keeps any
 authored waypoints, `false` forces it off), and an object overrides
-field-by-field — so you can keep the authored waypoints while overriding, say,
+field-by-field, so you can keep the authored waypoints while overriding, say,
 `autoPlay` or `loop`.
 
 ```tsx
@@ -942,19 +942,19 @@ memory cost, so the viewer degrades gracefully instead:
 - A dismissible banner appears over the canvas telling the user the model is
   very large, that it may render slowly on their device, and that selection is
   available through the panel.
-- The loading overlay narrates the extra work ("Preparing large model…") —
+- The loading overlay narrates the extra work ("Preparing large model…"),
   uploading that much geometry to the GPU is a single synchronous operation
   that can block the page for tens of seconds, on any WebGL viewer.
 
 Orbit, zoom, pan, animations, annotations, and the panels all keep working.
 
-There is no way to make a model of this size feel fast in a browser — the
+There is no way to make a model of this size feel fast in a browser, the
 per-frame cost of tens of millions of triangles is inherent, and on mobile
 devices the decoded geometry alone can exceed the tab's memory budget. For
 assets like this, decimate at ingestion (for example to ~2–3M triangles) rather
 than shipping the raw export; a decimated model loads in seconds and keeps full
 interactivity. Note that Blender or native tooling is required for very large
-Draco-compressed files — the WASM builds of `gltf-transform` and `gltfpack`
+Draco-compressed files, the WASM builds of `gltf-transform` and `gltfpack`
 cannot decode them within their 4GB address space.
 
 ---
@@ -964,7 +964,7 @@ cannot decode them within their 4GB address space.
 The scene objects panel and object binding data panel read their colors,
 borders, shadows, and fonts from CSS custom properties instead of hardcoded
 values. Set them on a `.ri-viewer` ancestor (or any element wrapping the
-viewer) to re-skin those panels without overriding individual classes —
+viewer) to re-skin those panels without overriding individual classes,
 every variable already has the current default baked in as a fallback, so
 you only need to set the ones you actually want to change.
 
@@ -983,7 +983,7 @@ you only need to set the ones you actually want to change.
 </div>
 ```
 
-### Scene objects panel — `--ri-sidepanel-*`
+### Scene objects panel, `--ri-sidepanel-*`
 
 | Variable                           | Default                                           |
 | ---------------------------------- | ------------------------------------------------- |
@@ -1007,7 +1007,7 @@ you only need to set the ones you actually want to change.
 | `--ri-sidepanel-accent`            | `#3b82f6`                                         |
 | `--ri-sidepanel-accent-soft`       | `rgba(59, 130, 246, 0.12)`                        |
 
-### Object binding data panel — `--ri-databinding-*`
+### Object binding data panel, `--ri-databinding-*`
 
 | Variable                                  | Default                                                          |
 | ----------------------------------------- | ---------------------------------------------------------------- |
@@ -1033,7 +1033,7 @@ you only need to set the ones you actually want to change.
 
 <Callout type="info">
   `ModelViewer.css` also declares the original `--ri-panel-*` and
-  `--ri-license-overlay-*` variables for its other surfaces — the two sets above
+  `--ri-license-overlay-*` variables for its other surfaces, the two sets above
   are specifically for the scene objects panel and the object binding data
   panel.
 </Callout>

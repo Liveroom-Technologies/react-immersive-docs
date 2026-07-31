@@ -2,7 +2,7 @@
 
 A `ModelViewer` demo that enables the built-in on-screen mouse controller.
 It lets users tune the movement sensitivity, controller opacity, and placement
-at runtime — useful for touchscreen, kiosk, and guided viewing experiences.
+at runtime, useful for touchscreen, kiosk, and guided viewing experiences.
 
 ## Run
 

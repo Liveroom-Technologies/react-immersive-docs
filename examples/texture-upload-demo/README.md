@@ -15,7 +15,7 @@ VITE_LICENSE_KEY=your-license-key npm run dev
 
 1. Pick a shirt color (optional).
 2. Click the shirt to select it, then choose **Change Material** in the panel.
-3. Upload a JPG, PNG, or WebP — it prints across the whole shirt.
+3. Upload a JPG, PNG, or WebP, it prints across the whole shirt.
 4. The side panel shows the applied artwork and a "durable URL applied" badge;
    use **Remove** to clear it.
 

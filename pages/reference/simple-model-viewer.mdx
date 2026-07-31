@@ -29,7 +29,7 @@ export default function App() {
 - Renders a left-side environment/scene settings panel (background color, environment preset, auto-rotate, exposure, ambient + directional light color/intensity), each seedable via props
 - Can swap `modelUrl` for a built-in drag-and-drop / file-picker upload flow
 - Lets users click a mesh or panel row to select and focus it
-- Fits the full scene on initial load, and re-fits when the canvas is resized (window resize, device rotation, or a panel opening/closing) — set `refitOnResize={false}` to instead preserve the user's orbit/zoom
+- Fits the full scene on initial load, and re-fits when the canvas is resized (window resize, device rotation, or a panel opening/closing), set `refitOnResize={false}` to instead preserve the user's orbit/zoom
 - Uses built-in ambient, directional, and environment lighting
 - Renders on demand: frames are only drawn when something changes (camera movement, hover, auto-rotate, panel edits), so an idle viewer costs no GPU time or battery
 - Degrades gracefully on very large models (above roughly 12 million triangles): viewport click/hover picking is disabled for performance, a dismissible banner explains this to the user, and selection stays available through the scene objects panel
@@ -68,7 +68,7 @@ type SimpleModelViewerProps = {
 ```
 
 <Callout type="info">
-  `SimpleModelViewer` does not take a `licenseKey` — licensing is enforced by
+  `SimpleModelViewer` does not take a `licenseKey`, licensing is enforced by
   [`ModelViewer`](/reference/model-viewer) and
   [`BindingBuilder`](/reference/binding-builder).
 </Callout>
@@ -119,7 +119,7 @@ true;
 
 ### Scene settings defaults
 
-The following optional props seed the initial values of the scene settings (environment) panel. Each maps to one control; the panel stays interactive, so the user can still adjust them at runtime. Changing one of these props after mount does **not** override a value the user has since changed in the panel (they are initial values, not controlled props) — the exception is `backgroundColor`, which is kept in sync live.
+The following optional props seed the initial values of the scene settings (environment) panel. Each maps to one control; the panel stays interactive, so the user can still adjust them at runtime. Changing one of these props after mount does **not** override a value the user has since changed in the panel (they are initial values, not controlled props), the exception is `backgroundColor`, which is kept in sync live.
 
 | Prop                   | Type          | Panel control           | Default     |
 | ---------------------- | ------------- | ----------------------- | ----------- |
@@ -164,7 +164,7 @@ false;
 
 Optional boolean. When `true`, hovering a mesh (in the viewport or the objects panel) highlights it.
 
-On very large models (above roughly 12 million triangles) viewport hover is disabled for performance regardless of this prop — panel-row hover highlighting still works.
+On very large models (above roughly 12 million triangles) viewport hover is disabled for performance regardless of this prop, panel-row hover highlighting still works.
 
 Default:
 
@@ -188,7 +188,7 @@ true;
 
 ### `refitOnResize`
 
-Optional boolean controlling whether the camera re-frames the model to fit whenever the canvas is resized — a browser window resize, a device rotation, or a side panel (scene settings / scene objects) opening or closing. Set to `false` to preserve the user's current orbit/zoom across resizes; the camera aspect stays correct either way, so the model never distorts, it just isn't re-centered.
+Optional boolean controlling whether the camera re-frames the model to fit whenever the canvas is resized, a browser window resize, a device rotation, or a side panel (scene settings / scene objects) opening or closing. Set to `false` to preserve the user's current orbit/zoom across resizes; the camera aspect stays correct either way, so the model never distorts, it just isn't re-centered.
 
 Default:
 

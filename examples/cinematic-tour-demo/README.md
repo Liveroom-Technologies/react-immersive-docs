@@ -1,6 +1,6 @@
 # cinematic-tour-demo
 
-A minimal `ModelViewer` demo of the cinematic auto-camera — the camera glides
+A minimal `ModelViewer` demo of the cinematic auto-camera, the camera glides
 through a space on its own, like a film, following a list of authored waypoints.
 
 ## Run
@@ -11,7 +11,7 @@ VITE_LICENSE_KEY=your-license-key npm run dev
 ```
 
 The camera auto-plays through the waypoints and loops. Use the **play / pause**
-control in the top-left of the viewer, or grab the model — touching the camera
+control in the top-left of the viewer, or grab the model, touching the camera
 pauses the glide and hands control back.
 
 ## About the path

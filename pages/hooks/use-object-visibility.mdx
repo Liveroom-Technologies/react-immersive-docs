@@ -9,7 +9,7 @@ import { Callout } from "nextra/components";
 A stateless utility hook for controlling object visibility outside the viewer.
 
 <Callout type="info">
-  `useObjectVisibility` does not own its own copy of `objectBindings` — the
+  `useObjectVisibility` does not own its own copy of `objectBindings`, the
   consumer owns the state and passes both the current value and its setter. The
   hook's methods call the setter directly, so the hook and the viewer stay in
   sync automatically.

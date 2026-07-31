@@ -24,7 +24,7 @@ Create a license key at [react-immersive.liveroom.dev/console](https://react-imm
 - Playback speed and loop mode are applied through `sceneConfig.animations` so
   they persist across clip switches; play/pause/stop/seek use the hook directly.
 - With **Loop = Play once**, a finished clip resets to its rest pose and clears
-  the current clip — that is the viewer's built-in once-playback behavior.
+  the current clip, that is the viewer's built-in once-playback behavior.
 
 ## Model
 

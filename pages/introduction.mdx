@@ -10,23 +10,23 @@ import { Callout } from "nextra/components";
 
 ## Why This Library Exists
 
-Rendering a GLB/GLTF model in Three.js/React Three Fiber is the easy part — `useGLTF` plus a `<primitive>` gets you a static model in a few lines. The hard part is everything layered on top once a model needs to be **interactive and configurable**:
+Rendering a GLB/GLTF model in Three.js/React Three Fiber is the easy part, `useGLTF` plus a `<primitive>` gets you a static model in a few lines. The hard part is everything layered on top once a model needs to be **interactive and configurable**:
 
 - Click a part of the model to show details about it
 - Let a user change a part's color or swap its texture
 - Toggle parts on/off (e.g. show/hide furniture, accessories, room walls)
 - Save a "good viewing angle" for each part and snap the camera to it
-- Track hover/selection state, animations, loading state, and camera state — all the bookkeeping around the 3D scene
+- Track hover/selection state, animations, loading state, and camera state, all the bookkeeping around the 3D scene
 
 Every project that does this ends up rebuilding the same scaffolding: material cloning so edits don't bleed across objects, texture caching/disposal, raycasting and highlighting, side panels, color pickers, popovers, and animation mixers. `react-immersive` packages all of that once so consuming apps don't have to reinvent it.
 
 ## Why `objectBindings` Exists
 
-`objectBindings` is the answer to one core problem: a GLB/GLTF file is just geometry — it has no concept of "this mesh is configurable, has these actions, and looks like this." Something has to bridge the gap between raw mesh node names (e.g. `"CarBody"`, `"BrickWall"`) and your application's domain model (a car's body panel, a room's wall, etc.).
+`objectBindings` is the answer to one core problem: a GLB/GLTF file is just geometry, it has no concept of "this mesh is configurable, has these actions, and looks like this." Something has to bridge the gap between raw mesh node names (e.g. `"CarBody"`, `"BrickWall"`) and your application's domain model (a car's body panel, a room's wall, etc.).
 
-`objectBindings` is that bridge — a plain JS/TS record, keyed by mesh node name, that:
+`objectBindings` is that bridge, a plain JS/TS record, keyed by mesh node name, that:
 
-- **Declares which meshes are interactive** (`selectable`, `hoverable`, `visible`) — meshes not listed aren't part of the interactive flow at all
+- **Declares which meshes are interactive** (`selectable`, `hoverable`, `visible`), meshes not listed aren't part of the interactive flow at all
 - **Carries live render state** (`visible` plus `style.material.*` overrides like `baseColor`, `texture.path`, `opacity`, `metalness`, `roughness`, `emissive`, and the full PBR/texture-map set) so the viewer can apply overrides without you touching Three.js objects directly
 - **Defines per-object actions** (`change-color`, `change-material`, `toggle-visibility`, etc.) that drive the built-in side panel buttons
 - **Stores domain data** (`metrics`, `metadata`) for display alongside the 3D view
@@ -76,12 +76,12 @@ and saved camera positions to lead a visitor through a scene without binding a
 single exhibit. The [`Guided Tour`](https://react-immersive.liveroom.dev/examples/guided-tour) demo uses exactly
 this pattern.
 
-- **Guided tours and onboarding** — define named stops and camera positions for a repeatable walkthrough
-- **Showrooms and product launches** — set the intended lighting, environment, and opening view for a model
-- **Architecture and real estate** — ship curated viewpoints, daylight mood, and annotations with a building or room
-- **Training and safety flows** — combine markers, camera positions, and animation playback into a consistent lesson
-- **XR and device experiences** — keep scene-level presentation and interaction settings together as the experience evolves
-- **Reusable model presets** — save a serializable scene setup that can be versioned, stored, and reused across applications
+- **Guided tours and onboarding**, define named stops and camera positions for a repeatable walkthrough
+- **Showrooms and product launches**, set the intended lighting, environment, and opening view for a model
+- **Architecture and real estate**, ship curated viewpoints, daylight mood, and annotations with a building or room
+- **Training and safety flows**, combine markers, camera positions, and animation playback into a consistent lesson
+- **XR and device experiences**, keep scene-level presentation and interaction settings together as the experience evolves
+- **Reusable model presets**, save a serializable scene setup that can be versioned, stored, and reused across applications
 
 In short: `objectBindings` make parts of a model behave like application data;
 `sceneConfig` makes the model behave like a designed 3D experience. Use one or
@@ -96,36 +96,36 @@ both depending on what the experience needs.
 
 ## When This Package Fits
 
-- **Product configurators** — let users recolor or retexture parts of a car, piece of furniture, or apparel
-- **Interactive room/scene tours** — click walls, furniture, or fixtures to see info or toggle visibility
-- **Asset inspection tools** — [`SimpleModelViewer`](/reference/simple-model-viewer) for quickly browsing a GLB/GLTF mesh hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
+- **Product configurators**, let users recolor or retexture parts of a car, piece of furniture, or apparel
+- **Interactive room/scene tours**, click walls, furniture, or fixtures to see info or toggle visibility
+- **Asset inspection tools**, [`SimpleModelViewer`](/reference/simple-model-viewer) for quickly browsing a GLB/GLTF mesh hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
 - **Anything needing "click a 3D part to show a panel with data and actions"** without hand-rolling raycasting, highlighting, and UI panels
 
 ## Example Applications Where Bindings Shine
 
-- **Product configurators** — cars, furniture, kitchens, appliances, apparel, or footwear where each part can be selected, recolored, retextured, upgraded, or hidden
-- **E-commerce customization flows** — "build your own" experiences where a mesh maps to a product option, add-on, or purchasable variant
-- **CPQ and sales tools** — enterprise configuration flows where 3D parts correspond to real options, compatibility rules, and pricing decisions
-- **Interior design and real estate tools** — rooms, walls, fixtures, finishes, and furniture that need labels, toggles, metadata, and saved viewpoints
-- **Industrial and engineering viewers** — machines, assemblies, equipment, and plant layouts where users isolate parts, inspect metadata, and follow maintenance flows
-- **Training and guided walkthroughs** — medical, hardware, aviation, or manufacturing education where each part can own annotations, steps, and camera presets
-- **Digital twins and operational dashboards** — buildings, assets, or devices where visual parts correspond to live entities with status, metrics, and alerts
-- **Smart building controls** — building models where light switches, room sensors, HVAC units, and doors are bound to real-time controls and telemetry
-- **Room-level control logic** — a room where one switch controls two lights and another switch controls two different lights, with the model reflecting application state instead of hard-coded mesh behavior
+- **Product configurators**, cars, furniture, kitchens, appliances, apparel, or footwear where each part can be selected, recolored, retextured, upgraded, or hidden
+- **E-commerce customization flows**, "build your own" experiences where a mesh maps to a product option, add-on, or purchasable variant
+- **CPQ and sales tools**, enterprise configuration flows where 3D parts correspond to real options, compatibility rules, and pricing decisions
+- **Interior design and real estate tools**, rooms, walls, fixtures, finishes, and furniture that need labels, toggles, metadata, and saved viewpoints
+- **Industrial and engineering viewers**, machines, assemblies, equipment, and plant layouts where users isolate parts, inspect metadata, and follow maintenance flows
+- **Training and guided walkthroughs**, medical, hardware, aviation, or manufacturing education where each part can own annotations, steps, and camera presets
+- **Digital twins and operational dashboards**, buildings, assets, or devices where visual parts correspond to live entities with status, metrics, and alerts
+- **Smart building controls**, building models where light switches, room sensors, HVAC units, and doors are bound to real-time controls and telemetry
+- **Room-level control logic**, a room where one switch controls two lights and another switch controls two different lights, with the model reflecting application state instead of hard-coded mesh behavior
 
 The common pattern is simple: if a user needs to say "this exact part of the
 model does something special," bindings usually make sense.
 
 ## When It Probably Doesn't Fit
 
-- Pure visual/cinematic scenes with no interactivity — a plain `<Canvas><primitive object={scene} /></Canvas>` is simpler
+- Pure visual/cinematic scenes with no interactivity, a plain `<Canvas><primitive object={scene} /></Canvas>` is simpler
 - Highly custom 3D UIs where the built-in panels/popovers would just be ripped out anyway, though [`customObjectBindingDataPanel`](/reference/model-viewer#customobjectbindingdatapanel) and [`customSceneObjectsPanel`](/reference/model-viewer#customsceneobjectspanel) cover a lot of that middle ground
 
 ## How It Works
 
 At a high level, the viewer does the following:
 
-1. Creates a Three.js canvas; `ModelViewer` only defaults the `fov` (`50`) — the camera position falls back to React Three Fiber's own `Canvas` default (`[0, 0, 5]`) unless you pass `camera={{ position: [...] }}`
+1. Creates a Three.js canvas; `ModelViewer` only defaults the `fov` (`50`), the camera position falls back to React Three Fiber's own `Canvas` default (`[0, 0, 5]`) unless you pass `camera={{ position: [...] }}`
 2. Loads the GLB/GLTF asset with `useGLTF`
 3. Looks up meshes by the keys in `objectBindings` (resolving `modelObjectId` to find the actual model node)
 4. Clones each referenced material so edits stay isolated per object

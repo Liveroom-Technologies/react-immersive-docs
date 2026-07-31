@@ -28,7 +28,7 @@ type BindingBuilderProps = {
 };
 ```
 
-`licenseKey` is **required** and is validated the same way as [`ModelViewer`](/reference/model-viewer)'s — see [Licensing & plan tiers](#licensing--plan-tiers) below. While the key is being checked, `BindingBuilder` renders a "Verifying license…" placeholder; if the key is invalid, it renders an error message instead of the editor.
+`licenseKey` is **required** and is validated the same way as [`ModelViewer`](/reference/model-viewer)'s, see [Licensing & plan tiers](#licensing--plan-tiers) below. While the key is being checked, `BindingBuilder` renders a "Verifying license…" placeholder; if the key is invalid, it renders an error message instead of the editor.
 
 ## Capabilities
 
@@ -37,7 +37,7 @@ type BindingBuilderProps = {
 - Upload a `.glb`, standalone/data-URI `.gltf`, or `.zip` containing a `.gltf` plus its referenced `.bin` and texture files
 - Traverse renderable mesh nodes and generate starter bindings automatically
 - Edit binding fields: identity, label, type, status, booleans, style, actions, metrics, metadata, and saved camera state
-- Author a full per-object material in the **Material** panel — a one-click
+- Author a full per-object material in the **Material** panel, a one-click
   preset gallery (wood, metal, chrome, glass, plastic, fabric, ceramic,
   concrete, etc.) plus collapsible sub-panels for PBR maps, roughness,
   emission, opacity, normal & bump, displacement, ambient occlusion,
@@ -46,7 +46,7 @@ type BindingBuilderProps = {
   `style.material` override (see
   [`ObjectBindingMaterial`](/reference/types#objectbindingmaterial))
 - Undo/redo the current bindings (toolbar buttons, or `Cmd/Ctrl+Z` /
-  `Cmd/Ctrl+Shift+Z` while the Object tab is active) — rapid edits like
+  `Cmd/Ctrl+Shift+Z` while the Object tab is active), rapid edits like
   slider drags coalesce into a single undo step
 - Import a previously exported `objectBindings.json` and merge it back onto
   the current model (matched by `modelObjectId`, so re-imports survive
@@ -57,7 +57,7 @@ type BindingBuilderProps = {
 
 - Configure scene-wide settings (lighting, environment, background, ground
   shadows, wireframe, post-processing, annotations, per-clip animation options,
-  and a cinematic camera path) — the same `SceneConfig` shape consumed by
+  and a cinematic camera path), the same `SceneConfig` shape consumed by
   `ModelViewer`'s `sceneConfig` prop
 - Switch the model renderer between **PBR**, **Matcap**, and **UV Checker**.
   UV Checker overlays a numbered directional chart to diagnose stretching,
@@ -144,12 +144,12 @@ share the configuration in BindingBuilder.
 <Callout type="info">
   **Picking a texture map** stores the durable path `materials/<filename>` in
   the binding (this is what's exported), and shows the image immediately in
-  the live preview via an in-memory `blob:` URL — so you can author without
+  the live preview via an in-memory `blob:` URL, so you can author without
   first copying files into `public/`.
 
 **Exporting bundles the files automatically:** if any material field was
 filled by uploading a file, clicking **Export**
-downloads a `.zip` instead of a single `.json`/`.ts` — containing the
+downloads a `.zip` instead of a single `.json`/`.ts`, containing the
 export file plus a `materials/` folder with every uploaded image. Unzip it
 into your app's `public/` folder and the exported bindings resolve as-is.
 Two different uploads that happen to share a filename are kept distinct

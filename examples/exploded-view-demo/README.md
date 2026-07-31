@@ -2,7 +2,7 @@
 
 A minimal `ModelViewer` demo for inspecting a multi-part assembly. The
 `showExplodeControls` prop adds an explode slider that separates every bound
-mesh outward from the model center and reassembles it — ideal for engines,
+mesh outward from the model center and reassembles it, ideal for engines,
 gadgets, and vehicles.
 
 ## Run
@@ -17,7 +17,7 @@ slider. Each of the car's 32 bound parts slides out along its own direction;
 drag back to zero to reassemble exactly.
 
 Exploded view writes node positions each frame, so it suits static product /
-CAD models — avoid combining it with playing skeletal animations.
+CAD models, avoid combining it with playing skeletal animations.
 
 ## Model attribution
 

@@ -15,7 +15,7 @@ to create a walkthrough, copy its link, and open it in a new tab.
 
 <Callout type="info">
   The encoded state covers camera + visibility + selection for the **currently
-  loaded model** only — it doesn't carry the model URL itself, so combine it
+  loaded model** only, it doesn't carry the model URL itself, so combine it
   with whatever query param already identifies which model to load.
 </Callout>
 
@@ -68,7 +68,7 @@ const { getShareUrl, restoreFromUrl } = useShareableViewerState({
   `selectedObject={selectedObjectBinding}` is required for a restored selection
   to actually appear in the viewer. Without it, `ModelViewer` manages selection
   internally and `setSelectedObjectBinding` only updates state used for
-  serialization — it has no visible effect on its own.
+  serialization, it has no visible effect on its own.
 </Callout>
 
 ## Parameters
@@ -98,18 +98,18 @@ const { getShareUrl, restoreFromUrl } = useShareableViewerState({
 - By default the hook keeps the URL hash in sync automatically (debounced) as
   the camera moves or visibility/selection changes, so the address bar is
   always a working link to the current view. Pass `autoSync: false` to only
-  update the hash explicitly — e.g. from a "Copy link" button via `syncUrl`
+  update the hash explicitly, e.g. from a "Copy link" button via `syncUrl`
   or `getShareUrl`.
 - **Auto-sync stays dormant until `restoreFromUrl` has been called at least
   once.** `restoreFromUrl` only resolves once the viewer is ready (after the
-  model finishes loading), which takes far longer than the sync debounce —
+  model finishes loading), which takes far longer than the sync debounce,
   without this guard, auto-sync's first write would overwrite an incoming
   shared link with the app's default state before it was ever restored. If
   you use `autoSync` but don't need restore-on-load, still call
-  `restoreFromUrl()` once (it's a no-op when there's nothing in the hash) —
+  `restoreFromUrl()` once (it's a no-op when there's nothing in the hash),
   otherwise auto-sync never activates.
 - `restoreFromUrl` depends on `viewer.controls` being available, so call it
-  from inside (or after) `onViewerReady` — not before the viewer has mounted.
+  from inside (or after) `onViewerReady`, not before the viewer has mounted.
   It's also safe to call from there even though `onViewerReady` fires
   repeatedly (camera changes, model load, binding changes): only the first
   call for a given hash snapshot does anything, so a newer permalink can
