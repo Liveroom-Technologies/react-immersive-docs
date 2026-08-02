@@ -76,12 +76,12 @@ and saved camera positions to lead a visitor through a scene without binding a
 single exhibit. The [`Guided Tour`](https://react-immersive.liveroom.dev/examples/guided-tour) demo uses exactly
 this pattern.
 
-- **Guided tours and onboarding**, define named stops and camera positions for a repeatable walkthrough
-- **Showrooms and product launches**, set the intended lighting, environment, and opening view for a model
-- **Architecture and real estate**, ship curated viewpoints, daylight mood, and annotations with a building or room
-- **Training and safety flows**, combine markers, camera positions, and animation playback into a consistent lesson
-- **XR and device experiences**, keep scene-level presentation and interaction settings together as the experience evolves
-- **Reusable model presets**, save a serializable scene setup that can be versioned, stored, and reused across applications
+- **Guided tours and onboarding** - define named stops and camera positions for a repeatable walkthrough
+- **Showrooms and product launches** - set the intended lighting, environment, and opening view for a model
+- **Architecture and real estate** - ship curated viewpoints, daylight mood, and annotations with a building or room
+- **Training and safety flows** - combine markers, camera positions, and animation playback into a consistent lesson
+- **XR and device experiences** - keep scene-level presentation and interaction settings together as the experience evolves
+- **Reusable model presets** - save a serializable scene setup that can be versioned, stored, and reused across applications
 
 In short: `objectBindings` make parts of a model behave like application data;
 `sceneConfig` makes the model behave like a designed 3D experience. Use one or
@@ -96,22 +96,22 @@ both depending on what the experience needs.
 
 ## When This Package Fits
 
-- **Product configurators**, let users recolor or retexture parts of a car, piece of furniture, or apparel
-- **Interactive room/scene tours**, click walls, furniture, or fixtures to see info or toggle visibility
-- **Asset inspection tools**, [`SimpleModelViewer`](/reference/simple-model-viewer) for quickly browsing a GLB/GLTF mesh hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
+- **Product configurators** - let users recolor or retexture parts of a car, piece of furniture, or apparel
+- **Interactive room/scene tours** - click walls, furniture, or fixtures to see info or toggle visibility
+- **Asset inspection tools** - [`SimpleModelViewer`](/reference/simple-model-viewer) for quickly browsing a GLB/GLTF mesh hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
 - **Anything needing "click a 3D part to show a panel with data and actions"** without hand-rolling raycasting, highlighting, and UI panels
 
 ## Example Applications Where Bindings Shine
 
-- **Product configurators**, cars, furniture, kitchens, appliances, apparel, or footwear where each part can be selected, recolored, retextured, upgraded, or hidden
-- **E-commerce customization flows**, "build your own" experiences where a mesh maps to a product option, add-on, or purchasable variant
-- **CPQ and sales tools**, enterprise configuration flows where 3D parts correspond to real options, compatibility rules, and pricing decisions
-- **Interior design and real estate tools**, rooms, walls, fixtures, finishes, and furniture that need labels, toggles, metadata, and saved viewpoints
-- **Industrial and engineering viewers**, machines, assemblies, equipment, and plant layouts where users isolate parts, inspect metadata, and follow maintenance flows
-- **Training and guided walkthroughs**, medical, hardware, aviation, or manufacturing education where each part can own annotations, steps, and camera presets
-- **Digital twins and operational dashboards**, buildings, assets, or devices where visual parts correspond to live entities with status, metrics, and alerts
-- **Smart building controls**, building models where light switches, room sensors, HVAC units, and doors are bound to real-time controls and telemetry
-- **Room-level control logic**, a room where one switch controls two lights and another switch controls two different lights, with the model reflecting application state instead of hard-coded mesh behavior
+- **Product configurators** - cars, furniture, kitchens, appliances, apparel, or footwear where each part can be selected, recolored, retextured, upgraded, or hidden
+- **E-commerce customization flows** - "build your own" experiences where a mesh maps to a product option, add-on, or purchasable variant
+- **CPQ and sales tools** - enterprise configuration flows where 3D parts correspond to real options, compatibility rules, and pricing decisions
+- **Interior design and real estate tools** - rooms, walls, fixtures, finishes, and furniture that need labels, toggles, metadata, and saved viewpoints
+- **Industrial and engineering viewers** - machines, assemblies, equipment, and plant layouts where users isolate parts, inspect metadata, and follow maintenance flows
+- **Training and guided walkthroughs** - medical, hardware, aviation, or manufacturing education where each part can own annotations, steps, and camera presets
+- **Digital twins and operational dashboards** - buildings, assets, or devices where visual parts correspond to live entities with status, metrics, and alerts
+- **Smart building controls** - building models where light switches, room sensors, HVAC units, and doors are bound to real-time controls and telemetry
+- **Room-level control logic** - a room where one switch controls two lights and another switch controls two different lights, with the model reflecting application state instead of hard-coded mesh behavior
 
 The common pattern is simple: if a user needs to say "this exact part of the
 model does something special," bindings usually make sense.
