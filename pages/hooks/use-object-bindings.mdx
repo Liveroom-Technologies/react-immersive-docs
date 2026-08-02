@@ -1,0 +1,135 @@
+---
+title: useObjectBindings
+---
+
+import { Callout } from "nextra/components";
+
+# `useObjectBindings`
+
+Own object-binding state and update general fields, materials, and visibility from one hook.
+
+<Callout type="info">
+  Every setter uses a functional React state update. Consecutive calls in the
+  same tick compose, including calls across material and visibility concerns.
+</Callout>
+
+## Usage
+
+```tsx
+import {
+  ModelViewer,
+  patchBindings,
+  useObjectBindings,
+} from "@liveroom-tech/react-immersive";
+
+const {
+  objectBindings,
+  setObjectBindings,
+  patch,
+  setMaterial,
+  setBaseColor,
+  resetMaterial,
+  getMaterial,
+  hiddenObjects,
+  hiddenObjectIds,
+  hideObject,
+  showObject,
+  toggleObjectVisibility,
+  isObjectHidden,
+  clearHiddenObjects,
+} = useObjectBindings(initialBindings);
+
+<ModelViewer
+  objectBindings={objectBindings}
+  onObjectBindingsChange={setObjectBindings}
+  ...
+/>
+```
+
+## Parameter
+
+| Name              | Type                                                                  | Description                 |
+| ----------------- | --------------------------------------------------------------------- | --------------------------- |
+| `initialBindings` | `Record<string, ObjectBinding> \| () => Record<string, ObjectBinding>` | Initial binding state or initializer |
+
+## General patches
+
+Patch one object, a group, or an atomic edit batch:
+
+```tsx
+patch("body", { visible: false });
+patch(["wheel-front", "wheel-rear"], { selectable: false });
+
+patch([
+  { ids: "body", patch: { metadata: { state: "active" } } },
+  { ids: ["light-left", "light-right"], patch: { visible: true } },
+]);
+```
+
+Nested objects are merged, arrays and tuples are replaced, and explicit
+`undefined` values clear fields. Identifiers resolve by binding map key,
+`binding.id`, then `binding.modelObjectId`.
+
+## Material operations
+
+```tsx
+setMaterial("body", {
+  baseColor: "#ef4444",
+  metalness: 0.7,
+  roughness: 0.25,
+});
+
+setBaseColor("body", "#2563eb");
+const currentMaterial = getMaterial("body");
+resetMaterial("body");
+```
+
+Material setters merge with existing material fields. `resetMaterial` removes
+the complete material override.
+
+## Visibility operations
+
+```tsx
+hideObject("body");
+showObject(["wheel-front", "wheel-rear"]);
+toggleObjectVisibility("spoiler");
+clearHiddenObjects();
+
+const hidden = isObjectHidden("body");
+```
+
+`hideObject`, `showObject`, and `toggleObjectVisibility` accept one identifier
+or an array. `hiddenObjects` and `hiddenObjectIds` are derived from the current
+binding state.
+
+## Returns
+
+| Name                     | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| `objectBindings`         | Current object-binding state                     |
+| `setObjectBindings`      | React state dispatcher for controlled viewers    |
+| `patch`                  | Patch one object, a group, or an atomic edit batch |
+| `setMaterial`            | Merge material fields                            |
+| `setBaseColor`           | Set the material base color                      |
+| `resetMaterial`          | Remove the material override                     |
+| `getMaterial`            | Read the current material override               |
+| `hiddenObjects`          | Map of hidden binding keys                       |
+| `hiddenObjectIds`        | IDs of currently hidden bindings                 |
+| `hideObject`             | Hide one object or a group                       |
+| `showObject`             | Show one object or a group                       |
+| `toggleObjectVisibility` | Toggle each target's current visibility          |
+| `isObjectHidden`         | Check whether an object is hidden                |
+| `clearHiddenObjects`     | Show every bound object                          |
+
+## Externally owned state
+
+When a parent component or store owns the bindings, use the pure
+`patchBindings` utility instead:
+
+```tsx
+const next = patchBindings(objectBindings, "body", {
+  style: { material: { baseColor: "#ef4444" } },
+});
+
+onObjectBindingsChange(next);
+```

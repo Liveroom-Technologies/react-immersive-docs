@@ -131,13 +131,12 @@ export default function App() {
 Use the provided hooks to drive camera, selection, hover, animations, and more from outside the viewer.
 
 ```tsx
-import { useState } from "react";
 import {
   ModelViewer,
   useViewerSelection,
   useViewerCamera,
   useViewerModel,
-  useObjectVisibility,
+  useObjectBindings,
   useViewerActions,
   useViewerAnimations,
   useViewerHover,
@@ -146,7 +145,12 @@ import {
 import { objectBindings as initialBindings } from "./objectBindings";
 
 export default function Example() {
-  const [objectBindings, setObjectBindings] = useState(initialBindings);
+  const {
+    objectBindings,
+    setObjectBindings,
+    hiddenObjects,
+    toggleObjectVisibility,
+  } = useObjectBindings(initialBindings);
 
   const { selectedObjectBinding, handleObjectSelect } = useViewerSelection();
   const { hoveredObjectBinding, handleHoveredObject } = useViewerHover();
@@ -160,10 +164,6 @@ export default function Example() {
   } = useViewerCamera();
   const { isLoading, isReady, error, handleModelLoaded, handleLoadError } =
     useViewerModel();
-  const { hiddenObjects, toggleObjectVisibility } = useObjectVisibility(
-    objectBindings,
-    setObjectBindings,
-  );
   const { getActionsForObject, runAction } = useViewerActions(objectBindings, {
     onAction: (event) => console.log(event),
     onObjectBindingsChange: setObjectBindings,

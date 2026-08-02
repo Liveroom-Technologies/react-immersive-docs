@@ -24,7 +24,7 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
   - [`useViewerModel`](/hooks/use-viewer-model)
   - [`useViewerActions`](/hooks/use-viewer-actions)
   - [`useObjectBinding`](/hooks/use-object-binding)
-  - [`useObjectVisibility`](/hooks/use-object-visibility)
+  - [`useObjectBindings`](/hooks/use-object-bindings)
   - [`useShareableViewerState`](/hooks/use-shareable-viewer-state)
 
 ## Quick Install
@@ -107,10 +107,12 @@ export default function App() {
 ```ts
 import {
   BindingBuilder,
+  material,
   ModelViewer,
+  patchBindings,
   SimpleModelViewer,
   useObjectBinding,
-  useObjectVisibility,
+  useObjectBindings,
   useViewerActions,
   useViewerAnimations,
   useViewerCamera,

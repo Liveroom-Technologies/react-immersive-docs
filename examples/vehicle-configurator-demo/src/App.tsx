@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import {
+  material,
   ModelViewer,
+  useObjectBindings,
   useViewerCamera,
   type ObjectActionEvent,
   type ObjectBinding,
@@ -163,25 +165,13 @@ function DemoHeader() {
   );
 }
 
-function patchGroup(
-  bindings: Record<string, ObjectBinding>,
-  keys: string[],
-  patch: (binding: ObjectBinding) => ObjectBinding,
-): Record<string, ObjectBinding> {
-  const next = { ...bindings };
-  for (const key of keys) {
-    const binding = next[key];
-    if (!binding) continue;
-    next[key] = patch(binding);
-  }
-  return next;
-}
-
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
-  const [bindings, setBindings] = useState(() =>
-    structuredClone(initialObjectBindings),
-  );
+  const {
+    objectBindings: bindings,
+    patch,
+    toggleObjectVisibility,
+  } = useObjectBindings(() => structuredClone(initialObjectBindings));
   const [selectedLabel, setSelectedLabel] = useState("Cartoon Car");
   const [paintIndex, setPaintIndex] = useState(0);
   const [wheelIndex, setWheelIndex] = useState(0);
@@ -207,103 +197,74 @@ export default function App() {
     [handleViewerReady, setCameraTarget],
   );
 
-  const applyPaint = useCallback((index: number) => {
-    const color = PAINT_COLORS[index];
-    setPaintIndex(index);
-    setBindings((current) =>
-      patchGroup(current, PAINT_GROUP, (binding) => ({
-        ...binding,
-        style: {
-          ...binding.style,
-          material: { ...binding.style?.material, baseColor: color.hex },
-        },
-      })),
-    );
-  }, []);
+  const applyPaint = useCallback(
+    (index: number) => {
+      setPaintIndex(index);
+      patch(PAINT_GROUP, material({ baseColor: PAINT_COLORS[index].hex }));
+    },
+    [patch],
+  );
 
-  const applyWheelFinish = useCallback((index: number) => {
-    const finish = WHEEL_FINISHES[index];
-    setWheelIndex(index);
-    setBindings((current) =>
-      patchGroup(current, WHEEL_GROUP, (binding) => ({
-        ...binding,
-        style: {
-          ...binding.style,
-          material: { ...binding.style?.material, baseColor: finish.hex },
-        },
-      })),
-    );
-  }, []);
+  const applyWheelFinish = useCallback(
+    (index: number) => {
+      setWheelIndex(index);
+      patch(WHEEL_GROUP, material({ baseColor: WHEEL_FINISHES[index].hex }));
+    },
+    [patch],
+  );
 
-  const applyTrimFinish = useCallback((index: number) => {
-    const finish = TRIM_FINISHES[index];
-    setTrimIndex(index);
-    setBindings((current) =>
-      patchGroup(current, TRIM_GROUP, (binding) => ({
-        ...binding,
-        style: {
-          ...binding.style,
-          material: {
-            ...binding.style?.material,
-            baseColor: finish.hex,
-            metalness: finish.metalness,
-            roughness: finish.roughness,
-          },
-        },
-      })),
-    );
-  }, []);
+  const applyTrimFinish = useCallback(
+    (index: number) => {
+      const finish = TRIM_FINISHES[index];
+      setTrimIndex(index);
+      patch(
+        TRIM_GROUP,
+        material({
+          baseColor: finish.hex,
+          metalness: finish.metalness,
+          roughness: finish.roughness,
+        }),
+      );
+    },
+    [patch],
+  );
 
-  const applyAeroVisibility = useCallback((installed: boolean) => {
-    setAeroInstalled(installed);
-    setBindings((current) =>
-      patchGroup(current, AERO_GROUP, (binding) => ({
-        ...binding,
-        visible: installed,
-      })),
-    );
-  }, []);
+  const applyAeroVisibility = useCallback(
+    (installed: boolean) => {
+      setAeroInstalled(installed);
+      patch(AERO_GROUP, { visible: installed });
+    },
+    [patch],
+  );
 
-  const applyWindowTint = useCallback((dark: boolean) => {
-    setWindowsDark(dark);
-    setBindings((current) =>
-      patchGroup(current, WINDOW_GROUP, (binding) => ({
-        ...binding,
-        style: {
-          ...binding.style,
-          material: {
-            ...binding.style?.material,
-            baseColor: dark ? "#020617" : "#0f172a",
-            opacity: dark ? 0.85 : 0.55,
-          },
-        },
-      })),
-    );
-  }, []);
+  const applyWindowTint = useCallback(
+    (dark: boolean) => {
+      setWindowsDark(dark);
+      patch(
+        WINDOW_GROUP,
+        material({
+          baseColor: dark ? "#020617" : "#0f172a",
+          opacity: dark ? 0.85 : 0.55,
+        }),
+      );
+    },
+    [patch],
+  );
 
-  const applyHeadlights = useCallback((on: boolean, colorIndex: number) => {
-    const color = HEADLIGHT_COLORS[colorIndex];
-    setHeadlightsOn(on);
-    setHeadlightColorIndex(colorIndex);
-    setBindings((current) => {
-      const binding = current[HEADLIGHT_KEY];
-      if (!binding) return current;
-      return {
-        ...current,
-        [HEADLIGHT_KEY]: {
-          ...binding,
-          style: {
-            ...binding.style,
-            material: {
-              ...binding.style?.material,
-              emissive: on ? color.hex : undefined,
-              emissiveIntensity: on ? 2.2 : 0,
-            },
-          },
-        },
-      };
-    });
-  }, []);
+  const applyHeadlights = useCallback(
+    (on: boolean, colorIndex: number) => {
+      setHeadlightsOn(on);
+      setHeadlightColorIndex(colorIndex);
+      patch(
+        HEADLIGHT_KEY,
+        material({
+          emissive: on ? HEADLIGHT_COLORS[colorIndex].hex : undefined,
+          emissiveIntensity: on ? 2.2 : 0,
+        }),
+      );
+    },
+    [patch],
+  );
 
   const handleAction = useCallback(
     (event: ObjectActionEvent) => {
@@ -317,14 +278,7 @@ export default function App() {
           return;
         }
 
-        setBindings((current) => {
-          const binding = current[modelObjectId];
-          if (!binding) return current;
-          return {
-            ...current,
-            [modelObjectId]: { ...binding, visible: !binding.visible },
-          };
-        });
+        toggleObjectVisibility(modelObjectId);
         return;
       }
 
@@ -364,6 +318,7 @@ export default function App() {
       headlightsOn,
       paintIndex,
       trimIndex,
+      toggleObjectVisibility,
       wheelIndex,
     ],
   );

@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import type {
-  ModelViewerProps,
-  ObjectActionEvent,
-  ObjectBinding,
+import {
+  material,
+  ModelViewer,
+  useObjectBindings,
+  type BindingEdit,
+  type ModelViewerProps,
+  type ObjectActionEvent,
+  type ObjectBinding,
 } from "@liveroom-tech/react-immersive";
-import { ModelViewer } from "@liveroom-tech/react-immersive";
 import {
   objectBindings as initialObjectBindings,
   type DemoAction,
@@ -117,65 +120,44 @@ function DemoHeader() {
   );
 }
 
-function applyBindingPatch(
-  target: ObjectBinding,
-  patch: Partial<ObjectBinding>,
-): ObjectBinding {
-  return {
-    ...target,
-    ...patch,
-    style: {
-      ...target.style,
-      ...patch.style,
-      material: {
-        ...target.style?.material,
-        ...patch.style?.material,
-      },
-    },
-    metadata: {
-      ...target.metadata,
-      ...patch.metadata,
-    },
-  };
-}
-
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
-  const [objectBindings, setObjectBindings] = useState(() =>
+  const { objectBindings, patch } = useObjectBindings(() =>
     structuredClone(initialObjectBindings),
   );
   const [selectedLabel, setSelectedLabel] = useState("Switch A");
   // Mobile: the switches panel starts collapsed so it doesn't cover the room.
   const [controlsOpen, setControlsOpen] = useState(false);
 
-  const applyAction = useCallback((switchId: string, action: DemoAction) => {
-    setObjectBindings((current) => {
-      const next = { ...current };
+  const applyAction = useCallback(
+    (switchId: string, action: DemoAction) => {
       const switchConfig = SWITCHES.find((item) => item.id === switchId);
       const switchIsOn = action.id.includes("turn-on");
 
-      if (switchConfig && next[switchId]) {
-        next[switchId] = applyBindingPatch(next[switchId], {
-          style: {
-            material: {
-              baseColor: switchIsOn ? switchConfig.color : "#334155",
-              emissive: switchIsOn ? switchConfig.color : undefined,
-              emissiveIntensity: switchIsOn ? 1.2 : 0,
+      const edits: BindingEdit[] = switchConfig
+        ? [
+            {
+              ids: switchId,
+              patch: {
+                ...material({
+                  baseColor: switchIsOn ? switchConfig.color : "#334155",
+                  emissive: switchIsOn ? switchConfig.color : undefined,
+                  emissiveIntensity: switchIsOn ? 1.2 : 0,
+                }),
+                metadata: { state: switchIsOn ? "on" : "off" },
+              },
             },
-          },
-          metadata: { state: switchIsOn ? "on" : "off" },
-        });
-      }
+          ]
+        : [];
 
       for (const effect of action.effects ?? []) {
-        const target = next[effect.targetObjectId];
-        if (!target) continue;
-        next[effect.targetObjectId] = applyBindingPatch(target, effect.patch);
+        edits.push({ ids: effect.targetObjectId, patch: effect.patch });
       }
 
-      return next;
-    });
-  }, []);
+      patch(edits);
+    },
+    [patch],
+  );
 
   const handleAction = useCallback(
     (event: ObjectActionEvent) => {
