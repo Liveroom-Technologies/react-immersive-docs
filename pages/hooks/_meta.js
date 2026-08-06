@@ -8,5 +8,6 @@ export default {
   "use-object-binding": "useObjectBinding",
   "use-object-binding-ids": "useObjectBindingIds",
   "use-object-bindings": "useObjectBindings",
+  "use-scene-config": "useSceneConfig",
   "use-shareable-viewer-state": "useShareableViewerState",
 };

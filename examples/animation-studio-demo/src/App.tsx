@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import {
   ModelViewer,
+  useSceneConfig,
   useViewerAnimations,
   useViewerCamera,
   type ObjectBinding,
@@ -124,7 +125,7 @@ function DemoHeader() {
 
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
-  const [sceneConfig, setSceneConfig] = useState<SceneConfig>(() =>
+  const { sceneConfig, updateSceneConfig } = useSceneConfig(() =>
     structuredClone(baseSceneConfig),
   );
   // Mobile: the playback panel starts collapsed so it doesn't cover the deer.
@@ -184,30 +185,33 @@ export default function App() {
   // object changes, so both survive switching between clips — unlike a one-off
   // imperative call that a later clip change would reset.
   const applyClipConfig = useCallback(
-    (patch: (clip: SceneConfig["animations"]["clips"][number]) => void) => {
-      setSceneConfig((current) => {
-        const next = structuredClone(current);
-        next.animations.clips.forEach(patch);
-        return next;
-      });
+    (
+      update: (
+        clip: SceneConfig["animations"]["clips"][number],
+      ) => SceneConfig["animations"]["clips"][number],
+    ) => {
+      updateSceneConfig((current) => ({
+        animations: {
+          clips: current.animations.clips.map(update),
+        },
+      }));
     },
-    [],
+    [updateSceneConfig],
   );
 
   const changeSpeed = useCallback(
     (value: number) => {
       setSpeed(value);
-      applyClipConfig((clip) => {
-        clip.speed = value;
-      });
+      applyClipConfig((clip) => ({ ...clip, speed: value }));
     },
     [applyClipConfig, setSpeed],
   );
 
   const toggleLoop = useCallback(() => {
-    applyClipConfig((clip) => {
-      clip.loopMode = loopRepeat ? "once" : "repeat";
-    });
+    applyClipConfig((clip) => ({
+      ...clip,
+      loopMode: loopRepeat ? "once" : "repeat",
+    }));
   }, [applyClipConfig, loopRepeat]);
 
   const togglePlay = useCallback(() => {

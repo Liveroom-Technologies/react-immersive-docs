@@ -122,7 +122,7 @@ function DemoHeader() {
 
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
-  const { objectBindings, patch } = useObjectBindings(() =>
+  const { objectBindings, updateObjectBindings } = useObjectBindings(() =>
     structuredClone(initialObjectBindings),
   );
   const [selectedLabel, setSelectedLabel] = useState("Switch A");
@@ -154,9 +154,9 @@ export default function App() {
         edits.push({ ids: effect.targetObjectId, patch: effect.patch });
       }
 
-      patch(edits);
+      updateObjectBindings(edits);
     },
-    [patch],
+    [updateObjectBindings],
   );
 
   const handleAction = useCallback(

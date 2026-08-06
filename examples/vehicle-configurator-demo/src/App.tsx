@@ -169,7 +169,7 @@ export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
   const {
     objectBindings: bindings,
-    patch,
+    updateObjectBindings,
     toggleObjectVisibility,
   } = useObjectBindings(() => structuredClone(initialObjectBindings));
   const [selectedLabel, setSelectedLabel] = useState("Cartoon Car");
@@ -200,24 +200,30 @@ export default function App() {
   const applyPaint = useCallback(
     (index: number) => {
       setPaintIndex(index);
-      patch(PAINT_GROUP, material({ baseColor: PAINT_COLORS[index].hex }));
+      updateObjectBindings(
+        PAINT_GROUP,
+        material({ baseColor: PAINT_COLORS[index].hex }),
+      );
     },
-    [patch],
+    [updateObjectBindings],
   );
 
   const applyWheelFinish = useCallback(
     (index: number) => {
       setWheelIndex(index);
-      patch(WHEEL_GROUP, material({ baseColor: WHEEL_FINISHES[index].hex }));
+      updateObjectBindings(
+        WHEEL_GROUP,
+        material({ baseColor: WHEEL_FINISHES[index].hex }),
+      );
     },
-    [patch],
+    [updateObjectBindings],
   );
 
   const applyTrimFinish = useCallback(
     (index: number) => {
       const finish = TRIM_FINISHES[index];
       setTrimIndex(index);
-      patch(
+      updateObjectBindings(
         TRIM_GROUP,
         material({
           baseColor: finish.hex,
@@ -226,21 +232,21 @@ export default function App() {
         }),
       );
     },
-    [patch],
+    [updateObjectBindings],
   );
 
   const applyAeroVisibility = useCallback(
     (installed: boolean) => {
       setAeroInstalled(installed);
-      patch(AERO_GROUP, { visible: installed });
+      updateObjectBindings(AERO_GROUP, { visible: installed });
     },
-    [patch],
+    [updateObjectBindings],
   );
 
   const applyWindowTint = useCallback(
     (dark: boolean) => {
       setWindowsDark(dark);
-      patch(
+      updateObjectBindings(
         WINDOW_GROUP,
         material({
           baseColor: dark ? "#020617" : "#0f172a",
@@ -248,14 +254,14 @@ export default function App() {
         }),
       );
     },
-    [patch],
+    [updateObjectBindings],
   );
 
   const applyHeadlights = useCallback(
     (on: boolean, colorIndex: number) => {
       setHeadlightsOn(on);
       setHeadlightColorIndex(colorIndex);
-      patch(
+      updateObjectBindings(
         HEADLIGHT_KEY,
         material({
           emissive: on ? HEADLIGHT_COLORS[colorIndex].hex : undefined,
@@ -263,7 +269,7 @@ export default function App() {
         }),
       );
     },
-    [patch],
+    [updateObjectBindings],
   );
 
   const handleAction = useCallback(

@@ -592,14 +592,17 @@ restores the original material references. Meshes without UV0 coordinates appear
 magenta and trigger an explanatory notice.
 
 ```tsx
-<ModelViewer
-  {...props}
-  sceneConfig={{
-    ...sceneConfig,
-    model: { ...sceneConfig.model, renderer: "uv-checker" },
-  }}
-/>
+const { sceneConfig, updateSceneConfig } = useSceneConfig(initialSceneConfig);
+
+const enableUvChecker = () =>
+  updateSceneConfig({ model: { renderer: "uv-checker" } });
+
+<ModelViewer {...props} sceneConfig={sceneConfig} />
+<button onClick={enableUvChecker}>Show UV checker</button>
 ```
+
+See [`useSceneConfig`](/hooks/use-scene-config) for nested scene updates and the
+pure `patchSceneConfig` alternative.
 
 ---
 

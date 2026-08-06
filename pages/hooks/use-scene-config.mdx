@@ -1,0 +1,99 @@
+---
+title: useSceneConfig
+---
+
+# `useSceneConfig`
+
+Own scene-wide configuration state and update nested settings without repetitive
+object spreads.
+
+## Usage
+
+```tsx
+import {
+  ModelViewer,
+  useSceneConfig,
+} from "@liveroom-tech/react-immersive";
+import { sceneConfig as initialSceneConfig } from "./sceneConfig";
+
+const {
+  sceneConfig,
+  setSceneConfig,
+  updateSceneConfig,
+  resetSceneConfig,
+} = useSceneConfig(initialSceneConfig);
+
+const enableUvChecker = () => {
+  updateSceneConfig({
+    model: { renderer: "uv-checker" },
+  });
+
+  updateSceneConfig({
+    lighting: {
+      ambient: { intensity: 0.5 },
+    },
+  });
+};
+
+<ModelViewer sceneConfig={sceneConfig} ... />
+<button onClick={enableUvChecker}>Show UV checker</button>
+```
+
+Every update runs through a functional React state updater, so consecutive calls
+in the same tick compose safely.
+
+## Updating from current state
+
+Pass a function when an update depends on the current configuration:
+
+```tsx
+const speedUpWalk = () =>
+  updateSceneConfig((current) => ({
+    animations: {
+      clips: current.animations.clips.map((clip) =>
+        clip.sourceName === "Walk" ? { ...clip, speed: 1.5 } : clip,
+      ),
+    },
+  }));
+```
+
+## Merge behavior
+
+- Nested configuration objects are merged recursively.
+- Arrays and tuples are replaced wholesale.
+- The input configuration and patch are not mutated.
+- `resetSceneConfig` restores the configuration supplied when the hook mounted.
+- `setSceneConfig` remains available when the complete configuration must be replaced.
+
+Arrays include lights, animation clips, annotations, and cinematic waypoints.
+Supply the complete replacement array when updating one of these fields.
+
+## Returns
+
+| Name                | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `sceneConfig`       | Current scene configuration                      |
+| `setSceneConfig`    | React state dispatcher for complete replacements |
+| `updateSceneConfig` | Merge a nested patch into the current state      |
+| `resetSceneConfig`  | Restore the initial scene configuration          |
+
+## Externally owned state
+
+Use the pure `patchSceneConfig` function when a store or parent owns the state:
+
+```tsx
+import { patchSceneConfig } from "@liveroom-tech/react-immersive";
+
+const next = patchSceneConfig(sceneConfig, {
+  background: {
+    enabled: true,
+    type: "color",
+    color: "#111827",
+  },
+});
+
+onSceneConfigChange(next);
+```
+
+The library also exports the `SceneConfigPatch`, `SceneConfigUpdate`, and
+`SceneConfigController` types.

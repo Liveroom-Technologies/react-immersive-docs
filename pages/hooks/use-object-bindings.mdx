@@ -25,7 +25,7 @@ import {
 const {
   objectBindings,
   setObjectBindings,
-  patch,
+  updateObjectBindings,
   setMaterial,
   setBaseColor,
   resetMaterial,
@@ -57,10 +57,10 @@ const {
 Patch one object, a group, or an atomic edit batch:
 
 ```tsx
-patch("body", { visible: false });
-patch(["wheel-front", "wheel-rear"], { selectable: false });
+updateObjectBindings("body", { visible: false });
+updateObjectBindings(["wheel-front", "wheel-rear"], { selectable: false });
 
-patch([
+updateObjectBindings([
   { ids: "body", patch: { metadata: { state: "active" } } },
   { ids: ["light-left", "light-right"], patch: { visible: true } },
 ]);
@@ -108,7 +108,7 @@ binding state.
 | ------------------------ | ------------------------------------------------ |
 | `objectBindings`         | Current object-binding state                     |
 | `setObjectBindings`      | React state dispatcher for controlled viewers    |
-| `patch`                  | Patch one object, a group, or an atomic edit batch |
+| `updateObjectBindings`   | Update one object, a group, or an atomic edit batch |
 | `setMaterial`            | Merge material fields                            |
 | `setBaseColor`           | Set the material base color                      |
 | `resetMaterial`          | Remove the material override                     |
