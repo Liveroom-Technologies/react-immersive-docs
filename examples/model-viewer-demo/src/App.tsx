@@ -56,6 +56,7 @@ export default function App() {
           performanceProfile="auto"
           meshopt
           showUvCheckerButton
+          showExplodeControls
           showMeasureTools
           measurementUnit="m"
           enableXR

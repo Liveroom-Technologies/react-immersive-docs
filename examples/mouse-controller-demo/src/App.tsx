@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { ModelViewer } from "@liveroom-tech/react-immersive";
+import {
+  ModelViewer,
+  useViewerCamera,
+} from "@liveroom-tech/react-immersive";
 import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
 import { objectBindings } from "./objectBindings";
 
@@ -24,6 +27,7 @@ const positions: { label: string; value: MouseControllerPosition }[] = [
 
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
+  const { handleCameraChange, handleViewerReady } = useViewerCamera();
   const [moveSensitivity, setMoveSensitivity] = useState(0.1);
   const [opacity, setOpacity] = useState(0.9);
   const [position, setPosition] =
@@ -55,14 +59,20 @@ export default function App() {
             backgroundColor="#080b12"
             shadows
             showObjectBindingDataPanel={false}
-            showSceneObjectsPanel={false}
+            showSceneObjectsPanel
             showDownloadButton={false}
             showMouseController
             mouseControllerPosition={position}
             mouseControllerOpacity={opacity}
             moveSensitivity={moveSensitivity}
+            zoomSensitivity={1}
             showResetButton
             refitOnResize={false}
+            renderMode="always"
+            performanceProfile="auto"
+            maxDpr={2}
+            onCameraChange={handleCameraChange}
+            onViewerReady={handleViewerReady}
           />
           <section className="mouse-controller-settings" aria-label="Controller settings">
             <div className="mouse-controller-settings__heading">

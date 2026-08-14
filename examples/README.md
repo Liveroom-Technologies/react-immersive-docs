@@ -7,6 +7,9 @@ These examples are safe-to-share public starters for `@liveroom-tech/react-immer
 - `binding-builder-demo` mirrors the public scene-editor style demo.
 - `switch-room-demo` shows two switches controlling four lights with exported
   object bindings, action effects, and reactive scene lighting.
+- `light-flicker-demo` uses synchronized runtime effects, model-attached point
+  lights, camera configuration, and one shared viewer connection to turn a
+  static bulb model into a horror lighting scene.
 - `vehicle-configurator-demo` shows grouped paint, wheel, trim, aero-kit,
   window-tint, and headlight configurator flows driven by exported object
   bindings.

@@ -1,184 +1,38 @@
-import { defineObjectBindings } from "@liveroom-tech/react-immersive";
+import {
+  defineObjectBindings,
+  type ObjectBinding,
+} from "@liveroom-tech/react-immersive";
+
+function binding(
+  id: string,
+  modelObjectId: string,
+  label: string,
+): ObjectBinding {
+  return {
+    id,
+    modelObjectId,
+    type: "other",
+    label,
+    status: "normal",
+    selectable: true,
+    hoverable: true,
+    visible: true,
+    style: {},
+    actions: [],
+    metrics: {},
+    metadata: {},
+  };
+}
 
 export const objectBindings = defineObjectBindings({
-  "Object_11": {
-    "id": "object-11",
-    "modelObjectId": "Object_11",
-    "type": "other",
-    "label": "Object 11",
-    "status": "normal",
-    "selectable": true,
-    "hoverable": true,
-    "visible": true,
-    "style": {},
-    "actions": [
-      {
-        "id": "change-color",
-        "label": "Change Color",
-        "type": "command"
-      },
-      {
-        "id": "change-material",
-        "label": "Change Material",
-        "type": "command"
-      },
-      {
-        "id": "toggle-visibility",
-        "label": "Toggle Visibility",
-        "type": "command"
-      }
-    ],
-    "metrics": {},
-    "metadata": {}
-  },
-  "Object_13": {
-    "id": "object-13",
-    "modelObjectId": "Object_13",
-    "type": "other",
-    "label": "Object 13",
-    "status": "normal",
-    "selectable": true,
-    "hoverable": true,
-    "visible": true,
-    "style": {},
-    "actions": [
-      {
-        "id": "change-color",
-        "label": "Change Color",
-        "type": "command"
-      },
-      {
-        "id": "change-material",
-        "label": "Change Material",
-        "type": "command"
-      },
-      {
-        "id": "toggle-visibility",
-        "label": "Toggle Visibility",
-        "type": "command"
-      }
-    ],
-    "metrics": {},
-    "metadata": {}
-  },
-  "Object_4": {
-    "id": "object-4",
-    "modelObjectId": "Object_4",
-    "type": "other",
-    "label": "Object 4",
-    "status": "normal",
-    "selectable": true,
-    "hoverable": true,
-    "visible": true,
-    "style": {},
-    "actions": [
-      {
-        "id": "change-color",
-        "label": "Change Color",
-        "type": "command"
-      },
-      {
-        "id": "change-material",
-        "label": "Change Material",
-        "type": "command"
-      },
-      {
-        "id": "toggle-visibility",
-        "label": "Toggle Visibility",
-        "type": "command"
-      }
-    ],
-    "metrics": {},
-    "metadata": {}
-  },
-  "Object_6": {
-    "id": "object-6",
-    "modelObjectId": "Object_6",
-    "type": "other",
-    "label": "Object 6",
-    "status": "normal",
-    "selectable": true,
-    "hoverable": true,
-    "visible": true,
-    "style": {},
-    "actions": [
-      {
-        "id": "change-color",
-        "label": "Change Color",
-        "type": "command"
-      },
-      {
-        "id": "change-material",
-        "label": "Change Material",
-        "type": "command"
-      },
-      {
-        "id": "toggle-visibility",
-        "label": "Toggle Visibility",
-        "type": "command"
-      }
-    ],
-    "metrics": {},
-    "metadata": {}
-  },
-  "Object_8": {
-    "id": "object-8",
-    "modelObjectId": "Object_8",
-    "type": "other",
-    "label": "Object 8",
-    "status": "normal",
-    "selectable": true,
-    "hoverable": true,
-    "visible": true,
-    "style": {},
-    "actions": [
-      {
-        "id": "change-color",
-        "label": "Change Color",
-        "type": "command"
-      },
-      {
-        "id": "change-material",
-        "label": "Change Material",
-        "type": "command"
-      },
-      {
-        "id": "toggle-visibility",
-        "label": "Toggle Visibility",
-        "type": "command"
-      }
-    ],
-    "metrics": {},
-    "metadata": {}
-  },
-  "Object_9": {
-    "id": "object-9",
-    "modelObjectId": "Object_9",
-    "type": "other",
-    "label": "Object 9",
-    "status": "normal",
-    "selectable": true,
-    "hoverable": true,
-    "visible": true,
-    "style": {},
-    "actions": [
-      {
-        "id": "change-color",
-        "label": "Change Color",
-        "type": "command"
-      },
-      {
-        "id": "change-material",
-        "label": "Change Material",
-        "type": "command"
-      },
-      {
-        "id": "toggle-visibility",
-        "label": "Toggle Visibility",
-        "type": "command"
-      }
-    ],
-    "metrics": {},
-    "metadata": {}
-  }
+  Object_4: binding("apartment-glass", "Object_4", "Window glass"),
+  bake_1: binding("apartment-baked-lighting", "bake_1", "Baked lighting"),
+  Object_6: binding("apartment-shell", "Object_6", "Apartment shell"),
+  rendertotexture_2: binding("apartment-textures", "rendertotexture_2", "Interior textures"),
+  Object_8: binding("apartment-kitchen", "Object_8", "Kitchen"),
+  Object_9: binding("apartment-living-area", "Object_9", "Living area"),
+  bakeplantas_3: binding("apartment-plants", "bakeplantas_3", "Plants"),
+  Object_11: binding("apartment-furniture", "Object_11", "Furniture"),
+  "B-ACC-06-Plant_4": binding("apartment-plant", "B-ACC-06-Plant_4", "Accent plant"),
+  Object_13: binding("apartment-details", "Object_13", "Interior details"),
 });

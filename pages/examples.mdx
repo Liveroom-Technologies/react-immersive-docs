@@ -24,6 +24,7 @@ The fuller `ModelViewer` experience used for the richer hosted demo:
 - Object bindings and per-object actions
 - Scene config wiring
 - UV Checker toolbar
+- Exploded-view controls
 - Measurement tools
 - Annotation navigation
 - XR flags and performance tuning
@@ -89,6 +90,7 @@ unstable electrical circuit:
 - `useObjectBindings` applies the BindingBuilder-exported model setup
 - `useSceneConfig` changes the environment, bloom, and vignette by preset
 - `useViewerEffects` drives filament, glass, and point-light channels without Three.js access
+- `useViewerConnection` shares one viewer-ready callback across camera, effects, and light setup
 - Runtime point lights attach to their filament meshes and follow them automatically
 - Failing-circuit mode dims every bulb together from one shared signal
 - Possessed mode gives every bulb independent dim, flash, and blackout timing

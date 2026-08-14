@@ -52,7 +52,11 @@ Examples live in `examples/` as standalone Vite apps:
 - `model-viewer-demo`
 - `binding-builder-demo`
 - `switch-room-demo`
+- `light-flicker-demo`
 - `vehicle-configurator-demo`
+- `exploded-view-demo`
+- `mouse-controller-demo`
+- `cinematic-tour-demo`
 - `guided-tour-demo`
 - `shareable-view-demo`
 - `ar-product-viewer-demo`

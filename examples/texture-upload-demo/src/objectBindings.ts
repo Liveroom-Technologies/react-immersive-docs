@@ -24,11 +24,6 @@ export const objectBindings = defineObjectBindings({
         label: "Change Material",
         type: "command",
       },
-      {
-        id: "toggle-visibility",
-        label: "Toggle Visibility",
-        type: "command",
-      },
     ],
     metrics: {},
     metadata: {},
@@ -54,11 +49,6 @@ export const objectBindings = defineObjectBindings({
       {
         id: "change-material",
         label: "Change Material",
-        type: "command",
-      },
-      {
-        id: "toggle-visibility",
-        label: "Toggle Visibility",
         type: "command",
       },
     ],
@@ -88,11 +78,6 @@ export const objectBindings = defineObjectBindings({
         label: "Change Material",
         type: "command",
       },
-      {
-        id: "toggle-visibility",
-        label: "Toggle Visibility",
-        type: "command",
-      },
     ],
     metrics: {},
     metadata: {},
@@ -118,11 +103,6 @@ export const objectBindings = defineObjectBindings({
       {
         id: "change-material",
         label: "Change Material",
-        type: "command",
-      },
-      {
-        id: "toggle-visibility",
-        label: "Toggle Visibility",
         type: "command",
       },
     ],

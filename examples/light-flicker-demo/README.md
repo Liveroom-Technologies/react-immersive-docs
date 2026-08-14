@@ -20,6 +20,7 @@ The demo shows how to:
 - Give every bulb independent failure timing in possessed mode.
 - Load the `objectBindings` and `sceneConfig` exported by BindingBuilder.
 - Use `useViewerCamera` for model-specific camera framing.
+- Combine camera, effects, and point-light setup with `useViewerConnection`.
 
 ## Model
 

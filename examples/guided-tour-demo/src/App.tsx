@@ -1,6 +1,10 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
-import { ModelViewer, type SceneConfig } from "@liveroom-tech/react-immersive";
+import {
+  ModelViewer,
+  useViewerCamera,
+  type SceneConfig,
+} from "@liveroom-tech/react-immersive";
 import { objectBindings } from "./objectBindings";
 import { sceneConfig } from "./sceneConfig";
 import { DemoPageHeader } from "./DemoLayout";
@@ -48,6 +52,7 @@ export default function App() {
   const [activeAnnotation, setActiveAnnotation] = useState<TourStop | null>(
     null,
   );
+  const { handleCameraChange, handleViewerReady } = useViewerCamera();
 
   const activeIndex = activeAnnotation
     ? STOPS.findIndex((stop) => stop.id === activeAnnotation.id)
@@ -103,6 +108,8 @@ export default function App() {
             maxDpr={2}
             refitOnResize={false}
             zoomOnSelected={false}
+            onCameraChange={handleCameraChange}
+            onViewerReady={handleViewerReady}
           />
 
           <section style={styles.panel}>
