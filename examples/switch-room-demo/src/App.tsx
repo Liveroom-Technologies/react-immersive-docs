@@ -1,18 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import {
-  material,
   ModelViewer,
   useObjectBindings,
-  type BindingEdit,
-  type ModelViewerProps,
+  useSceneConfig,
+  useViewerActions,
   type ObjectActionEvent,
   type ObjectBinding,
 } from "@liveroom-tech/react-immersive";
-import {
-  objectBindings as initialObjectBindings,
-  type DemoAction,
-} from "./objectBindings";
+import { objectBindings as initialObjectBindings } from "./objectBindings";
+import { SWITCH_LIGHT_IDS, switchSceneConfig } from "./sceneConfig";
 import { DemoPageHeader } from "./DemoLayout";
 
 const MODEL_URL = "/switch-room.glb";
@@ -54,19 +51,14 @@ const SWITCHES = [
   },
 ];
 
-const LIGHT_POSITIONS: Record<string, [number, number, number]> = {
-  light_a_1: [-2.45, 2.05, -2.04],
-  light_a_2: [-0.9, 2.05, -2.04],
-  light_b_1: [0.9, 2.05, -2.04],
-  light_b_2: [2.45, 2.05, -2.04],
-};
-
 function DemoHeader() {
   const features = [
     "Exported objectBindings",
-    "Switch action effects",
+    "Declarative action effects",
+    "useViewerActions executor",
     "Stateful light materials",
-    "Reactive scene lighting",
+    "Attached scene lights",
+    "useSceneConfig light controller",
   ];
 
   // On phones the description is clamped to two lines with a "Read more"
@@ -94,8 +86,8 @@ function DemoHeader() {
           className={`demo-desc${expanded ? " demo-desc--expanded" : ""}`}
           style={styles.description}
         >
-          Two switches control four lights. The switch actions patch the
-          relevant light bindings, and the scene lighting responds to the same
+          Two switches control four lights. useViewerActions executes each
+          exported action effect, and the scene lighting responds to the same
           state.
         </p>
         {(truncated || expanded) && (
@@ -122,53 +114,38 @@ function DemoHeader() {
 
 export default function App() {
   const licenseKey = import.meta.env.VITE_LICENSE_KEY ?? "";
-  const { objectBindings, updateObjectBindings } = useObjectBindings(() =>
+  const bindings = useObjectBindings(() =>
     structuredClone(initialObjectBindings),
   );
+  const { objectBindings } = bindings;
   const [selectedLabel, setSelectedLabel] = useState("Switch A");
+  const scene = useSceneConfig(switchSceneConfig);
+  const {
+    sceneConfig,
+    updateSceneConfig,
+    lights: sceneLights,
+  } = scene;
+  const {
+    setIntensity: setSceneLightIntensity,
+    show: showSceneLight,
+    hide: hideSceneLight,
+    attach: attachSceneLight,
+  } = sceneLights;
   // Mobile: the switches panel starts collapsed so it doesn't cover the room.
   const [controlsOpen, setControlsOpen] = useState(false);
 
-  const applyAction = useCallback(
-    (switchId: string, action: DemoAction) => {
-      const switchConfig = SWITCHES.find((item) => item.id === switchId);
-      const switchIsOn = action.id.includes("turn-on");
-
-      const edits: BindingEdit[] = switchConfig
-        ? [
-            {
-              ids: switchId,
-              patch: {
-                ...material({
-                  baseColor: switchIsOn ? switchConfig.color : "#334155",
-                  emissive: switchIsOn ? switchConfig.color : undefined,
-                  emissiveIntensity: switchIsOn ? 1.2 : 0,
-                }),
-                metadata: { state: switchIsOn ? "on" : "off" },
-              },
-            },
-          ]
-        : [];
-
-      for (const effect of action.effects ?? []) {
-        edits.push({ ids: effect.targetObjectId, patch: effect.patch });
-      }
-
-      updateObjectBindings(edits);
-    },
-    [updateObjectBindings],
-  );
-
-  const handleAction = useCallback(
+  const recordAction = useCallback(
     (event: ObjectActionEvent) => {
-      const action = event.action as DemoAction;
-      const switchId = event.binding?.modelObjectId ?? event.objectId;
-
-      applyAction(switchId, action);
-      setSelectedLabel(event.binding?.label ?? switchId);
+      setSelectedLabel(event.binding?.label ?? event.objectId);
     },
-    [applyAction],
+    [],
   );
+
+  const { handleAction: handleViewerAction, runAction } = useViewerActions({
+    bindings,
+    scene,
+    onAction: recordAction,
+  });
 
   // Flip a switch from whatever its current state is, by running the matching
   // turn-on / turn-off action already declared on its binding.
@@ -183,9 +160,9 @@ export default function App() {
       );
       if (!action) return;
 
-      applyAction(switchId, action);
+      void runAction(switchId, action.id);
     },
-    [applyAction, objectBindings],
+    [objectBindings, runAction],
   );
 
   const handleObjectSelect = useCallback(
@@ -201,46 +178,57 @@ export default function App() {
     [toggleSwitch],
   );
 
-  const lightsOn =["light_a_1", "light_a_2", "light_b_1", "light_b_2"].filter(
+  const lightsOn = SWITCH_LIGHT_IDS.filter(
     (lightId) => objectBindings[lightId]?.metadata?.state === "on",
   ).length;
   const ambientIntensity = lightsOn === 0 ? 0.035 : 0.16 + lightsOn * 0.045;
   const keyLightIntensity = lightsOn === 0 ? 0.04 : 0.25 + lightsOn * 0.08;
-  const sceneLights: ModelViewerProps["lights"] = (
-    <>
-      <ambientLight color="#dbeafe" intensity={ambientIntensity} />
-      <directionalLight
-        color="#f8fafc"
-        intensity={keyLightIntensity}
-        position={[3, 5, 4]}
-      />
-      {Object.entries(LIGHT_POSITIONS).map(([lightId, position]) =>
-        objectBindings[lightId]?.metadata?.state === "on" ? (
-          <pointLight
-            key={lightId}
-            color="#fde68a"
-            distance={4}
-            intensity={1.8}
-            position={position}
-          />
-        ) : null,
-      )}
-    </>
-  );
+  useEffect(() => {
+    for (const objectId of SWITCH_LIGHT_IDS) {
+      attachSceneLight(`scene-${objectId}`, {
+        objectId,
+        offset: [0, 0, 0],
+      });
+    }
+  }, [attachSceneLight]);
+
+  useEffect(() => {
+    updateSceneConfig({ lighting: { ambient: { intensity: ambientIntensity } } });
+    setSceneLightIntensity("switch-room-key", keyLightIntensity);
+
+    for (const lightId of SWITCH_LIGHT_IDS) {
+      const sceneLightId = `scene-${lightId}`;
+      if (objectBindings[lightId]?.metadata?.state === "on") {
+        showSceneLight(sceneLightId);
+      } else {
+        hideSceneLight(sceneLightId);
+      }
+    }
+  }, [
+    ambientIntensity,
+    keyLightIntensity,
+    objectBindings,
+    hideSceneLight,
+    setSceneLightIntensity,
+    showSceneLight,
+    updateSceneConfig,
+  ]);
 
   return (
     <main className="demo-page" style={styles.page}>
       <style>{RESPONSIVE_CSS}</style>
       <DemoPageHeader
         title="Switch Demo"
-        description="A small room model where an exported objectBindings file defines two switches and four lights. Switch actions patch the relevant light bindings."
+        description="A small room model where exported declarative actions update switches and grouped lights through useViewerActions."
         features={[
           "BindingBuilder-style export",
           "Plain objectBindings state",
-          "Switch action effects",
+          "Declarative action effects",
+          "useViewerActions executor",
           "Four stateful lights",
           "Live material patches",
-          "Reactive scene lighting",
+          "Attached scene lights",
+          "useSceneConfig light controller",
         ]}
       />
       {!licenseKey ? (
@@ -264,8 +252,8 @@ export default function App() {
             modelUrl={MODEL_URL}
             licenseKey={licenseKey}
             objectBindings={objectBindings as Record<string, ObjectBinding>}
-            lights={sceneLights}
-            onAction={handleAction}
+            sceneConfig={sceneConfig}
+            onAction={handleViewerAction}
             onObjectSelect={handleObjectSelect}
             backgroundColor="#07111f"
             camera={{ position: [8, 6, 8], fov: 48 }}

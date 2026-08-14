@@ -1,7 +1,7 @@
 # light-flicker-demo
 
-A Vite example that turns nine static incandescent-bulb meshes into an
-asynchronous horror-film lighting effect with React Immersive.
+A Vite example that turns nine static incandescent-bulb meshes into a
+horror-film lighting effect with React Immersive.
 
 ## Run
 
@@ -14,11 +14,12 @@ The demo shows how to:
 
 - Apply atomic material presets with `useObjectBindings`.
 - Change the environment, bloom, and vignette with `useSceneConfig`.
-- Drive live filament, glass, and point-light intensities from the same values.
+- Drive filament, glass, and point-light channels with `useViewerEffects`.
+- Attach runtime point lights to model objects without Three.js or R3F light code.
 - Dim every bulb together in failing-circuit mode.
 - Give every bulb independent failure timing in possessed mode.
 - Load the `objectBindings` and `sceneConfig` exported by BindingBuilder.
-- Use `onViewerReady` for model-specific camera framing.
+- Use `useViewerCamera` for model-specific camera framing.
 
 ## Model
 

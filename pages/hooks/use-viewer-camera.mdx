@@ -4,12 +4,20 @@ title: useViewerCamera
 
 # `useViewerCamera`
 
-Provides camera state and imperative helpers for resetting, focusing, and fitting the scene.
+Provides declarative initial framing, live camera state, named presets, and camera movement helpers without direct `CameraControls` calls.
 
 ## Usage
 
 ```tsx
-import { useViewerCamera } from "@liveroom-tech/react-immersive";
+import { ModelViewer, useViewerCamera } from "@liveroom-tech/react-immersive";
+
+const camera = useViewerCamera({
+  initialPosition: [0, 2, 8],
+  initialTarget: [0, 1.2, 0],
+  presets: {
+    detail: { position: [2, 1.2, 2.5], target: [0, 1.1, 0], fov: 35 },
+  },
+});
 
 const {
   cameraState,
@@ -17,9 +25,14 @@ const {
   focusObject,
   fitScene,
   setCameraTarget,
+  lookAt,
+  orbitTo,
+  dollyTo,
+  savePreset,
+  goToPreset,
   handleCameraChange,
   handleViewerReady,
-} = useViewerCamera();
+} = camera;
 
 <ModelViewer
   onCameraChange={handleCameraChange}
@@ -32,13 +45,20 @@ const {
 
 | Name                 | Type                                                 | Description                                                                   |
 | -------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `cameraState`        | `CameraState \| null`                                | Latest camera `position`, `target`, `fov`, `zoom`                             |
-| `resetView`          | `() => void`                                         | Resets the controls to their initial saved state                              |
-| `focusObject`        | `(id: string) => void`                               | Fits the camera to a binding by key, `binding.id`, or `binding.modelObjectId` |
-| `fitScene`           | `() => void`                                         | Fits the camera to the whole loaded scene                                     |
-| `setCameraTarget`    | `(target: [number, number, number]) => void`         | Sets the camera target to a given `[x, y, z]`                                 |
+| `cameraState`        | `ViewerCameraState \| null`                          | Latest camera `position`, `target`, `fov`, `zoom`                             |
+| `cameraPresets`      | `Record<string, ViewerCameraPreset>`                 | Current named views                                                           |
+| `resetView`          | `() => Promise<boolean>`                             | Resets the controls to their initial saved state                              |
+| `focusObject`        | `(id: string) => Promise<boolean>`                   | Fits the camera to a binding by key, `binding.id`, or `binding.modelObjectId` |
+| `fitScene`           | `() => Promise<boolean>`                             | Fits the camera to the whole loaded scene                                     |
+| `setCameraTarget`    | `(target, transition?) => Promise<boolean>`          | Sets the camera target to a given `[x, y, z]`                                 |
+| `setCameraState`     | `(state, transition?) => Promise<boolean>`            | Restores a complete camera state                                              |
+| `lookAt`             | `(position, target, transition?) => Promise<boolean>`  | Moves the camera position and target together                                 |
+| `orbitTo`            | `(azimuth, polar, transition?) => Promise<boolean>`    | Moves to orbit angles in radians                                              |
+| `dollyTo`            | `(distance, transition?) => Promise<boolean>`          | Moves to a distance from the current target                                   |
+| `savePreset`         | `(name: string) => ViewerCameraState \| null`          | Saves the current view under a name                                           |
+| `goToPreset`         | `(name, transition?) => Promise<boolean>`               | Moves to a named view                                                         |
 | `handleCameraChange` | `(camera: Camera, controls: CameraControls) => void` | Callback to pass to `onCameraChange`                                          |
-| `handleViewerReady`  | `(viewer: ViewerReadyState) => void`                 | Callback to pass to `onViewerReady`                                           |
+| `handleViewerReady`  | `(viewer: ViewerReadyState) => void`                 | Pass to `onViewerReady`, or compose with `useViewerConnection`                 |
 
 ## Example
 
@@ -47,6 +67,13 @@ const {
 <button onClick={() => focusObject("some-object-id")}>Focus Object</button>
 <button onClick={() => fitScene()}>Fit Scene</button>
 <button onClick={() => setCameraTarget([0, 0, 0])}>Target Origin</button>
+<button onClick={() => lookAt([4, 2, 6], [0, 1, 0])}>Three-quarter view</button>
+<button onClick={() => orbitTo(Math.PI / 2, Math.PI / 3)}>Orbit</button>
+<button onClick={() => dollyTo(4)}>Move closer</button>
+<button onClick={() => savePreset("custom")}>Save View</button>
+<button onClick={() => goToPreset("custom")}>Restore View</button>
 
 <pre>{JSON.stringify(cameraState, null, 2)}</pre>
 ```
+
+Each initial position or target is optional and is applied once for every loaded model. Set `initialTransition: true` to animate into it. The default is `false`. `cameraPresets` contains the current named preset record.

@@ -1,9 +1,11 @@
-import type { ObjectBinding } from "@liveroom-tech/react-immersive";
+import { defineObjectBindings } from "@liveroom-tech/react-immersive";
 
-export const objectBindings: Record<string, ObjectBinding> = {
+export const objectBindings = defineObjectBindings({
   "black_floats_chrome_0": {
     "id": "black-floats-chrome-0",
     "modelObjectId": "black_floats_chrome_0",
+    "group": "trim",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Black Floats Chrome 0",
     "status": "normal",
@@ -94,6 +96,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "body_car_body_0": {
     "id": "body-car-body-0",
     "modelObjectId": "body_car_body_0",
+    "group": "paint",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Body Car Body 0",
     "status": "normal",
@@ -124,6 +128,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "exhaust_chrome_0": {
     "id": "exhaust-chrome-0",
     "modelObjectId": "exhaust_chrome_0",
+    "group": "trim",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Exhaust Chrome 0",
     "status": "normal",
@@ -154,6 +160,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "front_bumper_carbon_fiber_0": {
     "id": "front-bumper-carbon-fiber-0",
     "modelObjectId": "front_bumper_carbon_fiber_0",
+    "group": "aero",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Front Bumper Carbon Fiber 0",
     "status": "normal",
@@ -184,6 +192,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "front_fenders_carbon_fiber_0": {
     "id": "front-fenders-carbon-fiber-0",
     "modelObjectId": "front_fenders_carbon_fiber_0",
+    "group": "aero",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Front Fenders Carbon Fiber 0",
     "status": "normal",
@@ -214,6 +224,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "front_left_wheel_wheel_0": {
     "id": "front-left-wheel-wheel-0",
     "modelObjectId": "front_left_wheel_wheel_0",
+    "group": "wheels",
+    "tags": ["exterior", "configurable"],
     "type": "wheel",
     "label": "Front Left Wheel Wheel 0",
     "status": "normal",
@@ -244,6 +256,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "front_right_wheel_wheel_0": {
     "id": "front-right-wheel-wheel-0",
     "modelObjectId": "front_right_wheel_wheel_0",
+    "group": "wheels",
+    "tags": ["exterior", "configurable"],
     "type": "wheel",
     "label": "Front Right Wheel Wheel 0",
     "status": "normal",
@@ -274,6 +288,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "headlight_glass_headlight_glass_0": {
     "id": "headlight-glass-headlight-glass-0",
     "modelObjectId": "headlight_glass_headlight_glass_0",
+    "group": "headlight",
+    "tags": ["exterior", "configurable"],
     "type": "light",
     "label": "Headlight Glass Headlight Glass 0",
     "status": "normal",
@@ -304,6 +320,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "hood_car_body_0": {
     "id": "hood-car-body-0",
     "modelObjectId": "hood_car_body_0",
+    "group": "paint",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Hood Car Body 0",
     "status": "normal",
@@ -364,6 +382,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "mirrors_chrome_0": {
     "id": "mirrors-chrome-0",
     "modelObjectId": "mirrors_chrome_0",
+    "group": "trim",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Mirrors Chrome 0",
     "status": "normal",
@@ -424,6 +444,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "Plane006_car_body_0": {
     "id": "plane006-car-body-0",
     "modelObjectId": "Plane006_car_body_0",
+    "group": "paint",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Plane006 Car Body 0",
     "status": "normal",
@@ -484,6 +506,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "Plane008_window_0": {
     "id": "plane008-window-0",
     "modelObjectId": "Plane008_window_0",
+    "group": "windows",
+    "tags": ["exterior", "configurable"],
     "type": "glass",
     "label": "Plane008 Window 0",
     "status": "normal",
@@ -544,6 +568,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "Plane011_window_0": {
     "id": "plane011-window-0",
     "modelObjectId": "Plane011_window_0",
+    "group": "windows",
+    "tags": ["exterior", "configurable"],
     "type": "glass",
     "label": "Plane011 Window 0",
     "status": "normal",
@@ -604,6 +630,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "Plane017_window_0": {
     "id": "plane017-window-0",
     "modelObjectId": "Plane017_window_0",
+    "group": "windows",
+    "tags": ["exterior", "configurable"],
     "type": "glass",
     "label": "Plane017 Window 0",
     "status": "normal",
@@ -634,6 +662,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "Plane026_chrome_0": {
     "id": "plane026-chrome-0",
     "modelObjectId": "Plane026_chrome_0",
+    "group": "trim",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Plane026 Chrome 0",
     "status": "normal",
@@ -724,6 +754,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "Plane035_window_0": {
     "id": "plane035-window-0",
     "modelObjectId": "Plane035_window_0",
+    "group": "windows",
+    "tags": ["exterior", "configurable"],
     "type": "glass",
     "label": "Plane035 Window 0",
     "status": "normal",
@@ -814,6 +846,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "rear_bumper_carbon_fiber_0": {
     "id": "rear-bumper-carbon-fiber-0",
     "modelObjectId": "rear_bumper_carbon_fiber_0",
+    "group": "aero",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Rear Bumper Carbon Fiber 0",
     "status": "normal",
@@ -844,6 +878,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "rear_fenders_carbon_fiber_0": {
     "id": "rear-fenders-carbon-fiber-0",
     "modelObjectId": "rear_fenders_carbon_fiber_0",
+    "group": "aero",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Rear Fenders Carbon Fiber 0",
     "status": "normal",
@@ -874,6 +910,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "rear_wheels_wheel_0": {
     "id": "rear-wheels-wheel-0",
     "modelObjectId": "rear_wheels_wheel_0",
+    "group": "wheels",
+    "tags": ["exterior", "configurable"],
     "type": "wheel",
     "label": "Rear Wheels Wheel 0",
     "status": "normal",
@@ -904,6 +942,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "side_skirts_carbon_fiber_0": {
     "id": "side-skirts-carbon-fiber-0",
     "modelObjectId": "side_skirts_carbon_fiber_0",
+    "group": "aero",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Side Skirts Carbon Fiber 0",
     "status": "normal",
@@ -934,6 +974,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   "trunk_car_body_0": {
     "id": "trunk-car-body-0",
     "modelObjectId": "trunk_car_body_0",
+    "group": "paint",
+    "tags": ["exterior", "configurable"],
     "type": "other",
     "label": "Trunk Car Body 0",
     "status": "normal",
@@ -961,4 +1003,4 @@ export const objectBindings: Record<string, ObjectBinding> = {
     "metrics": {},
     "metadata": {}
   }
-};
+});

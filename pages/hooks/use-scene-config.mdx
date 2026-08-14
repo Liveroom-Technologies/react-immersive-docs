@@ -21,6 +21,7 @@ const {
   setSceneConfig,
   updateSceneConfig,
   resetSceneConfig,
+  lights,
 } = useSceneConfig(initialSceneConfig);
 
 const enableUvChecker = () => {
@@ -41,6 +42,48 @@ const enableUvChecker = () => {
 
 Every update runs through a functional React state updater, so consecutive calls
 in the same tick compose safely.
+
+## Scene lights
+
+`lights` is a namespaced controller for persistent scene lights. Its operations
+use the same functional state pipeline as `updateSceneConfig`, so several light
+changes in one event compose safely.
+
+```tsx
+lights.add({
+  id: "bulb-light",
+  type: "point",
+  color: "#ffd27d",
+  intensity: 4,
+  distance: 5,
+});
+
+lights.setIntensity("bulb-light", 6);
+lights.setColor("bulb-light", "#fff1c2");
+lights.toggle("bulb-light");
+
+lights.attach("bulb-light", {
+  objectId: "bulb-filament",
+  offset: [0, -0.2, 0],
+});
+```
+
+An attached light follows the model object's complete world transform. The
+`objectId` can be a binding key, binding id, `modelObjectId`, or raw model node
+name. The offset is measured in the object's local space. Use `lights.detach`
+to return to the light's stored world position.
+
+Pass `sceneConfig` to `ModelViewer` and leave the custom `lights` prop unset.
+That prop is an advanced replacement for the scene-config lighting tree, so
+scene-light controller changes do not affect custom React light elements.
+
+The controller provides:
+
+- `items` and `get`
+- `add`, `update`, and `remove`
+- `setIntensity` and `setColor`
+- `show`, `hide`, and `toggle`
+- `attach` and `detach`
 
 ## Updating from current state
 
@@ -76,6 +119,7 @@ Supply the complete replacement array when updating one of these fields.
 | `setSceneConfig`    | React state dispatcher for complete replacements |
 | `updateSceneConfig` | Merge a nested patch into the current state      |
 | `resetSceneConfig`  | Restore the initial scene configuration          |
+| `lights`            | CRUD, visibility, color, intensity, and attachment operations |
 
 ## Externally owned state
 
@@ -95,5 +139,6 @@ const next = patchSceneConfig(sceneConfig, {
 onSceneConfigChange(next);
 ```
 
-The library also exports the `SceneConfigPatch`, `SceneConfigUpdate`, and
-`SceneConfigController` types.
+The library also exports `DEFAULT_SCENE_CONFIG` and the `SceneConfigPatch`,
+`SceneConfigUpdate`, `SceneConfigController`, `SceneLightInput`,
+`SceneLightPatch`, and `SceneLightsController` types.

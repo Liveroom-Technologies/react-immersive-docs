@@ -1,0 +1,66 @@
+---
+title: useViewerConnection
+---
+
+# `useViewerConnection`
+
+Combines every feature that needs `ModelViewer.onViewerReady` into one typed connection. Camera, runtime effects, screenshots, and custom setup callbacks can share the same viewer without manual callback wiring.
+
+## Usage
+
+```tsx
+import {
+  ModelViewer,
+  useViewerCamera,
+  useViewerConnection,
+  useViewerEffects,
+} from "@liveroom-tech/react-immersive";
+
+const camera = useViewerCamera({
+  initialTarget: [0, 1.2, 0],
+});
+const effects = useViewerEffects();
+
+const connection = useViewerConnection(
+  camera,
+  effects,
+  (viewer) => {
+    console.log("Loaded scene", viewer.scene);
+  },
+);
+
+<ModelViewer
+  modelUrl="/model.glb"
+  licenseKey={licenseKey}
+  onCameraChange={camera.handleCameraChange}
+  onViewerReady={connection.handleViewerReady}
+/>;
+```
+
+Consumers run in the order supplied. A consumer can be a controller with a `handleViewerReady` method, a callback, `null`, or `undefined`.
+
+## Screenshots and direct access
+
+The connection keeps the latest viewer in a ref, so camera changes do not cause extra React renders.
+
+```tsx
+const dataUrl = await connection.captureImage({
+  width: 1920,
+  height: 1080,
+  transparent: true,
+});
+
+connection.invalidate();
+const viewer = connection.getViewer();
+```
+
+`captureImage` rejects with a clear error before the viewer is ready. `invalidate` returns `false` before connection and `true` after requesting a frame.
+
+## Returns
+
+| Name | Description |
+| --- | --- |
+| `handleViewerReady` | The single callback to pass to `ModelViewer.onViewerReady` |
+| `getViewer` | Return the latest `ViewerReadyState`, or `null` |
+| `captureImage` | Capture a PNG data URL from the connected viewer |
+| `invalidate` | Request a render frame from the connected viewer |

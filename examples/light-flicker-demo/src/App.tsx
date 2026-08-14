@@ -4,7 +4,11 @@ import {
   material,
   useObjectBindings,
   useSceneConfig,
+  useViewerCamera,
+  useViewerConnection,
+  useViewerEffects,
   type BindingEdit,
+  type ViewerEffectChannels,
   type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
@@ -27,16 +31,11 @@ type FlickerSettings = {
   lightStrength: number;
 };
 
-type BulbRuntime = {
-  level: number;
-  target: number;
-  hold: number;
-};
-
 type BulbDefinition = {
   id: string;
   modelObjectId: string;
   glassObjectId: string;
+  lightId: string;
 };
 
 type SceneMood = {
@@ -100,14 +99,6 @@ const SCENE_MOODS: Record<FlickerPreset, SceneMood> = {
   },
 };
 
-function clamp(value: number, min = 0, max = 1.2): number {
-  return Math.min(max, Math.max(min, value));
-}
-
-function randomBetween(min: number, max: number): number {
-  return min + Math.random() * (max - min);
-}
-
 const BULBS: BulbDefinition[] = Object.values(initialObjectBindings).flatMap(
   (binding) => {
     const match = /^Cylinder(\d+)_Material008_0$/.exec(
@@ -116,153 +107,66 @@ const BULBS: BulbDefinition[] = Object.values(initialObjectBindings).flatMap(
     if (!match) return [];
 
     const glassObjectId = `Cylinder${String(Number(match[1]) - 3).padStart(3, "0")}_Material001_0`;
-    if (!initialObjectBindings[glassObjectId]) return [];
+    if (!(glassObjectId in initialObjectBindings)) return [];
 
     return [
       {
         id: binding.id,
         modelObjectId: binding.modelObjectId,
         glassObjectId,
+        lightId: `bulb-light-${binding.id}`,
       },
     ];
   },
 );
 
-type GlowMaterial = {
-  emissiveIntensity?: number;
-};
-
-type GlowNode = {
-  material?: GlowMaterial | GlowMaterial[];
-  matrixWorld?: { elements: ArrayLike<number> };
-  updateWorldMatrix?: (updateParents: boolean, updateChildren: boolean) => void;
-};
-
-type PointLightHandle = {
-  intensity: number;
-  position: { set: (x: number, y: number, z: number) => unknown };
-};
-
-function setNodeIntensity(
-  node: ViewerReadyState["nodeRefs"][string] | undefined,
-  intensity: number,
-): void {
-  const material = (node as GlowNode | undefined)?.material;
-  if (!material) return;
-
-  const materials = Array.isArray(material) ? material : [material];
-  materials.forEach((entry) => {
-    entry.emissiveIntensity = intensity;
-  });
-}
-
-function advanceRuntime(
-  runtime: BulbRuntime,
-  powerOn: boolean,
-  preset: FlickerPreset,
-  settings: FlickerSettings,
-  forcedBlackout: boolean,
-  forcedSurge: boolean,
-): number {
-  if (!powerOn) {
-    runtime.level = 0;
-    runtime.target = 0;
-    runtime.hold = 1;
-    return 0;
-  }
-
-  if (forcedBlackout) {
-    runtime.target = 0;
-    runtime.hold = 1;
-  } else if (forcedSurge) {
-    runtime.target = randomBetween(3.2, 4);
-    runtime.hold = 1;
-  } else if (preset === "lit") {
-    runtime.level = 1;
-    runtime.target = 1;
-    runtime.hold = 1;
-    return 1;
-  } else if (runtime.hold <= 0) {
-    const roll = Math.random();
-
-    if (roll < settings.blackoutChance) {
-      runtime.target = randomBetween(0, 0.035);
-      runtime.hold = Math.floor(randomBetween(2, 9));
-    } else if (roll < settings.blackoutChance + settings.flashChance) {
-      runtime.target = randomBetween(0.92, 1.18);
-      runtime.hold = Math.floor(randomBetween(1, 3));
-    } else {
-      runtime.target = clamp(
-        settings.base + randomBetween(-settings.variance, settings.variance),
-      );
-      runtime.hold = Math.floor(randomBetween(1, 6));
-    }
-  } else {
-    runtime.hold -= 1;
-  }
-
-  const response = forcedSurge
-    ? 0.92
-    : runtime.target > runtime.level
-      ? Math.min(0.92, settings.response + 0.12)
-      : settings.response;
-  const electricalNoise = randomBetween(
-    -settings.variance * 0.08,
-    settings.variance * 0.08,
-  );
-
-  runtime.level = clamp(
-    runtime.level +
-      (runtime.target - runtime.level) * response +
-      electricalNoise,
-    0,
-    forcedSurge ? 4 : 1.2,
-  );
-  return runtime.level;
-}
-
-function syncPointLight(
-  pointLight: PointLightHandle | null | undefined,
-  node: ViewerReadyState["nodeRefs"][string] | undefined,
-  intensity: number,
-): void {
-  if (!pointLight || !node) return;
-
-  const anchor = node as GlowNode;
-  anchor.updateWorldMatrix?.(true, false);
-  const elements = anchor.matrixWorld?.elements;
-  if (!elements) return;
-
-  pointLight.position.set(elements[12], elements[13], elements[14]);
-  pointLight.intensity = intensity;
-}
+const BULB_EFFECT_ID = "horror-bulbs";
 
 export default function App() {
   const { objectBindings, updateObjectBindings } =
     useObjectBindings(initialObjectBindings);
   const { sceneConfig, updateSceneConfig } =
     useSceneConfig(horrorSceneConfig);
+  const effects = useViewerEffects();
+  const {
+    addPointLight,
+    flicker,
+    overrideEffect,
+    setMaterial: setRuntimeMaterial,
+    stopEffect,
+    updatePointLight,
+  } = effects;
+  const camera = useViewerCamera({ initialTarget: [-32, -3, 0] });
   const [preset, setPreset] = useState<FlickerPreset>("failing");
   const [powerOn, setPowerOn] = useState(true);
   const [controlsOpen, setControlsOpen] = useState(false);
-  const runtimeRef = useRef<BulbRuntime[]>(
-    BULBS.map((_, index) => ({
-      level: 0.55 + (index % 3) * 0.1,
-      target: 0.65,
-      hold: index % 4,
-    })),
-  );
-  const sharedFailingRuntimeRef = useRef<BulbRuntime>({
-    level: 0.65,
-    target: 0.65,
-    hold: 0,
-  });
-  const blackoutUntilRef = useRef(0);
-  const surgeUntilRef = useRef(0);
-  const nodeRefsRef = useRef<ViewerReadyState["nodeRefs"]>({});
-  const pointLightsRef = useRef<Array<PointLightHandle | null>>([]);
   const framedSceneRef = useRef<ViewerReadyState["scene"]>(null);
   const settings = PRESETS[preset];
+  const effectChannels = useMemo<ViewerEffectChannels>(
+    () => ({
+      materials: [
+        {
+          targets: BULBS.map((bulb) => bulb.modelObjectId),
+          values: {
+            emissiveIntensity: [0.02, settings.emissiveStrength],
+          },
+        },
+        {
+          targets: BULBS.map((bulb) => bulb.glassObjectId),
+          values: {
+            emissiveIntensity: [0, settings.emissiveStrength * 0.16],
+          },
+        },
+      ],
+      lights: [
+        {
+          lights: BULBS.map((bulb) => bulb.lightId),
+          intensity: [0, settings.lightStrength],
+        },
+      ],
+    }),
+    [settings],
+  );
 
   useEffect(() => {
     const baselineLevel = powerOn ? settings.base : 0;
@@ -307,94 +211,73 @@ export default function App() {
   }, [preset, updateSceneConfig]);
 
   useEffect(() => {
-    const tick = () => {
-      const now = performance.now();
-      const forcedBlackout = now < blackoutUntilRef.current;
-      const forcedSurge = now < surgeUntilRef.current;
-
-      const sharedFailingLevel =
-        preset === "failing"
-          ? advanceRuntime(
-              sharedFailingRuntimeRef.current,
-              powerOn,
-              preset,
-              settings,
-              forcedBlackout,
-              forcedSurge,
-            )
-          : null;
-      const nextLevels =
-        sharedFailingLevel !== null
-          ? BULBS.map(() => sharedFailingLevel)
-          : runtimeRef.current.map((runtime) =>
-              advanceRuntime(
-                runtime,
-                powerOn,
-                preset,
-                settings,
-                forcedBlackout,
-                forcedSurge,
-              ),
-            );
-
-      BULBS.forEach((bulb, index) => {
-        const level = nextLevels[index];
-        const filamentNode = nodeRefsRef.current[bulb.modelObjectId];
-        setNodeIntensity(
-          filamentNode,
-          powerOn ? 0.02 + level * settings.emissiveStrength : 0,
-        );
-        setNodeIntensity(
-          nodeRefsRef.current[bulb.glassObjectId],
-          powerOn ? level * settings.emissiveStrength * 0.16 : 0,
-        );
-
-        syncPointLight(
-          pointLightsRef.current[index],
-          filamentNode,
-          level * settings.lightStrength,
-        );
+    if (!powerOn) {
+      stopEffect(BULB_EFFECT_ID);
+      setRuntimeMaterial(
+        BULBS.map((bulb) => bulb.modelObjectId),
+        { emissiveIntensity: 0 },
+      );
+      setRuntimeMaterial(
+        BULBS.map((bulb) => bulb.glassObjectId),
+        { emissiveIntensity: 0 },
+      );
+      BULBS.forEach((bulb) => {
+        updatePointLight(bulb.lightId, { intensity: 0 });
       });
+      return;
+    }
 
+    flicker(effectChannels, {
+      id: BULB_EFFECT_ID,
+      minLevel:
+        preset === "lit"
+          ? 1
+          : Math.max(0.02, settings.base - settings.variance),
+      maxLevel:
+        preset === "lit"
+          ? 1
+          : Math.min(1.2, settings.base + settings.variance),
+      interval: preset === "lit" ? 500 : [65, 320],
+      response: settings.response,
+      blackoutChance: settings.blackoutChance,
+      flashChance: settings.flashChance,
+      flashLevel: 1.18,
+      synchronized: preset !== "possessed",
+    });
+
+    return () => {
+      stopEffect(BULB_EFFECT_ID);
     };
+  }, [
+    effectChannels,
+    flicker,
+    powerOn,
+    preset,
+    setRuntimeMaterial,
+    settings,
+    stopEffect,
+    updatePointLight,
+  ]);
 
-    tick();
-    const interval = window.setInterval(tick, 65);
-    return () => window.clearInterval(interval);
-  }, [powerOn, preset, settings]);
-
-  const handleViewerReady = useCallback((viewer: ViewerReadyState) => {
-    nodeRefsRef.current = viewer.nodeRefs;
+  const setupBulbLights = useCallback((viewer: ViewerReadyState) => {
     if (!viewer.scene || framedSceneRef.current === viewer.scene) return;
     framedSceneRef.current = viewer.scene;
-    void viewer.controls.setLookAt(-32, 10, 95, -32, -3, 0, false);
-  }, []);
 
-  const sceneLights = useMemo(
-    () => (
-      <>
-        <ambientLight color="#526080" intensity={0.006} />
-        <directionalLight
-          color="#52617f"
-          intensity={0.02}
-          position={[20, 30, 25]}
-        />
-        {BULBS.map((bulb, index) => (
-          <pointLight
-            key={bulb.id}
-            ref={(light) => {
-              pointLightsRef.current[index] = light;
-            }}
-            color={WARM_GLOW}
-            decay={2}
-            distance={38}
-            intensity={0}
-            position={[0, 0, 0]}
-          />
-        ))}
-      </>
-    ),
-    [],
+    BULBS.forEach((bulb) => {
+      addPointLight({
+        id: bulb.lightId,
+        target: bulb.modelObjectId,
+        color: WARM_GLOW,
+        decay: 2,
+        distance: 38,
+        intensity: 0,
+      });
+    });
+  }, [addPointLight]);
+  const { handleViewerReady } = useViewerConnection(
+    effects,
+    camera,
+    setupBulbLights,
   );
 
   return (
@@ -411,9 +294,11 @@ export default function App() {
         features={[
           "useObjectBindings",
           "useSceneConfig",
+          "useViewerConnection",
+          "useViewerEffects",
           "Atomic material presets",
-          "onViewerReady runtime effects",
-          "Synchronized point lights",
+          "Model-attached point lights",
+          "Synchronized runtime effects",
           "BindingBuilder exports",
         ]}
       />
@@ -424,7 +309,6 @@ export default function App() {
             modelUrl="/bulbs.glb"
             licenseKey={LICENSE_KEY}
             objectBindings={objectBindings}
-            lights={sceneLights}
             sceneConfig={sceneConfig}
             onViewerReady={handleViewerReady}
             backgroundColor="#030407"
@@ -437,7 +321,6 @@ export default function App() {
             showMouseController={false}
             highlightOnHover={false}
             zoomOnSelected={false}
-            renderMode="always"
             performanceProfile="auto"
             maxDpr={2}
             refitOnResize={false}
@@ -486,9 +369,7 @@ export default function App() {
             <div className="action-grid">
               <button
                 type="button"
-                onClick={() => {
-                  blackoutUntilRef.current = performance.now() + 900;
-                }}
+                onClick={() => overrideEffect(BULB_EFFECT_ID, 0, 900)}
                 disabled={!powerOn}
               >
                 Blackout
@@ -496,9 +377,7 @@ export default function App() {
               <button
                 type="button"
                 className="surge-button"
-                onClick={() => {
-                  surgeUntilRef.current = performance.now() + 800;
-                }}
+                onClick={() => overrideEffect(BULB_EFFECT_ID, 4, 800)}
                 disabled={!powerOn}
               >
                 Surge
@@ -515,9 +394,9 @@ export default function App() {
             </div>
 
             <p className="panel-note">
-              React Immersive owns the persistent material presets and scene
-              mood. Its onViewerReady node handles drive only the rapid glow
-              intensity and synchronized point lights.
+              React Immersive owns the material presets, scene mood, runtime
+              flicker, and point lights. The demo never mutates a Three.js node
+              or material directly.
             </p>
           </section>
 

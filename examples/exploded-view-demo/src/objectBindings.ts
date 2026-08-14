@@ -1,6 +1,6 @@
-import type { ObjectBinding } from "@liveroom-tech/react-immersive";
+import { defineObjectBindings } from "@liveroom-tech/react-immersive";
 
-export const objectBindings: Record<string, ObjectBinding> = {
+export const objectBindings = defineObjectBindings({
   "black_floats_chrome_0": {
     "id": "black-floats-chrome-0",
     "modelObjectId": "black_floats_chrome_0",
@@ -961,4 +961,4 @@ export const objectBindings: Record<string, ObjectBinding> = {
     "metrics": {},
     "metadata": {}
   }
-};
+});

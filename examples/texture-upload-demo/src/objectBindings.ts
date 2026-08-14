@@ -1,9 +1,11 @@
-import type { ObjectBinding } from "@liveroom-tech/react-immersive";
+import { defineObjectBindings } from "@liveroom-tech/react-immersive";
 
-export const objectBindings: Record<string, ObjectBinding> = {
+export const objectBindings = defineObjectBindings({
   Object_2: {
     id: "object-2",
     modelObjectId: "Object_2",
+    group: "shirt",
+    tags: ["garment", "printable"],
     type: "other",
     label: "Object 2",
     status: "normal",
@@ -34,6 +36,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   Object_3: {
     id: "object-3",
     modelObjectId: "Object_3",
+    group: "shirt",
+    tags: ["garment", "printable"],
     type: "other",
     label: "Object 3",
     status: "normal",
@@ -64,6 +68,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   Object_4: {
     id: "object-4",
     modelObjectId: "Object_4",
+    group: "shirt",
+    tags: ["garment", "printable"],
     type: "other",
     label: "Object 4",
     status: "normal",
@@ -94,6 +100,8 @@ export const objectBindings: Record<string, ObjectBinding> = {
   Object_5: {
     id: "object-5",
     modelObjectId: "Object_5",
+    group: "shirt",
+    tags: ["garment", "printable"],
     type: "other",
     label: "Object 5",
     status: "normal",
@@ -121,4 +129,4 @@ export const objectBindings: Record<string, ObjectBinding> = {
     metrics: {},
     metadata: {},
   },
-};
+});

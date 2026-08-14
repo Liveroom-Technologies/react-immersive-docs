@@ -4,41 +4,125 @@ title: useViewerActions
 
 # `useViewerActions`
 
-Resolves and dispatches object actions programmatically, outside of the built-in UI.
+Executes declarative object-binding, scene, visibility, camera, and animation effects from an object's actions. Use the same `handleAction` callback for `ModelViewer` actions and `runAction` for controls elsewhere in your app.
 
 ## Usage
 
 ```tsx
-import { useViewerActions } from "@liveroom-tech/react-immersive";
+import {
+  ModelViewer,
+  useObjectBindings,
+  useSceneConfig,
+  useViewerActions,
+  useViewerAnimations,
+  useViewerCamera,
+} from "@liveroom-tech/react-immersive";
 
-const { getActionsForObject, runAction } = useViewerActions(objectBindings, {
-  onAction: (event) => console.log(event),
-  onObjectBindingsChange: setObjectBindings,
+const bindings = useObjectBindings(initialBindings);
+const scene = useSceneConfig(initialSceneConfig);
+const camera = useViewerCamera();
+const animations = useViewerAnimations();
+
+const { getActionsForObject, handleAction, runAction } = useViewerActions({
+  bindings,
+  scene,
+  camera,
+  animations,
+  onAction: (event) => console.log("completed", event.action.id),
 });
 
-// Inspect actions for an object
-const actions = getActionsForObject("some-object-id");
+<ModelViewer
+  objectBindings={bindings.objectBindings}
+  sceneConfig={scene.sceneConfig}
+  onObjectBindingsChange={bindings.setObjectBindings}
+  onAction={handleAction}
+  onViewerReady={camera.handleViewerReady}
+  onCameraChange={camera.handleCameraChange}
+  onAnimationsReady={animations.handleAnimationsReady}
+/>;
 
-// Dispatch an action
-runAction("some-object-id", "toggle-visibility");
+// Run the same exported action from your own button.
+await runAction("switch-a", "turn-on");
 ```
+
+## Declare effects
+
+Effects run in the order they appear. An action can combine any of the supported effect categories.
+
+```tsx
+const initialBindings = {
+  switch_a: {
+    id: "switch-a",
+    modelObjectId: "switch_a",
+    actions: [
+      {
+        id: "turn-on",
+        label: "Turn On",
+        type: "command",
+        effects: [
+          {
+            target: { group: "circuit-a" },
+            objectBindings: {
+              style: {
+                material: {
+                  emissive: "#fde047",
+                  emissiveIntensity: 3,
+                },
+              },
+              metadata: { state: "on" },
+            },
+          },
+          {
+            sceneConfig: {
+              lighting: { ambient: { intensity: 0.2 } },
+            },
+          },
+          { target: { tag: "warning" }, visibility: "show" },
+          { camera: { type: "focus-object" } },
+          { animation: { type: "play", clip: "PowerOn" } },
+        ],
+      },
+    ],
+  },
+};
+```
+
+### Supported effects
+
+| Category | Shape | Controller used |
+| --- | --- | --- |
+| Object bindings | `{ target, objectBindings: patch }` | `useObjectBindings` |
+| Scene | `{ sceneConfig: patch }` | `useSceneConfig` |
+| Visibility | `{ target, visibility: "show" \| "hide" \| "toggle" }` | `useObjectBindings` |
+| Camera | `{ camera: action }` | `useViewerCamera` |
+| Animation | `{ animation: action }` | `useViewerAnimations` |
+
+Object and visibility targets accept an object id, an array of ids, `{ group }`, `{ tag }`, or `{ type }`, just like `useObjectBindings`.
+
+Camera actions are `focus-object`, `fit-scene`, `reset`, `set-target`, and `set-state`. Animation actions are `play`, `pause`, `stop`, `set-speed`, and `seek`.
 
 ## Parameters
 
-| Name                             | Type                                            | Description                                                            |
-| -------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------- |
-| `objectBindings`                 | `Record<string, ObjectBinding>`                 | The current bindings map                                               |
-| `options.onAction`               | `(event: ObjectActionEvent) => void`            | Called when an action is dispatched                                    |
-| `options.onObjectBindingsChange` | `(next: Record<string, ObjectBinding>) => void` | Called when a binding-modifying action (e.g. `toggle-visibility`) runs |
+| Name | Required | Description |
+| --- | --- | --- |
+| `bindings` | Yes | The controller returned by `useObjectBindings` |
+| `scene` | No | The controller returned by `useSceneConfig` |
+| `camera` | No | The controller returned by `useViewerCamera` |
+| `animations` | No | The controller returned by `useViewerAnimations` |
+| `onAction` | No | Observer called after the declared effects have run |
+
+If an optional controller is omitted, effects for that category are skipped and the remaining effects still run.
 
 ## Returns
 
-| Name                  | Type                                                          | Description                                                                                 |
-| --------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `getActionsForObject` | `(id: string) => ObjectBindingAction[]`                       | Resolves actions for a binding by key, `binding.id`, or `binding.modelObjectId`             |
-| `runAction`           | `(id: string, actionId: string) => ObjectActionEvent \| null` | Dispatches an action and returns its event, or `null` if the binding/action cannot be found |
+| Name | Description |
+| --- | --- |
+| `getActionsForObject(id)` | Resolves actions by binding key, `binding.id`, or `binding.modelObjectId` |
+| `handleAction(event)` | Executes an action event. Pass it directly to `ModelViewer.onAction` |
+| `runAction(id, actionId)` | Finds and executes an action, then resolves to its event, or `null` when it cannot be found |
 
-## Notes
+## Built-in viewer actions
 
-- `toggle-visibility` update binding data through `onObjectBindingsChange`
-- `change-color` and `change-material` dispatch the event but do **not** open the built-in picker, they rely on `ModelViewer`'s built-in UI for that
+`ModelViewer` still owns the picker UI for `change-color` and `change-material`, plus its built-in `toggle-visibility` behavior. Declarative effects run in addition to that behavior when `handleAction` is connected. Do not declare an equivalent visibility effect on a built-in `toggle-visibility` action, because it would toggle twice.
+
+Calling `runAction` executes declarative effects only. It does not invoke viewer-owned behavior such as opening a picker or running the built-in visibility toggle. For programmatic visibility, call the bindings controller directly or declare a custom action with a visibility effect.

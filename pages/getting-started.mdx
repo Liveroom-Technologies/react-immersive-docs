@@ -75,7 +75,9 @@ in your source tree so you can import it into your viewer page.
 </Callout>
 
 ```ts
-const objectBindings = {
+import { defineObjectBindings } from "@liveroom-tech/react-immersive";
+
+const objectBindings = defineObjectBindings({
   BrickWall: {
     id: "brick-wall",
     modelObjectId: "BrickWall",
@@ -98,7 +100,7 @@ const objectBindings = {
       { id: "toggle-visibility", label: "Toggle Visibility", type: "command" },
     ],
   },
-};
+});
 ```
 
 ### Mount the viewer
@@ -145,15 +147,17 @@ import {
 import { objectBindings as initialBindings } from "./objectBindings";
 
 export default function Example() {
+  const bindings = useObjectBindings(initialBindings);
   const {
     objectBindings,
     setObjectBindings,
     hiddenObjects,
     toggleObjectVisibility,
-  } = useObjectBindings(initialBindings);
+  } = bindings;
 
   const { selectedObjectBinding, handleObjectSelect } = useViewerSelection();
   const { hoveredObjectBinding, handleHoveredObject } = useViewerHover();
+  const camera = useViewerCamera();
   const {
     cameraState,
     resetView,
@@ -161,15 +165,17 @@ export default function Example() {
     fitScene,
     handleCameraChange,
     handleViewerReady,
-  } = useViewerCamera();
+  } = camera;
   const { isLoading, isReady, error, handleModelLoaded, handleLoadError } =
     useViewerModel();
-  const { getActionsForObject, runAction } = useViewerActions(objectBindings, {
+  const animations = useViewerAnimations();
+  const { clips, isPlaying, play, pause, handleAnimationsReady } = animations;
+  const { getActionsForObject, handleAction, runAction } = useViewerActions({
+    bindings,
+    camera,
+    animations,
     onAction: (event) => console.log(event),
-    onObjectBindingsChange: setObjectBindings,
   });
-  const { clips, isPlaying, play, pause, handleAnimationsReady } =
-    useViewerAnimations();
 
   return (
     <div style={{ height: "100vh", overflow: "hidden" }}>
@@ -186,7 +192,7 @@ export default function Example() {
         onObjectBindingsChange={setObjectBindings}
         onViewerReady={handleViewerReady}
         onAnimationsReady={handleAnimationsReady}
-        onAction={(event) => console.log(event)}
+        onAction={handleAction}
       />
 
       <button onClick={() => toggleObjectVisibility("some-object-id")}>

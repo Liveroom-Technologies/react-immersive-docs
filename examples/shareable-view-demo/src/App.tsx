@@ -13,9 +13,9 @@ import {
   ModelViewer,
   useShareableViewerState,
   useViewerCamera,
+  useViewerConnection,
   useViewerSelection,
   type ObjectBinding,
-  type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import initialBindings from "./objectBindings.json";
 import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
@@ -136,13 +136,13 @@ export default function App() {
     Record<string, ObjectBinding>
   >(() => structuredClone(initialBindings) as Record<string, ObjectBinding>);
   const [controlsOpen, setControlsOpen] = useState(false);
+  const camera = useViewerCamera();
   const {
     cameraState,
     focusObject,
     handleCameraChange,
-    handleViewerReady,
     setCameraState,
-  } = useViewerCamera();
+  } = camera;
   const {
     selectedObjectBinding,
     setSelectedObjectBinding,
@@ -172,14 +172,7 @@ export default function App() {
       ),
     [objectBindings],
   );
-
-  const handleReady = useCallback(
-    (viewer: ViewerReadyState) => {
-      handleViewerReady(viewer);
-      void restoreFromUrl();
-    },
-    [handleViewerReady, restoreFromUrl],
-  );
+  const { handleViewerReady } = useViewerConnection(camera, restoreFromUrl);
 
   const focusFeaturedObject = useCallback(
     async (binding: ObjectBinding) => {
@@ -244,7 +237,7 @@ export default function App() {
             selectedObject={selectedObjectBinding}
             onObjectSelect={handleObjectSelect}
             onCameraChange={handleCameraChange}
-            onViewerReady={handleReady}
+          onViewerReady={handleViewerReady}
             backgroundColor="#07111f"
             shadows
             showObjectBindingDataPanel={false}

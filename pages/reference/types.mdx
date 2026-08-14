@@ -14,9 +14,12 @@ type ObjectBinding = {
   type: ObjectBindingType;
   modelObjectId: string;
   label?: string;
+  group?: string;
+  tags?: string[];
   visible?: boolean;
   selectable?: boolean;
   hoverable?: boolean;
+  transform?: ObjectBindingTransform;
   style?: ObjectBindingStyle;
   actions?: ObjectBindingAction[];
   metrics?: Record<string, number>;
@@ -28,6 +31,8 @@ type ObjectBinding = {
 ### Key Notes
 
 - The `objectBindings` record is **keyed by node name**, not by `id`
+- `group` assigns a binding to one named set, while `tags` can assign it to several queryable sets
+- `transform` stores persistent local-space position, rotation, and scale overrides; rotation values use radians
 - `visible` is live render state, not just an initial default
 - `selectable: false` and `hoverable: false` make the mesh inert to viewport picking; clicks resolve the front-most surface under the pointer, so a non-selectable mesh does **not** pass the click through to meshes behind it
 - `style.material.baseColor` is the committed source of truth for color picks
@@ -36,6 +41,45 @@ type ObjectBinding = {
 - See [`ObjectBindingMaterial`](#objectbindingmaterial) for the full set of per-object material overrides
 - `metrics` and `metadata` are displayed in the side panel as nested key/value fields (objects expand into indented child labels)
 - `cameraState` stores a saved camera view for the object; when both `position` and `target` are set, the viewer uses that view when the object is focused or selected instead of falling back to `fitToBox`
+
+## `defineObjectBindings`
+
+A runtime identity helper that validates binding literals while preserving their exact inferred TypeScript types.
+
+```ts
+import {
+  defineObjectBindings,
+  type ObjectBindingActionId,
+  type ObjectBindingKey,
+} from "@liveroom-tech/react-immersive";
+
+const bindings = defineObjectBindings({
+  body: {
+    id: "vehicle-body",
+    modelObjectId: "body",
+    type: "body",
+    actions: [{ id: "repaint", label: "Repaint", type: "command" }],
+  },
+});
+
+type BindingKeys = ObjectBindingKey<typeof bindings>; // "body"
+type BodyActions = ObjectBindingActionId<typeof bindings, "body">; // "repaint"
+```
+
+`ObjectBindingKey<T>` extracts the binding-map key union. `ObjectBindingActionId<T, K>` extracts the declared action-id union for binding `K`.
+
+## `ObjectBindingTransform`
+
+```ts
+type ObjectBindingTransform = {
+  position?: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: [number, number, number];
+};
+```
+
+Missing fields retain their model-authored local values. Removing the complete
+transform restores the model-authored position, rotation, and scale.
 
 ---
 
@@ -189,8 +233,42 @@ type ObjectBindingAction = {
   id: string;
   label: string;
   type: "command";
+  effects?: ObjectActionEffect[];
 };
 ```
+
+`effects` are executed in declaration order by `useViewerActions`. Each effect updates one concern through the corresponding library controller:
+
+```ts
+type ObjectActionEffect =
+  | {
+      target: ObjectBindingTarget;
+      objectBindings: ObjectBindingPatch;
+    }
+  | { sceneConfig: SceneConfigPatch }
+  | {
+      target: ObjectBindingTarget;
+      visibility: "show" | "hide" | "toggle";
+    }
+  | { camera: CameraAction }
+  | { animation: AnimationAction };
+
+type CameraAction =
+  | { type: "focus-object"; objectId?: string }
+  | { type: "fit-scene" }
+  | { type: "reset" }
+  | { type: "set-target"; target: [number, number, number]; transition?: boolean }
+  | { type: "set-state"; state: ViewerCameraState; transition?: boolean };
+
+type AnimationAction =
+  | { type: "play"; clip: string }
+  | { type: "pause" }
+  | { type: "stop" }
+  | { type: "set-speed"; speed: number }
+  | { type: "seek"; time: number };
+```
+
+`ObjectBindingTarget` supports an object id, an array of ids, `{ group }`, `{ tag }`, or `{ type }`.
 
 Built-in action IDs:
 
@@ -260,6 +338,36 @@ type AnimationControls = {
   subscribe?: (listener: (state: AnimationPlaybackState) => void) => () => void;
 };
 ```
+
+---
+
+## `SceneLight`
+
+```ts
+type SceneLightAttachment = {
+  objectId: string;
+  offset: [number, number, number];
+};
+
+type SceneLight = {
+  id: string;
+  type: "none" | "directional" | "point" | "hemisphere";
+  color: string;
+  intensity: number;
+  position: [number, number, number];
+  distance?: number;
+  decay?: number;
+  attachedToCamera: boolean;
+  attachment?: SceneLightAttachment;
+  castShadow: boolean;
+  shadowBias: number;
+  visible: boolean;
+};
+```
+
+`position` is world-space unless the light is attached. An attachment resolves
+binding keys, binding ids, `modelObjectId` values, and raw model node names. Its
+offset uses the target object's local space.
 
 ---
 

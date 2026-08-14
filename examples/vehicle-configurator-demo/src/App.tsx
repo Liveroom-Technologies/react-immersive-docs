@@ -7,7 +7,6 @@ import {
   useViewerCamera,
   type ObjectActionEvent,
   type ObjectBinding,
-  type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import { objectBindings as initialObjectBindings } from "./objectBindings";
 import { DemoPageHeader } from "./DemoLayout";
@@ -35,49 +34,6 @@ const RESPONSIVE_CSS = `
     }
   }
 `;
-
-const PAINT_GROUP = [
-  "body_car_body_0",
-  "hood_car_body_0",
-  "Plane006_car_body_0",
-  "trunk_car_body_0",
-];
-const WHEEL_GROUP = [
-  "front_left_wheel_wheel_0",
-  "front_right_wheel_wheel_0",
-  "rear_wheels_wheel_0",
-];
-const TRIM_GROUP = [
-  "black_floats_chrome_0",
-  "exhaust_chrome_0",
-  "mirrors_chrome_0",
-  "Plane026_chrome_0",
-];
-const AERO_GROUP = [
-  "front_bumper_carbon_fiber_0",
-  "front_fenders_carbon_fiber_0",
-  "rear_bumper_carbon_fiber_0",
-  "rear_fenders_carbon_fiber_0",
-  "side_skirts_carbon_fiber_0",
-];
-const WINDOW_GROUP = [
-  "Plane008_window_0",
-  "Plane011_window_0",
-  "Plane017_window_0",
-  "Plane035_window_0",
-];
-const HEADLIGHT_KEY = "headlight_glass_headlight_glass_0";
-
-type Group = "paint" | "wheels" | "trim" | "aero" | "windows" | "headlight";
-
-const OBJECT_TO_GROUP: Record<string, Group> = Object.fromEntries([
-  ...PAINT_GROUP.map((key) => [key, "paint"] as const),
-  ...WHEEL_GROUP.map((key) => [key, "wheels"] as const),
-  ...TRIM_GROUP.map((key) => [key, "trim"] as const),
-  ...AERO_GROUP.map((key) => [key, "aero"] as const),
-  ...WINDOW_GROUP.map((key) => [key, "windows"] as const),
-  [HEADLIGHT_KEY, "headlight"] as const,
-]);
 
 const PAINT_COLORS = [
   { name: "Racing Red", hex: "#b91c1c" },
@@ -108,7 +64,7 @@ const HEADLIGHT_COLORS = [
 
 function DemoHeader() {
   const features = [
-    "Grouped material swatches",
+    "Binding group selectors",
     "Built-in action reuse",
     "Aero kit visibility",
     "Headlight emissive toggle",
@@ -183,25 +139,19 @@ export default function App() {
   // Mobile: the configurator panel starts collapsed so it doesn't cover the car.
   const [controlsOpen, setControlsOpen] = useState(false);
 
-  const { handleViewerReady, setCameraTarget } = useViewerCamera();
-
   // The car's bounding-box center sits above and slightly forward of the world
   // origin (this asset has no floor-aligned pivot), so the default look-at
-  // target of [0, 0, 0] frames it high and off-center. Re-center the orbit
-  // target here; the deliberate camera position/fov below is left untouched.
-  const handleReady = useCallback(
-    (viewer: ViewerReadyState) => {
-      handleViewerReady(viewer);
-      setCameraTarget([-5.2, 3.5, 1], false);
-    },
-    [handleViewerReady, setCameraTarget],
-  );
+  // target of [0, 0, 0] frames it high and off-center. The initial target
+  // leaves the deliberate camera position/fov below untouched.
+  const { handleViewerReady } = useViewerCamera({
+    initialTarget: [-5.2, 3.5, 1],
+  });
 
   const applyPaint = useCallback(
     (index: number) => {
       setPaintIndex(index);
       updateObjectBindings(
-        PAINT_GROUP,
+        { group: "paint" },
         material({ baseColor: PAINT_COLORS[index].hex }),
       );
     },
@@ -212,7 +162,7 @@ export default function App() {
     (index: number) => {
       setWheelIndex(index);
       updateObjectBindings(
-        WHEEL_GROUP,
+        { group: "wheels" },
         material({ baseColor: WHEEL_FINISHES[index].hex }),
       );
     },
@@ -224,7 +174,7 @@ export default function App() {
       const finish = TRIM_FINISHES[index];
       setTrimIndex(index);
       updateObjectBindings(
-        TRIM_GROUP,
+        { group: "trim" },
         material({
           baseColor: finish.hex,
           metalness: finish.metalness,
@@ -238,7 +188,7 @@ export default function App() {
   const applyAeroVisibility = useCallback(
     (installed: boolean) => {
       setAeroInstalled(installed);
-      updateObjectBindings(AERO_GROUP, { visible: installed });
+      updateObjectBindings({ group: "aero" }, { visible: installed });
     },
     [updateObjectBindings],
   );
@@ -247,7 +197,7 @@ export default function App() {
     (dark: boolean) => {
       setWindowsDark(dark);
       updateObjectBindings(
-        WINDOW_GROUP,
+        { group: "windows" },
         material({
           baseColor: dark ? "#020617" : "#0f172a",
           opacity: dark ? 0.85 : 0.55,
@@ -262,7 +212,7 @@ export default function App() {
       setHeadlightsOn(on);
       setHeadlightColorIndex(colorIndex);
       updateObjectBindings(
-        HEADLIGHT_KEY,
+        { group: "headlight" },
         material({
           emissive: on ? HEADLIGHT_COLORS[colorIndex].hex : undefined,
           emissiveIntensity: on ? 2.2 : 0,
@@ -275,7 +225,7 @@ export default function App() {
   const handleAction = useCallback(
     (event: ObjectActionEvent) => {
       const modelObjectId = event.binding?.modelObjectId ?? event.objectId;
-      const group = OBJECT_TO_GROUP[modelObjectId];
+      const group = event.binding?.group;
       setSelectedLabel(event.binding?.label ?? modelObjectId);
 
       if (event.action.id === "toggle-visibility") {
@@ -336,7 +286,7 @@ export default function App() {
         title="Vehicle Configurator"
         description="A car model where BindingBuilder-exported object bindings drive a real product configurator: grouped paint, wheel, and trim swatches, an aero-kit visibility toggle, and clickable headlights — all wired to the same built-in change-color / toggle-visibility actions."
         features={[
-          "Grouped material swatches",
+          "Binding group selectors",
           "Built-in change-color action",
           "Built-in toggle-visibility action",
           "Aero kit install/remove",
@@ -369,7 +319,7 @@ export default function App() {
               setSelectedLabel(binding?.label ?? "Cartoon Car")
             }
             onAction={handleAction}
-            onViewerReady={handleReady}
+            onViewerReady={handleViewerReady}
             backgroundColor="#07111f"
             camera={{ position: [14, 5, 16], fov: 40 }}
             shadows

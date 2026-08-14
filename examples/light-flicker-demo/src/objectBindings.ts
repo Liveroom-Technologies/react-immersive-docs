@@ -1,6 +1,6 @@
-import type { ObjectBinding } from "@liveroom-tech/react-immersive";
+import { defineObjectBindings } from "@liveroom-tech/react-immersive";
 
-export const objectBindings: Record<string, ObjectBinding> = {
+export const objectBindings = defineObjectBindings({
   Cylinder001_Material001_0: {
     id: "cylinder001-material001-0",
     modelObjectId: "Cylinder001_Material001_0",
@@ -2971,4 +2971,4 @@ export const objectBindings: Record<string, ObjectBinding> = {
     metrics: {},
     metadata: {},
   },
-};
+});

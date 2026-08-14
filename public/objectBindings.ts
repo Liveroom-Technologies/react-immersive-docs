@@ -1,4 +1,6 @@
-export const objectBindings = {
+import { defineObjectBindings } from "@liveroom-tech/react-immersive";
+
+export const objectBindings = defineObjectBindings({
   BrickWall: {
     id: "brick-wall",
     modelObjectId: "BrickWall",
@@ -21,4 +23,4 @@ export const objectBindings = {
       { id: "toggle-visibility", label: "Toggle Visibility", type: "command" },
     ],
   },
-};
+});

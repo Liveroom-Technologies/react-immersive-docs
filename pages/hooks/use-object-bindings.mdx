@@ -6,12 +6,47 @@ import { Callout } from "nextra/components";
 
 # `useObjectBindings`
 
-Own object-binding state and update general fields, materials, and visibility from one hook.
+Own object-binding state and update general fields, materials, textures,
+transforms, metadata, and visibility from one hook.
 
 <Callout type="info">
   Every setter uses a functional React state update. Consecutive calls in the
   same tick compose, including calls across material and visibility concerns.
 </Callout>
+
+## Define typed bindings
+
+Use `defineObjectBindings` instead of annotating the object as `Record<string, ObjectBinding>`. It validates every binding while preserving exact keys, IDs, action IDs, groups, and tags for autocomplete and reusable union types.
+
+```tsx
+import {
+  defineObjectBindings,
+  type ObjectBindingActionId,
+  type ObjectBindingKey,
+} from "@liveroom-tech/react-immersive";
+
+const initialBindings = defineObjectBindings({
+  switch_a: {
+    id: "switch-a",
+    modelObjectId: "switch_a",
+    type: "switch",
+    group: "controls",
+    tags: ["interactive"],
+    actions: [
+      { id: "turn-on", label: "Turn On", type: "command" },
+      { id: "turn-off", label: "Turn Off", type: "command" },
+    ],
+  },
+});
+
+type BindingKey = ObjectBindingKey<typeof initialBindings>;
+// "switch_a"
+
+type SwitchAction = ObjectBindingActionId<typeof initialBindings, "switch_a">;
+// "turn-on" | "turn-off"
+```
+
+`defineObjectBindings` returns the same object without cloning or changing it at runtime. BindingBuilder uses this helper in exported TypeScript files automatically.
 
 ## Usage
 
@@ -19,6 +54,8 @@ Own object-binding state and update general fields, materials, and visibility fr
 import {
   ModelViewer,
   patchBindings,
+  selectBindings,
+  selectBindingKeys,
   useObjectBindings,
 } from "@liveroom-tech/react-immersive";
 
@@ -26,10 +63,18 @@ const {
   objectBindings,
   setObjectBindings,
   updateObjectBindings,
+  selectObjectBindings,
+  selectObjectBindingIds,
   setMaterial,
   setBaseColor,
+  setTexture,
+  clearTexture,
+  copyMaterial,
   resetMaterial,
   getMaterial,
+  setTransform,
+  resetTransform,
+  updateMetadata,
   hiddenObjects,
   hiddenObjectIds,
   hideObject,
@@ -58,17 +103,45 @@ Patch one object, a group, or an atomic edit batch:
 
 ```tsx
 updateObjectBindings("body", { visible: false });
-updateObjectBindings(["wheel-front", "wheel-rear"], { selectable: false });
+updateObjectBindings({ group: "wheels" }, { selectable: false });
 
 updateObjectBindings([
   { ids: "body", patch: { metadata: { state: "active" } } },
-  { ids: ["light-left", "light-right"], patch: { visible: true } },
+  { ids: { tag: "lighting" }, patch: { visible: true } },
 ]);
 ```
 
 Nested objects are merged, arrays and tuples are replaced, and explicit
 `undefined` values clear fields. Identifiers resolve by binding map key,
 `binding.id`, then `binding.modelObjectId`.
+
+## Groups, tags, and selectors
+
+Store a single group and any number of tags on each binding. BindingBuilder
+provides fields for both and includes them in exported bindings.
+
+```tsx
+const initialBindings = {
+  WheelFL: {
+    id: "wheel-front-left",
+    modelObjectId: "WheelFL",
+    type: "wheel",
+    group: "wheels",
+    tags: ["exterior", "configurable"],
+  },
+};
+
+setBaseColor({ group: "paint" }, "#ef4444");
+hideObject({ tag: "optional" });
+updateObjectBindings({ type: "wheel" }, { selectable: false });
+
+const exterior = selectObjectBindings({ tag: "exterior" });
+const wheelIds = selectObjectBindingIds({ type: "wheel" });
+```
+
+Group, tag, and type matching is exact and case-sensitive. All mutation helpers
+that previously accepted an identifier or identifier array also accept these
+selectors.
 
 ## Material operations
 
@@ -80,27 +153,55 @@ setMaterial("body", {
 });
 
 setBaseColor("body", "#2563eb");
+setTexture({ group: "screens" }, "/images/dashboard.png");
+setTexture("panel", "/images/panel-normal.png", "normal");
+clearTexture("panel", "normal");
+copyMaterial("wheel-front", { group: "wheels" });
+
 const currentMaterial = getMaterial("body");
 resetMaterial("body");
 ```
 
 Material setters merge with existing material fields. `resetMaterial` removes
-the complete material override.
+the complete material override, while `copyMaterial` replaces each target's
+complete override with an independent copy of the source material.
+
+`setTexture` accepts either a URL or `{ path: url }`. It targets the base-color
+texture by default. Its optional channel supports material maps such as
+`normal`, `roughness`, `metalness`, `emissive`, `ao`, and `clearcoat`.
+
+## Transform and metadata operations
+
+```tsx
+setTransform("door-left", {
+  position: [0, 1, 0],
+  rotation: [0, Math.PI / 2, 0],
+  scale: [1, 1, 1],
+});
+
+resetTransform("door-left");
+updateMetadata({ group: "lights" }, { state: "on", circuit: "a" });
+```
+
+Transforms are persistent local-space binding state. Rotations use radians.
+Missing transform fields retain the model-authored value, and
+`resetTransform` restores the complete model-authored local transform.
+Metadata updates merge recursively with existing metadata.
 
 ## Visibility operations
 
 ```tsx
 hideObject("body");
-showObject(["wheel-front", "wheel-rear"]);
+showObject({ group: "wheels" });
 toggleObjectVisibility("spoiler");
 clearHiddenObjects();
 
 const hidden = isObjectHidden("body");
 ```
 
-`hideObject`, `showObject`, and `toggleObjectVisibility` accept one identifier
-or an array. `hiddenObjects` and `hiddenObjectIds` are derived from the current
-binding state.
+`hideObject`, `showObject`, and `toggleObjectVisibility` accept one identifier,
+an identifier array, or a group, tag, or type selector. `hiddenObjects` and
+`hiddenObjectIds` are derived from the current binding state.
 
 ## Returns
 
@@ -109,10 +210,18 @@ binding state.
 | `objectBindings`         | Current object-binding state                     |
 | `setObjectBindings`      | React state dispatcher for controlled viewers    |
 | `updateObjectBindings`   | Update one object, a group, or an atomic edit batch |
+| `selectObjectBindings`   | Return bindings matching an identifier or selector |
+| `selectObjectBindingIds` | Return binding IDs matching an identifier or selector |
 | `setMaterial`            | Merge material fields                            |
 | `setBaseColor`           | Set the material base color                      |
+| `setTexture`             | Set a base-color or material-map texture         |
+| `clearTexture`           | Clear one texture channel                        |
+| `copyMaterial`           | Copy one complete material override to targets   |
 | `resetMaterial`          | Remove the material override                     |
 | `getMaterial`            | Read the current material override               |
+| `setTransform`           | Merge a persistent local transform               |
+| `resetTransform`         | Restore the model-authored local transform       |
+| `updateMetadata`         | Merge metadata fields                            |
 | `hiddenObjects`          | Map of hidden binding keys                       |
 | `hiddenObjectIds`        | IDs of currently hidden bindings                 |
 | `hideObject`             | Hide one object or a group                       |
@@ -131,5 +240,11 @@ const next = patchBindings(objectBindings, "body", {
   style: { material: { baseColor: "#ef4444" } },
 });
 
+const exterior = selectBindings(objectBindings, { tag: "exterior" });
+const exteriorKeys = selectBindingKeys(objectBindings, { tag: "exterior" });
+
 onObjectBindingsChange(next);
 ```
+
+`selectBindings` and `selectBindingKeys` provide the same selector queries
+without React state ownership.

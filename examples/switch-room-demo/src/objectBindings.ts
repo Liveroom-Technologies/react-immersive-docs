@@ -1,19 +1,6 @@
-import type { ObjectBinding } from "@liveroom-tech/react-immersive";
+import { defineObjectBindings } from "@liveroom-tech/react-immersive";
 
-export type ActionEffect = {
-  targetObjectId: string;
-  patch: Partial<ObjectBinding>;
-};
-
-export type DemoAction = NonNullable<ObjectBinding["actions"]>[number] & {
-  effects?: ActionEffect[];
-};
-
-export type DemoObjectBinding = Omit<ObjectBinding, "actions"> & {
-  actions?: DemoAction[];
-};
-
-export const objectBindings: Record<string, DemoObjectBinding> = {
+export const objectBindings = defineObjectBindings({
   control_panel: {
     id: "control-panel",
     modelObjectId: "control_panel",
@@ -31,6 +18,8 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
   light_a_1: {
     id: "light-a-1",
     modelObjectId: "light_a_1",
+    group: "circuit-a",
+    tags: ["circuit-light"],
     type: "light",
     label: "Light A 1",
     status: "normal",
@@ -50,6 +39,8 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
   light_a_2: {
     id: "light-a-2",
     modelObjectId: "light_a_2",
+    group: "circuit-a",
+    tags: ["circuit-light"],
     type: "light",
     label: "Light A 2",
     status: "normal",
@@ -69,6 +60,8 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
   light_b_1: {
     id: "light-b-1",
     modelObjectId: "light_b_1",
+    group: "circuit-b",
+    tags: ["circuit-light"],
     type: "light",
     label: "Light B 1",
     status: "normal",
@@ -88,6 +81,8 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
   light_b_2: {
     id: "light-b-2",
     modelObjectId: "light_b_2",
+    group: "circuit-b",
+    tags: ["circuit-light"],
     type: "light",
     label: "Light B 2",
     status: "normal",
@@ -238,21 +233,21 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
         type: "command",
         effects: [
           {
-            targetObjectId: "light_a_1",
-            patch: {
+            target: "switch_a",
+            objectBindings: {
               style: {
                 material: {
-                  baseColor: "#fef08a",
-                  emissive: "#fde047",
-                  emissiveIntensity: 2.2,
+                  baseColor: "#22c55e",
+                  emissive: "#22c55e",
+                  emissiveIntensity: 1.2,
                 },
               },
               metadata: { state: "on" },
             },
           },
           {
-            targetObjectId: "light_a_2",
-            patch: {
+            target: { group: "circuit-a" },
+            objectBindings: {
               style: {
                 material: {
                   baseColor: "#fef08a",
@@ -271,11 +266,11 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
         type: "command",
         effects: [
           {
-            targetObjectId: "light_a_1",
-            patch: {
+            target: "switch_a",
+            objectBindings: {
               style: {
                 material: {
-                  baseColor: "#64748b",
+                  baseColor: "#334155",
                   emissive: undefined,
                   emissiveIntensity: 0,
                 },
@@ -284,8 +279,8 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
             },
           },
           {
-            targetObjectId: "light_a_2",
-            patch: {
+            target: { group: "circuit-a" },
+            objectBindings: {
               style: {
                 material: {
                   baseColor: "#64748b",
@@ -341,21 +336,21 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
         type: "command",
         effects: [
           {
-            targetObjectId: "light_b_1",
-            patch: {
+            target: "switch_b",
+            objectBindings: {
               style: {
                 material: {
-                  baseColor: "#fef08a",
-                  emissive: "#fde047",
-                  emissiveIntensity: 2.2,
+                  baseColor: "#f97316",
+                  emissive: "#f97316",
+                  emissiveIntensity: 1.2,
                 },
               },
               metadata: { state: "on" },
             },
           },
           {
-            targetObjectId: "light_b_2",
-            patch: {
+            target: { group: "circuit-b" },
+            objectBindings: {
               style: {
                 material: {
                   baseColor: "#fef08a",
@@ -374,11 +369,11 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
         type: "command",
         effects: [
           {
-            targetObjectId: "light_b_1",
-            patch: {
+            target: "switch_b",
+            objectBindings: {
               style: {
                 material: {
-                  baseColor: "#64748b",
+                  baseColor: "#334155",
                   emissive: undefined,
                   emissiveIntensity: 0,
                 },
@@ -387,8 +382,8 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
             },
           },
           {
-            targetObjectId: "light_b_2",
-            patch: {
+            target: { group: "circuit-b" },
+            objectBindings: {
               style: {
                 material: {
                   baseColor: "#64748b",
@@ -422,4 +417,4 @@ export const objectBindings: Record<string, DemoObjectBinding> = {
     metrics: {},
     metadata: {},
   },
-};
+});

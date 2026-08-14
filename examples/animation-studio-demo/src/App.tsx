@@ -7,7 +7,6 @@ import {
   useViewerCamera,
   type ObjectBinding,
   type SceneConfig,
-  type ViewerReadyState,
 } from "@liveroom-tech/react-immersive";
 import { sceneConfig as baseSceneConfig } from "./sceneConfig";
 import { DemoPageHeader } from "./DemoLayout";
@@ -147,17 +146,11 @@ export default function App() {
     handleAnimationsReady,
   } = useViewerAnimations();
 
-  const { handleViewerReady, setCameraTarget } = useViewerCamera();
-
   // The deer stands ~1.8 units tall with its feet near the ground plane, so the
   // default look-at target of [0, 0, 0] frames it high. Aim at mid-body instead.
-  const handleReady = useCallback(
-    (viewer: ViewerReadyState) => {
-      handleViewerReady(viewer);
-      setCameraTarget([0, 0.85, 0], false);
-    },
-    [handleViewerReady, setCameraTarget],
-  );
+  const { handleViewerReady } = useViewerCamera({
+    initialTarget: [0, 0.85, 0],
+  });
 
   const labelFor = useCallback(
     (sourceName: string) => {
@@ -262,7 +255,7 @@ export default function App() {
             objectBindings={EMPTY_BINDINGS}
             sceneConfig={sceneConfig}
             onAnimationsReady={handleAnimationsReady}
-            onViewerReady={handleReady}
+            onViewerReady={handleViewerReady}
             backgroundColor="#0b0f14"
             camera={{ position: [2.6, 1.3, 3.6], fov: 40 }}
             shadows

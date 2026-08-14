@@ -1,0 +1,230 @@
+---
+title: useViewerEffects
+---
+
+import { Callout } from "nextra/components";
+
+# `useViewerEffects`
+
+Create high-frequency material, transform, and lighting effects without
+accessing Three.js objects or putting animation values in React state.
+
+The hook uses one request-animation-frame scheduler, invalidates demand-rendered
+viewers automatically, and restores runtime changes when it unmounts.
+
+## Usage
+
+```tsx
+import { useEffect } from "react";
+import {
+  ModelViewer,
+  useViewerEffects,
+  type ViewerEffectChannels,
+} from "@liveroom-tech/react-immersive";
+
+const channels: ViewerEffectChannels = {
+  materials: [
+    {
+      targets: { group: "filaments" },
+      values: { emissiveIntensity: [0.02, 8] },
+    },
+  ],
+  lights: [
+    {
+      lights: ["light-left", "light-right"],
+      intensity: [0, 180],
+    },
+  ],
+};
+
+function Bulbs() {
+  const {
+    addPointLight,
+    flicker,
+    handleViewerReady,
+    overrideEffect,
+    stopEffect,
+  } = useViewerEffects();
+
+  useEffect(() => {
+    flicker(channels, {
+      id: "bulbs",
+      minLevel: 0.1,
+      maxLevel: 1,
+      blackoutChance: 0.1,
+      synchronized: true,
+    });
+
+    return () => stopEffect("bulbs");
+  }, [flicker, stopEffect]);
+
+  return (
+    <>
+      <ModelViewer
+        modelUrl="/bulbs.glb"
+        licenseKey={licenseKey}
+        objectBindings={objectBindings}
+        onViewerReady={(viewer) => {
+          handleViewerReady(viewer);
+          addPointLight({
+            id: "light-left",
+            target: "filament-left",
+            color: "#ff9a3c",
+            intensity: 0,
+            distance: 30,
+          });
+        }}
+      />
+
+      <button onClick={() => overrideEffect("bulbs", 0, 800)}>
+        Blackout
+      </button>
+    </>
+  );
+}
+```
+
+<Callout type="info">
+  Material and transform targets resolve by binding map key, `binding.id`,
+  `modelObjectId`, or a group, tag, or type selector. Runtime point lights
+  attach to the target object and follow its transform.
+</Callout>
+
+## Channels
+
+`transition`, `pulse`, and `flicker` use the same channel structure:
+
+```tsx
+const channels: ViewerEffectChannels = {
+  materials: [
+    {
+      targets: "warning-light",
+      values: {
+        emissiveIntensity: [0, 6],
+        opacity: [0.4, 1],
+      },
+    },
+  ],
+  transforms: [
+    {
+      targets: "door",
+      values: {
+        rotation: [[0, 0, 0], [0, 1.57, 0]],
+      },
+    },
+  ],
+  lights: [
+    {
+      lights: "warning-point-light",
+      intensity: [0, 120],
+    },
+  ],
+};
+
+transition(channels, { duration: 500, easing: "ease-out" });
+pulse(channels, { duration: 900, repeat: Infinity });
+flicker(channels, { synchronized: false });
+
+timeline(
+  [
+    { channels, duration: 500, hold: 200 },
+    { channels: closingChannels, duration: 500 },
+  ],
+  { repeat: Infinity },
+);
+```
+
+When `synchronized` is `true`, every target receives the same level. When it is
+`false`, array items receive independent levels or phases. Aligned arrays in
+separate channels continue to describe the same logical objects.
+
+## Immediate operations
+
+```tsx
+setMaterial("screen", {
+  emissive: "#22d3ee",
+  emissiveIntensity: 4,
+});
+
+setMaterial({ tag: "warning" }, {
+  emissive: "#ef4444",
+  emissiveIntensity: 4,
+});
+
+setTransform("door", {
+  rotation: [0, Math.PI / 2, 0],
+  position: [0, 0.2, 0],
+});
+
+const position = getWorldPosition("door");
+```
+
+Selectors can target several bindings for material and transform operations.
+`getWorldPosition` remains a single-object lookup.
+
+Transform rotations use radians. Values are snapshotted when first changed so
+`resetRuntime` can restore them.
+
+## Point lights
+
+```tsx
+addPointLight({
+  id: "status-light",
+  target: "status-led",
+  color: "#22c55e",
+  intensity: 80,
+  distance: 12,
+  decay: 2,
+  offset: [0, 0.02, 0],
+});
+
+updatePointLight("status-light", { intensity: 140 });
+removePointLight("status-light");
+```
+
+react-immersive creates and disposes these lights. Application code does not
+import `PointLight` or render React Three Fiber light elements.
+
+## Returns
+
+| Name | Description |
+| --- | --- |
+| `handleViewerReady` | Connect the hook to `ModelViewer.onViewerReady` |
+| `setMaterial` | Apply an immediate runtime material patch |
+| `setTransform` | Apply position, rotation, scale, or visibility at runtime |
+| `getWorldPosition` | Read a bound object's world position |
+| `addPointLight` | Create a point light attached to a bound object |
+| `updatePointLight` | Update or reattach a point light |
+| `removePointLight` | Dispose a runtime point light |
+| `transition` | Run a finite eased channel transition |
+| `timeline` | Sequence transitions and holds, optionally repeating |
+| `pulse` | Run repeating channel pulses |
+| `flicker` | Run synchronized or independent randomized flicker |
+| `overrideEffect` | Temporarily force an effect level |
+| `stopEffect` | Stop one effect by ID |
+| `stopAllEffects` | Stop every active effect |
+| `resetRuntime` | Restore snapshots and remove runtime lights |
+
+## Composing viewer-ready handlers
+
+Use `useViewerConnection` when camera or other viewer hooks also need the
+callback:
+
+```tsx
+import {
+  useViewerCamera,
+  useViewerConnection,
+  useViewerEffects,
+} from "@liveroom-tech/react-immersive";
+
+const camera = useViewerCamera();
+const effects = useViewerEffects();
+const connection = useViewerConnection(camera, effects);
+
+<ModelViewer
+  modelUrl="/model.glb"
+  licenseKey={licenseKey}
+  objectBindings={objectBindings}
+  onViewerReady={connection.handleViewerReady}
+/>;
+```

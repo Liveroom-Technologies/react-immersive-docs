@@ -8,6 +8,25 @@ import { sceneConfig } from "./sceneConfig";
 // over it. This makes it clear which values came from the builder and which
 // ones are part of the animated horror treatment.
 export const horrorSceneConfig: SceneConfig = patchSceneConfig(sceneConfig, {
+  lighting: {
+    ambient: {
+      intensity: 0.006,
+      color: "#526080",
+    },
+    lights: [
+      {
+        id: "horror-key",
+        type: "directional",
+        color: "#52617f",
+        intensity: 0.02,
+        position: [20, 30, 25],
+        attachedToCamera: false,
+        castShadow: false,
+        shadowBias: -0.0005,
+        visible: true,
+      },
+    ],
+  },
   environment: {
     intensity: 0.012,
   },

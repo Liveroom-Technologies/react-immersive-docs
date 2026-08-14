@@ -102,8 +102,7 @@ public/model.glb
 public/materials/... (when the export includes uploaded textures)
 ```
 
-The TypeScript exports already include the correct type and named export. Import
-them directly and pass them to `ModelViewer`:
+The TypeScript bindings export already wraps the record in `defineObjectBindings`, so TypeScript validates the complete file without widening its keys or literal IDs. Import the named exports directly and pass them to `ModelViewer`:
 
 ```tsx
 import { useState } from "react";
