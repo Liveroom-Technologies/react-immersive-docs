@@ -1,7 +1,7 @@
 import {
   defineObjectBindings,
   type ObjectBinding,
-} from "@liveroom-tech/react-immersive";
+} from "@liveroom-tech/react-immersive/utils";
 
 function binding(
   id: string,

@@ -2,7 +2,7 @@ import {
   DEFAULT_SCENE_CONFIG,
   patchSceneConfig,
   type SceneConfig,
-} from "@liveroom-tech/react-immersive";
+} from "@liveroom-tech/react-immersive/utils";
 
 export const SWITCH_LIGHT_IDS = [
   "light_a_1",

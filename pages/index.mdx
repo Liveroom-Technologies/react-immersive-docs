@@ -10,12 +10,13 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
 
 ## Features
 
-- **GLB/GLTF rendering** via React Three Fiber and `@react-three/drei`
+- **GLB/GLTF, OBJ/MTL, FBX, and USDZ rendering** via React Three Fiber
 - **Mesh selection** by object name with built-in side panels
-- **Object bindings**, drive color, texture, visibility, and actions from a plain data record
+- **Object bindings**, drive transforms, color, texture, visibility, and actions from a plain data record
+- **Object move & rotate controls**, geometry-centered handles with World or Local axis alignment
 - **Shadows & post-processing**, soft shadows (auto-tuned for interiors), SSAO, bloom, and ACES tone mapping, toggleable via the `shadows` prop
-- **SimpleModelViewer**, a lightweight GLB/GLTF inspection viewer with no `objectBindings` required
-- **BindingBuilder**, browser-based design-time tool for generating starter bindings from GLB/GLTF assets
+- **SimpleModelViewer**, a lightweight model inspection viewer with no `objectBindings` required
+- **BindingBuilder**, browser-based design-time tool for generating bindings and positioning model objects
 - **Hooks API**:
   - [`useViewerCamera`](/hooks/use-viewer-camera)
   - [`useViewerConnection`](/hooks/use-viewer-connection)
@@ -56,6 +57,12 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
   </Tabs.Tab>
 </Tabs>
 
+Import the library stylesheet once from your application root:
+
+```tsx
+import "@liveroom-tech/react-immersive/styles.css";
+```
+
 ## Minimal Example
 
 ```tsx
@@ -85,13 +92,13 @@ bindings in [`BindingBuilder`](/reference/binding-builder) and export them as
 `objectBindings.json` or a TypeScript file to import into your app.
 
 <Callout type="info">
-  The component ships with its own internal UI styles. Tailwind is **not**
-  required in the consuming app.
+  UI styles ship as an explicit static CSS import; the package does not inject
+  runtime style tags. Tailwind is **not** required in the consuming app.
 </Callout>
 
 ## Quick Inspection With `SimpleModelViewer`
 
-If you don't need `objectBindings`-driven styling and actions, [`SimpleModelViewer`](/reference/simple-model-viewer) gives you a lightweight viewer for inspecting GLB/GLTF assets. It can also run in an upload-first mode for ad-hoc local model inspection:
+If you don't need `objectBindings`-driven styling and actions, [`SimpleModelViewer`](/reference/simple-model-viewer) gives you a lightweight viewer for inspecting GLB, GLTF, OBJ, FBX, or USDZ assets. It can also run in an upload-first mode for ad-hoc local model inspection:
 
 ```tsx
 import { SimpleModelViewer } from "@liveroom-tech/react-immersive";
@@ -128,3 +135,8 @@ import {
   useViewerSelection,
 } from "@liveroom-tech/react-immersive";
 ```
+
+Pure data helpers such as `defineObjectBindings`, `patchBindings`,
+`patchSceneConfig`, and `selectBindings` are also available from the
+server-safe `@liveroom-tech/react-immersive/utils` entry point. The main entry
+continues to export them for backwards compatibility.

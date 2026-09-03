@@ -1,4 +1,4 @@
-import { defineObjectBindings } from "@liveroom-tech/react-immersive";
+import { defineObjectBindings } from "@liveroom-tech/react-immersive/utils";
 
 export const objectBindings = defineObjectBindings({
   Cylinder001_Material001_0: {

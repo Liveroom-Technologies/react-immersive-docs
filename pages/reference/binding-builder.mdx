@@ -6,7 +6,7 @@ import { Callout } from "nextra/components";
 
 # `BindingBuilder`
 
-A design-time helper component for authoring `objectBindings` and `sceneConfig` in the browser. Load a GLB/GLTF asset, inspect its mesh nodes, edit binding fields, configure the scene, preview the result live, and export as JSON or TypeScript.
+A design-time helper component for authoring `objectBindings` and `sceneConfig` in the browser. Load a GLB, GLTF, OBJ, FBX, or USDZ asset, inspect its mesh nodes, edit binding fields, configure the scene, preview the result live, and export as JSON or TypeScript.
 
 Try the public editor at [react-immersive.liveroom.dev/editor](https://react-immersive.liveroom.dev/editor).
 
@@ -25,18 +25,29 @@ export default function App() {
 ```ts
 type BindingBuilderProps = {
   licenseKey: string;
+  dracoDecoderPath?: string | false;
+  ktx2TranscoderPath?: string | false;
+  meshopt?: boolean;
 };
 ```
 
 `licenseKey` is **required** and is validated the same way as [`ModelViewer`](/reference/model-viewer)'s, see [Licensing & plan tiers](#licensing--plan-tiers) below. While the key is being checked, `BindingBuilder` renders a "Verifying license…" placeholder; if the key is invalid, it renders an error message instead of the editor.
 
+The decoder props are forwarded to the editor preview. Built-in defaults support
+Meshopt, DRACO, and KTX2; override them with self-hosted directories or `false`.
+See the
+[`ModelViewer` decoder setup](/reference/model-viewer#dracodecoderpath--ktx2transcoderpath--meshopt).
+
 ## Capabilities
 
 ### Object tab
 
-- Upload a `.glb`, standalone/data-URI `.gltf`, or `.zip` containing a `.gltf` plus its referenced `.bin` and texture files
+- Upload a `.glb`, standalone/data-URI `.gltf`, `.obj`, `.fbx`, `.usdz`, or `.zip` bundle. ZIP bundles may contain GLTF dependencies, OBJ + MTL/textures, or FBX external textures; USDZ is uploaded directly
 - Traverse renderable mesh nodes and generate starter bindings automatically
 - Edit binding fields: identity, label, type, status, booleans, style, actions, metrics, metadata, and saved camera state
+- Move and rotate the selected object with a geometry-centered pivot, World or
+  Local axes, numeric position/rotation fields, and restore-to-authored-transform
+  support
 - Author a full per-object material in the **Material** panel, a one-click
   preset gallery (wood, metal, chrome, glass, plastic, fabric, ceramic,
   concrete, etc.) plus collapsible sub-panels for PBR maps, roughness,
@@ -52,6 +63,14 @@ type BindingBuilderProps = {
   the current model (matched by `modelObjectId`, so re-imports survive
   hand edits or partial files)
 - Export the current bindings as **JSON** or **TypeScript**
+
+<Callout type="info">
+  Model ZIPs are limited to 128 MiB compressed, 1,024 entries, 128 MiB per
+  expanded entry, 256 MiB expanded in total, and a 200:1 per-entry compression
+  ratio. Every GLTF dependency must be included in the archive: absolute,
+  root-relative, and other external asset URLs are rejected. `data:` URIs are
+  allowed.
+</Callout>
 
 ### Scene tab
 
@@ -77,6 +96,30 @@ type BindingBuilderProps = {
 ### Preview
 
 - Live preview of the selected node in an embedded `ModelViewer`
+
+### Moving and rotating objects
+
+Open the **Move & Rotate** panel in the Object tab, then:
+
+1. Turn on **Transform gizmo**. Camera controls pause while editing is enabled.
+2. Select a bound mesh in the preview or object list.
+3. Drag an arrow to move on one axis, a plane handle to move on two axes, or a
+   colored ring to rotate. Move and rotate handles are always shown together.
+4. Choose **World** to keep the handles aligned with the scene, or **Local** to
+   align them with the selected object's current orientation.
+5. Use the horizontal X, Y, and Z fields for precise values. Rotation fields
+   display degrees; the exported binding stores radians.
+
+The pivot is placed at the center of the selected object's renderable geometry,
+so rotation happens around the object itself even when the source node's
+authored origin is elsewhere. This authoring pivot does not rewrite the
+GLB/GLTF origin.
+
+Both gizmo and numeric edits are saved to the selected binding's local-space
+`transform.position` and `transform.rotation`. Changing World/Local axis space
+only changes the direction of the gizmo handles; it does not change the saved
+position. Use **Restore original position & rotation** to remove those
+overrides and return to the model-authored transform.
 
 ## Exporting and Reusing Files
 
@@ -173,8 +216,9 @@ A locked feature is shown in place (not hidden) with a message naming the requir
 ## Typical Workflow
 
 1. Mount `<BindingBuilder />` in a dev-only route (e.g. `/dev/bindings`)
-2. Upload your `.glb`, `.gltf`, or `.zip`
-3. Select mesh nodes in the sidebar and edit their binding fields, or apply a material preset
+2. Upload your `.glb`, `.gltf`, `.obj`, `.fbx`, `.usdz`, or `.zip`
+3. Select mesh nodes in the sidebar, edit their binding fields, move or rotate
+   them as needed, or apply a material preset
 4. Configure scene-wide settings in the **Scene** tab
 5. Preview the interactive result in the embedded viewer
 6. Click **Export → JSON** or **Export → TypeScript** to download the bindings (and, if you uploaded any textures, a `.zip` with them included)

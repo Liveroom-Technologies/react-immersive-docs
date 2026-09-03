@@ -1,7 +1,9 @@
-# `react-immersive-docs`
+# React Immersive — React 3D model viewer docs
 
 `react-immersive-docs` is the public documentation and feedback surface for
 `@liveroom-tech/react-immersive`.
+
+[Website](https://react-immersive.liveroom.dev) · [Documentation](https://react-immersive.liveroom.dev/docs) · [Live editor](https://react-immersive.liveroom.dev/editor) · [npm](https://www.npmjs.com/package/@liveroom-tech/react-immersive)
 
 The package itself is commercially maintained and the core source remains
 private, but this repo is where users can:

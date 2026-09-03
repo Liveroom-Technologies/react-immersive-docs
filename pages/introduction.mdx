@@ -6,11 +6,17 @@ import { Callout } from "nextra/components";
 
 # Introduction
 
-`@liveroom-tech/react-immersive` is a React-based 3D model viewer for interactive GLB/GLTF assets. It renders a model with React Three Fiber, lets users click named meshes, shows a built-in side panel for the selected object, and supports per-object actions such as color changes, texture uploads, and visibility toggles.
+`@liveroom-tech/react-immersive` is a React-based 3D model viewer for
+interactive GLB, GLTF, OBJ, FBX, and USDZ assets. It renders a model with React
+Three Fiber, lets users click named meshes, shows a built-in side panel for the
+selected object, and supports per-object actions such as color changes, texture
+uploads, and visibility toggles.
 
 ## Why This Library Exists
 
-Rendering a GLB/GLTF model in Three.js/React Three Fiber is the easy part, `useGLTF` plus a `<primitive>` gets you a static model in a few lines. The hard part is everything layered on top once a model needs to be **interactive and configurable**:
+Rendering a model in Three.js/React Three Fiber is the easy part. The hard part
+is everything layered on top once a GLB, GLTF, OBJ, FBX, or USDZ asset needs to
+be **interactive and configurable**:
 
 - Click a part of the model to show details about it
 - Let a user change a part's color or swap its texture
@@ -27,12 +33,12 @@ Every project that does this ends up rebuilding the same scaffolding: material c
 `objectBindings` is that bridge, a plain JS/TS record, keyed by mesh node name, that:
 
 - **Declares which meshes are interactive** (`selectable`, `hoverable`, `visible`), meshes not listed aren't part of the interactive flow at all
-- **Carries live render state** (`visible` plus `style.material.*` overrides like `baseColor`, `texture.path`, `opacity`, `metalness`, `roughness`, `emissive`, and the full PBR/texture-map set) so the viewer can apply overrides without you touching Three.js objects directly
+- **Carries live render state** (`visible`, local `transform.position` / `transform.rotation`, plus `style.material.*` overrides like `baseColor`, `texture.path`, `opacity`, `metalness`, `roughness`, `emissive`, and the full PBR/texture-map set) so the viewer can apply overrides without you touching Three.js objects directly
 - **Defines per-object actions** (`change-color`, `change-material`, `toggle-visibility`, etc.) that drive the built-in side panel buttons
 - **Stores domain data** (`metrics`, `metadata`) for display alongside the 3D view
 - **Saves camera framing** (`cameraState`) so clicking an object can snap to a curated view instead of a generic "fit to box"
 
-Because it's just a serializable record, it can be authored by hand, generated automatically (via [`BindingBuilder`](/reference/binding-builder), which traverses a GLB/GLTF asset and produces starter bindings), stored in a database, and round-tripped through `onObjectBindingsChange` to keep your app state and the 3D scene in sync. `objectBindings` is the single source of truth, so React's normal data flow ("state in, callbacks out") works for a 3D scene the same way it would for any other component.
+Because it's just a serializable record, it can be authored by hand, generated automatically (via [`BindingBuilder`](/reference/binding-builder), which traverses a model and produces starter bindings), stored in a database, and round-tripped through `onObjectBindingsChange` to keep your app state and the 3D scene in sync. `objectBindings` is the single source of truth, so React's normal data flow ("state in, callbacks out") works for a 3D scene the same way it would for any other component.
 
 ## Why It Is Worth The Setup
 
@@ -98,7 +104,7 @@ both depending on what the experience needs.
 
 - **Product configurators** - let users recolor or retexture parts of a car, piece of furniture, or apparel
 - **Interactive room/scene tours** - click walls, furniture, or fixtures to see info or toggle visibility
-- **Asset inspection tools** - [`SimpleModelViewer`](/reference/simple-model-viewer) for quickly browsing a GLB/GLTF mesh hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
+- **Asset inspection tools** - [`SimpleModelViewer`](/reference/simple-model-viewer) for quickly browsing a model hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
 - **Anything needing "click a 3D part to show a panel with data and actions"** without hand-rolling raycasting, highlighting, and UI panels
 
 ## Example Applications Where Bindings Shine
@@ -126,8 +132,8 @@ model does something special," bindings usually make sense.
 At a high level, the viewer does the following:
 
 1. Creates a Three.js canvas; `ModelViewer` only defaults the `fov` (`50`), the camera position falls back to React Three Fiber's own `Canvas` default (`[0, 0, 5]`) unless you pass `camera={{ position: [...] }}`
-2. Loads the GLB/GLTF asset with `useGLTF`
-3. Looks up meshes by the keys in `objectBindings` (resolving `modelObjectId` to find the actual model node)
+2. Loads the model with the format-appropriate loader
+3. Builds stable node identifiers, including suffixed identifiers for duplicate names, and resolves `objectBindings` through those identifiers
 4. Clones each referenced material so edits stay isolated per object
 5. Applies runtime color, texture, and style overrides from `objectBindings` in a `useEffect`
 6. Manages a reference-counted texture cache so the same texture URL is decoded once and disposed when no longer referenced
@@ -147,7 +153,7 @@ Interior models (rooms, dollhouses) are a special case: the large mesh that form
 
 The component includes its own UI shell:
 
-- A full-height viewer layout with built-in styles
+- A full-height viewer layout styled by the package's explicit static CSS import
 - A sliding left side panel (~280 px wide) for the selected object's details and actions; on narrow screens the side panels collapse to half-width so the canvas keeps its other half
 - A canvas area that fills the remaining width
 - A color picker that expands inline beneath the **Change Color** action
@@ -161,11 +167,11 @@ The component includes its own UI shell:
 
 ## Model Requirements
 
-To use this library successfully, your GLB/GLTF asset should follow these conventions:
+To use this library successfully, your model should follow these conventions:
 
-- Mesh node names must match the keys in `objectBindings` (or be referenced via `binding.modelObjectId`)
+- Binding identifiers must match the model node IDs (`BindingBuilder` assigns stable suffixed IDs when authored names are duplicated)
 - Target nodes should have geometry and a `MeshStandardMaterial`
-- The file must be accessible from the browser at the path you pass to `modelUrl`; hosted `.gltf` files must also serve external `.bin` and texture files at their declared relative paths
+- The file must be accessible from the browser at the path passed to `modelUrl`; hosted GLTF, OBJ, and FBX files must also serve external dependencies at their declared relative paths
 
 If a node name or material does not match, that object will not render through the interactive binding flow.
 

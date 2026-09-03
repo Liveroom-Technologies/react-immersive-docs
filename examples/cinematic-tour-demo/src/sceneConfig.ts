@@ -1,4 +1,4 @@
-import type { SceneConfig } from "@liveroom-tech/react-immersive";
+import type { SceneConfig } from "@liveroom-tech/react-immersive/utils";
 
 export const sceneConfig: SceneConfig = {
   model: {

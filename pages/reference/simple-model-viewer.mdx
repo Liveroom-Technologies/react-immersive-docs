@@ -6,7 +6,7 @@ import { Callout } from "nextra/components";
 
 # `SimpleModelViewer`
 
-A lightweight viewer for cases where you want to load a GLB/GLTF asset, inspect meshes, and toggle visibility **without** building `objectBindings`. It can either load a fixed `modelUrl` or, when `enableModelUpload` is enabled, let the user drag-and-drop or choose a local model at runtime.
+A lightweight viewer for cases where you want to load a GLB, GLTF, OBJ, FBX, or USDZ asset, inspect meshes, and toggle visibility **without** building `objectBindings`. It can either load a fixed `modelUrl` or, when `enableModelUpload` is enabled, let the user drag-and-drop or choose a local model at runtime.
 
 ## Usage
 
@@ -24,7 +24,7 @@ export default function App() {
 
 ## Behavior
 
-- Discovers renderable meshes directly from the loaded GLB/GLTF scene
+- Discovers renderable meshes directly from the loaded model scene
 - Renders a right-side scene objects panel with search and visibility toggles
 - Renders a left-side environment/scene settings panel (background color, environment preset, auto-rotate, exposure, ambient + directional light color/intensity), each seedable via props
 - Can swap `modelUrl` for a built-in drag-and-drop / file-picker upload flow
@@ -45,6 +45,10 @@ export default function App() {
 ```ts
 type SimpleModelViewerProps = {
   modelUrl: string;
+  modelFormat?: "glb" | "gltf" | "obj" | "fbx" | "usdz";
+  dracoDecoderPath?: string | false;
+  ktx2TranscoderPath?: string | false;
+  meshopt?: boolean;
   backgroundColor?: string;
   showSceneObjectsPanel?: boolean;
   showSceneSettingsPanel?: boolean;
@@ -77,7 +81,22 @@ type SimpleModelViewerProps = {
 
 ### `modelUrl`
 
-**Required.** URL or public path to the `.glb` or `.gltf` model to inspect. For `.gltf` URLs with external `.bin` or texture files, those files must be hosted at the relative paths declared in the `.gltf`.
+**Required.** URL or public path to a `.glb`, `.gltf`, `.obj`, `.fbx`, or `.usdz` model. Hosted assets must serve external dependencies at their declared relative paths; USDZ dependencies are packaged internally.
+
+---
+
+### `modelFormat`
+
+Optional explicit format for extensionless or signed URLs. Supported extensions are detected automatically in normal URLs.
+
+---
+
+### `dracoDecoderPath` / `ktx2TranscoderPath` / `meshopt`
+
+Compressed-asset decoder configuration. Meshopt is bundled; DRACO and KTX2
+default to immutable, versioned files on the first-party React Immersive domain.
+Override with self-hosted directories or pass `false` to disable either format.
+See the [`ModelViewer` decoder setup](/reference/model-viewer#dracodecoderpath--ktx2transcoderpath--meshopt).
 
 ---
 
@@ -200,7 +219,12 @@ true;
 
 ### `enableModelUpload`
 
-Optional boolean that swaps the fixed `modelUrl` workflow for a built-in upload UI. When enabled, the viewer starts with a drag-and-drop / file-picker empty state and loads the uploaded `.glb`, standalone/data-URI `.gltf`, or `.zip` containing a `.gltf` plus its referenced `.bin` and texture files.
+Optional boolean that swaps the fixed `modelUrl` workflow for a built-in upload UI. It accepts `.glb`, standalone/data-URI `.gltf`, `.obj`, `.fbx`, `.usdz`, or `.zip`. A ZIP may bundle GLTF dependencies, OBJ + MTL/textures, or FBX external textures; USDZ is already self-contained.
+
+ZIP uploads are limited to 128 MiB compressed, 1,024 entries, 128 MiB per
+expanded entry, 256 MiB expanded in total, and a 200:1 per-entry compression
+ratio. Zipped GLTF assets may use `data:` URIs or paths included in the archive;
+external asset URLs are rejected.
 
 Default:
 
@@ -212,7 +236,7 @@ false;
 
 ### `onModelLoaded`
 
-Optional callback fired after the GLB/GLTF scene has loaded.
+Optional callback fired after the model scene has loaded.
 
 ```ts
 onModelLoaded?: (scene: Object3D) => void

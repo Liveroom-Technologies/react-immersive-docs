@@ -32,6 +32,15 @@ import { Callout, Steps, Tabs } from "nextra/components";
   </Tabs.Tab>
 </Tabs>
 
+## Import Styles
+
+Import the static stylesheet once from your application root. In a Next.js App
+Router project, put this in `app/layout.tsx`:
+
+```tsx
+import "@liveroom-tech/react-immersive/styles.css";
+```
+
 ## Get a License Key
 
 `ModelViewer` and `BindingBuilder` require a `licenseKey`. (`SimpleModelViewer` does not, it's unlicensed.) To get one:
@@ -51,7 +60,9 @@ import { Callout, Steps, Tabs } from "nextra/components";
 
 ### Define your object bindings
 
-Each key in `objectBindings` must match a mesh name from your GLB/GLTF file.
+Each key in `objectBindings` must match a model node identifier. Unique nodes
+use their authored name; duplicate names receive identifiers such as `Cube [1]`
+and `Cube [2]`. BindingBuilder generates the correct identifiers automatically.
 You can write the bindings by hand, or generate starter bindings in
 [`BindingBuilder`](/reference/binding-builder) and export them as
 `objectBindings.json` or a TypeScript file to import into your app.
@@ -75,7 +86,7 @@ in your source tree so you can import it into your viewer page.
 </Callout>
 
 ```ts
-import { defineObjectBindings } from "@liveroom-tech/react-immersive";
+import { defineObjectBindings } from "@liveroom-tech/react-immersive/utils";
 
 const objectBindings = defineObjectBindings({
   BrickWall: {

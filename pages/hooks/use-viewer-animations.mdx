@@ -6,7 +6,8 @@ import { Callout } from 'nextra/components'
 
 # `useViewerAnimations`
 
-Controls animation playback for GLB/GLTF models that contain embedded animations.
+Controls animation playback for supported GLB/GLTF, FBX, and USDZ models that
+contain embedded animations.
 
 ## Usage
 
@@ -38,7 +39,7 @@ const {
 
 | Name | Type | Description |
 |------|------|-------------|
-| `clips` | `string[]` | Animation clip names found in the GLB/GLTF file |
+| `clips` | `string[]` | Animation clip names found in the model file |
 | `currentClip` | `string \| null` | Name of the currently playing clip, or `null` |
 | `isPlaying` | `boolean` | `true` while an animation is playing (not paused or stopped) |
 | `speed` | `number` | Current playback speed (default `1`) |

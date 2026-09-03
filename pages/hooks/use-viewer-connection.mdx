@@ -32,6 +32,7 @@ const connection = useViewerConnection(
 <ModelViewer
   modelUrl="/model.glb"
   licenseKey={licenseKey}
+  preserveDrawingBuffer
   onCameraChange={camera.handleCameraChange}
   onViewerReady={connection.handleViewerReady}
 />;
@@ -54,7 +55,10 @@ connection.invalidate();
 const viewer = connection.getViewer();
 ```
 
-`captureImage` rejects with a clear error before the viewer is ready. `invalidate` returns `false` before connection and `true` after requesting a frame.
+`captureImage` requires `preserveDrawingBuffer` on the connected `ModelViewer`
+and rejects with a clear error before the viewer is ready or when framebuffer
+preservation is disabled. `invalidate` returns `false` before connection and
+`true` after requesting a frame.
 
 ## Returns
 

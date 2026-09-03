@@ -23,7 +23,7 @@ import {
   defineObjectBindings,
   type ObjectBindingActionId,
   type ObjectBindingKey,
-} from "@liveroom-tech/react-immersive";
+} from "@liveroom-tech/react-immersive/utils";
 
 const initialBindings = defineObjectBindings({
   switch_a: {
@@ -53,11 +53,13 @@ type SwitchAction = ObjectBindingActionId<typeof initialBindings, "switch_a">;
 ```tsx
 import {
   ModelViewer,
+  useObjectBindings,
+} from "@liveroom-tech/react-immersive";
+import {
   patchBindings,
   selectBindings,
   selectBindingKeys,
-  useObjectBindings,
-} from "@liveroom-tech/react-immersive";
+} from "@liveroom-tech/react-immersive/utils";
 
 const {
   objectBindings,

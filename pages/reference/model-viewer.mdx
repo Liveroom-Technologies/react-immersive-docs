@@ -6,16 +6,18 @@ import { Callout } from "nextra/components";
 
 # `ModelViewer`
 
-The primary exported component. Renders a GLB/GLTF model with orbit/pan/zoom controls, built-in side panels, and a full callback API.
+The primary exported component. Renders a GLB, GLTF, OBJ, FBX, or USDZ model with orbit/pan/zoom controls, built-in side panels, and a full callback API.
 
 ## Props
 
 ```ts
 type Props = {
   modelUrl: string;
+  modelFormat?: "glb" | "gltf" | "obj" | "fbx" | "usdz";
   licenseKey: string;
   objectBindings: Record<string, ObjectBinding>;
   selectedObject?: ObjectBinding | null;
+  panelHoveredObject?: ObjectBinding | null;
   onObjectBindingsChange?: (next: Record<string, ObjectBinding>) => void;
   onObjectSelect?: (binding: ObjectBinding | null) => void;
   onObjectHover?: (binding: ObjectBinding | null) => void;
@@ -61,10 +63,16 @@ type Props = {
   sceneConfig?: SceneConfig;
   disableZoom?: boolean;
   zoomOnSelected?: boolean;
+  highlightOnHover?: boolean;
+  enableCameraControls?: boolean;
+  moveModeEnabled?: boolean;
+  objectTransformSpace?: "local" | "world";
+  enableKeyboardNavigation?: boolean;
   onAutoFit?: () => Promise<boolean>;
   refitOnResize?: boolean;
   renderMode?: "always" | "demand";
   maxDpr?: number;
+  preserveDrawingBuffer?: boolean;
   performanceProfile?: "auto" | "high" | "low";
   dracoDecoderPath?: string | false;
   ktx2TranscoderPath?: string | false;
@@ -76,8 +84,12 @@ type Props = {
   measurementUnit?: string;
   enableXR?: boolean;
   usdzUrl?: string;
+  arScaleMode?: "normalized" | "real-world";
+  mobileHandoffUrl?: string;
   showAnnotationNavigation?: boolean;
   showAnnotationOnHover?: boolean;
+  onSceneConfigChange?: (config: SceneConfig) => void;
+  showViewGizmo?: boolean;
 };
 ```
 
@@ -85,11 +97,25 @@ type Props = {
 
 ### `modelUrl`
 
-**Required.** URL or public path to the `.glb` or `.gltf` model file. For `.gltf` URLs with external `.bin` or texture files, those files must be served at the relative paths declared in the `.gltf`.
+**Required.** URL or public path to a `.glb`, `.gltf`, `.obj`, `.fbx`, or `.usdz` model. Hosted assets must serve external buffers, MTL files, and textures at their declared relative paths; USDZ dependencies are packaged internally.
 
 ```tsx
 <ModelViewer modelUrl="/model.glb" ... />
 ```
+
+---
+
+### `modelFormat`
+
+Optional explicit format for extensionless or signed URLs. Supported file extensions are detected automatically in normal URLs.
+
+```tsx
+<ModelViewer modelUrl={signedUrl} modelFormat="fbx" ... />
+```
+
+This is separate from `usdzUrl`: `modelUrl` renders USDZ inside the viewer,
+while `usdzUrl` launches the native Apple Quick Look experience when XR is
+enabled.
 
 ---
 
@@ -103,11 +129,26 @@ type Props = {
 
 To get a license key, sign in at the [React Immersive Console](https://react-immersive.liveroom.dev/console), choose a plan, and generate a key from your dashboard.
 
+The browser validates the key against
+`https://react-immersive.liveroom.dev/api/validate-license`. A successful
+result is cached in memory for five minutes and may include a signed,
+domain-and-key-scoped offline grant valid for up to 12 hours. If validation is
+temporarily indeterminate, an unexpired signed grant is used immediately when
+available. Without one, the SDK retries once after a 400 ms backoff; each
+attempt has a five-second timeout. Timeouts, transport failures, `429`, `5xx`,
+and malformed responses are retryable, while explicit licence denials are not.
+A first-time visitor without a valid grant fails closed if both attempts fail.
+
 ---
 
 ### `objectBindings`
 
-**Required.** A map keyed by the model node name. Each key should match a mesh name from the GLB/GLTF file.
+**Required.** A map keyed by the model node identifier. A uniquely named mesh
+keeps its authored name. When a model contains duplicate node names, each
+duplicate receives a stable traversal-order identifier such as `Cube [1]` and
+`Cube [2]`; the original `Object3D.name` is not mutated, so animation tracks
+continue to work. `BindingBuilder` generates these identifiers automatically
+and the viewer logs the duplicate-name mapping to the console.
 
 `objectBindings` is the single source of truth for all visual state:
 
@@ -168,6 +209,15 @@ When the selected object has a `cameraState` with both `position` and `target`, 
 
 ---
 
+### `panelHoveredObject`
+
+Optional externally controlled binding to highlight as hovered by a custom
+scene-objects panel. It takes precedence over the built-in panel and canvas
+hover while `highlightOnHover` is enabled. Pass `null` when no panel row is
+hovered.
+
+---
+
 ### `onObjectSelect`
 
 Called when the user clicks a mesh or closes the side panel.
@@ -213,6 +263,11 @@ Fires for:
 - Color picks (`binding.style.material.baseColor`), committed when the color picker closes
 - Texture uploads (`binding.style.material.texture.path`)
 - Texture removal
+- Object movement and rotation (`binding.transform.position` and `binding.transform.rotation`)
+
+Passing this callback makes binding edits controlled: update the
+`objectBindings` prop with the returned record. If it is omitted, the viewer
+keeps built-in edits in internal state for the lifetime of the mounted viewer.
 
 ---
 
@@ -228,7 +283,7 @@ onHiddenObjectsChange?: (next: Record<string, boolean>) => void
 
 ### `onModelLoaded`
 
-Called after the GLB/GLTF scene has been loaded.
+Called after the model scene has been loaded.
 
 ```ts
 onModelLoaded?: (scene: Object3D) => void
@@ -286,16 +341,19 @@ type CaptureImageOptions = {
 };
 ```
 
-`captureImage` forces a render and resolves with a `data:image/png` URL of the canvas. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG has an alpha channel. It rejects if called before the viewer is ready.
+`captureImage` requires the opt-in `preserveDrawingBuffer` prop, forces a render, and resolves with a `data:image/png` URL of the canvas. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG has an alpha channel. It rejects if called before the viewer is ready or when framebuffer preservation is disabled.
 
 ```tsx
-onViewerReady={(viewer) => {
-  viewer
-    .captureImage({ width: 1920, height: 1080, transparent: true })
-    .then((dataUrl) => {
-      // upload, preview, etc.
-    });
-}}
+<ModelViewer
+  preserveDrawingBuffer
+  onViewerReady={(viewer) => {
+    viewer
+      .captureImage({ width: 1920, height: 1080, transparent: true })
+      .then((dataUrl) => {
+        // upload, preview, etc.
+      });
+  }}
+/>;
 ```
 
 For turning the current camera/visibility/selection into a shareable link, see [`useShareableViewerState`](/hooks/use-shareable-viewer-state).
@@ -342,7 +400,9 @@ When omitted, the viewer falls back to `URL.createObjectURL(file)`, a session-sc
 
 ### `onAnimationsReady`
 
-Called after the GLB/GLTF model is loaded, providing animation controls. Called even if the model has no animations (empty `clips` array, no-op functions).
+Called after the model is loaded, providing animation controls for supported
+embedded GLB/GLTF, FBX, or USDZ animations. Called even if the model has no
+animations (empty `clips` array, no-op functions).
 
 ```ts
 type AnimationControls = {
@@ -484,8 +544,9 @@ type CustomSceneObjectsPanelProps = {
 
 ### `showDownloadButton`
 
-Enables the download split-button (export GLB, export PNG screenshot, or export
-the model's UV layout). Default: `true`.
+Enables the download split-button (export GLB, export the model's UV layout,
+and—when `preserveDrawingBuffer` is enabled—export a PNG screenshot). Default:
+`true`.
 
 UV export downloads an editable 2048×2048 SVG UV-island outline when the model
 uses one material. For multi-material models it downloads a ZIP containing one
@@ -606,6 +667,19 @@ pure `patchSceneConfig` alternative.
 
 ---
 
+### `onSceneConfigChange`
+
+Called with an updated `SceneConfig` when viewer-owned scene editing changes
+the configuration. Currently this is used when a light-position gizmo moves a
+scene-config light. Update your controlled `sceneConfig` state with the value
+returned by this callback.
+
+```ts
+onSceneConfigChange?: (config: SceneConfig) => void
+```
+
+---
+
 ### `disableZoom`
 
 Optional boolean. When `true`, the viewer never zooms the camera to an object
@@ -618,6 +692,97 @@ on selection (selection still highlights and fires callbacks). Default: `false`.
 Optional boolean controlling whether selecting an object zooms/fits the camera
 to it. Set to `false` to keep the current camera framing on selection. Default:
 `true`. (Zooming is also skipped when `disableZoom` is `true`.)
+
+---
+
+### `highlightOnHover`
+
+Controls hover highlighting for the canvas, built-in object list, and
+`panelHoveredObject`. Default: `true`. On very large models, viewport hover is
+disabled for performance, while panel-row highlighting remains available.
+
+---
+
+### Moving and rotating objects
+
+Set `moveModeEnabled` to show a centered `PivotControls` gizmo for the selected
+bound object. Its translation arrows, plane handles, and rotation rings are
+available at the same time; scaling is disabled.
+
+```tsx
+import { useState } from "react";
+import {
+  ModelViewer,
+  type ObjectBinding,
+} from "@liveroom-tech/react-immersive";
+
+export function EditableViewer({
+  initialBindings,
+}: {
+  initialBindings: Record<string, ObjectBinding>;
+}) {
+  const [bindings, setBindings] = useState(initialBindings);
+
+  return (
+    <ModelViewer
+      modelUrl="/model.glb"
+      licenseKey="your-license-key"
+      objectBindings={bindings}
+      onObjectBindingsChange={setBindings}
+      moveModeEnabled
+      objectTransformSpace="world"
+    />
+  );
+}
+```
+
+Click a bound mesh to select it. Drag an arrow to move on one axis, a plane
+handle to move on two axes, or a ring to rotate. The pivot is calculated from
+the center of the object's renderable geometry, so the object rotates around
+itself even when its authored node origin is elsewhere.
+
+`objectTransformSpace` accepts:
+
+- `"world"` (default): handles stay aligned with the scene axes
+- `"local"`: handles follow the selected object's current orientation
+
+Changing axis space only changes handle alignment; it does not move the
+object. Changes are persisted to the binding as local-space
+`transform.position` and `transform.rotation`. Positions use model units and
+rotations use radians.
+
+<Callout type="info">
+  If you pass `selectedObject`, selection is controlled too. Update it from
+  `onObjectSelect`. If you omit both props, `ModelViewer` manages selection
+  internally.
+</Callout>
+
+---
+
+### `enableCameraControls`
+
+Optional boolean controlling orbit, pan, and zoom input. Default: `true`.
+Camera controls are paused whenever `moveModeEnabled` is on so pointer drags
+manipulate the object.
+
+---
+
+### `enableKeyboardNavigation`
+
+Optional boolean enabling canvas-focused camera shortcuts. Default: `false`.
+Click or focus the canvas first, then use `W`/`S` to move forward/back,
+`A`/`D` to truck left/right, Space/`C` to move up/down, and the arrow keys to
+orbit. `Shift` + Up/Down moves forward/back. The shortcuts are inactive while
+object editing or camera controls are disabled.
+
+---
+
+### `showViewGizmo`
+
+Optional boolean showing a clickable camera-orientation gizmo in the top-right
+of the viewer. Default: `false`. It displays the scene axes and can snap the
+camera to an axis. This is separate from the selected object's transform gizmo
+and is hidden while `moveModeEnabled` is on.
 
 ---
 
@@ -696,6 +861,19 @@ Upper bound for the device pixel ratio used when rendering, so retina/4K display
 
 ---
 
+### `preserveDrawingBuffer`
+
+Retains the WebGL framebuffer so `captureImage` and the built-in Download PNG
+action can read the rendered frame. Default: `false`. Enable it only when PNG
+capture is needed because framebuffer retention adds GPU memory and bandwidth
+cost to every rendered frame.
+
+```tsx
+<ModelViewer preserveDrawingBuffer {...props} />
+```
+
+---
+
 ### `performanceProfile`
 
 Optional control over how aggressively the viewer trades visual fidelity for a
@@ -727,7 +905,43 @@ ktx2TranscoderPath?: string | false;
 meshopt?: boolean;
 ```
 
-DRACO, Meshopt, and KTX2 decoding are enabled by default via hosted decoder/transcoder bundles, fetched lazily only when the model actually needs them. Pass a path to self-host the decoder/transcoder files, or `false` to disable that decoder entirely.
+Meshopt is bundled and enabled by default. DRACO and KTX2 are also enabled by
+default through immutable, versioned builds hosted on the first-party
+`assets.react-immersive.liveroom.dev` domain. They are fetched lazily only when a model
+uses the corresponding compression format.
+
+```ts
+dracoDecoderPath =
+  "https://assets.react-immersive.liveroom.dev/three-r184/draco/";
+ktx2TranscoderPath =
+  "https://assets.react-immersive.liveroom.dev/three-r184/basis/";
+```
+
+Pass `false` to disable either decoder. For a fully self-hosted or offline
+deployment, version-matched decoder files ship in `dist/decoders`.
+
+Copy them into your app's public/static directory:
+
+```sh
+cp -R node_modules/@liveroom-tech/react-immersive/dist/decoders public/react-immersive-decoders
+```
+
+Then pass the public URL directories, including the trailing slash:
+
+```tsx
+<ModelViewer
+  dracoDecoderPath="/react-immersive-decoders/draco/"
+  ktx2TranscoderPath="/react-immersive-decoders/basis/"
+  {...props}
+/>
+```
+
+The same props are available on `SimpleModelViewer` and `BindingBuilder`. When
+using the built-in defaults with a strict CSP, allow both the licence-validation
+and asset origins, plus blob workers. A typical baseline is
+`connect-src 'self' https://react-immersive.liveroom.dev https://assets.react-immersive.liveroom.dev; worker-src 'self' blob:; script-src 'self' 'wasm-unsafe-eval'`.
+Self-hosting the decoder assets removes the asset-domain requirement, but
+`ModelViewer` and `BindingBuilder` still require the licence-validation origin.
 
 ---
 

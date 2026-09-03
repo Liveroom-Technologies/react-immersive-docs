@@ -3,6 +3,8 @@ import type { DocsThemeConfig } from "nextra-theme-docs";
 const DOCS_REPO_URL =
   "https://github.com/liveroom-technologies/react-immersive-docs";
 const DOCS_ISSUES_URL = `${DOCS_REPO_URL}/issues`;
+const DOCS_DESCRIPTION =
+  "Documentation for React Immersive, a React 3D model viewer for interactive GLB/GLTF assets, mesh selection, object bindings, camera controls, and WebXR.";
 
 const config: DocsThemeConfig = {
   logo: (
@@ -51,12 +53,12 @@ const config: DocsThemeConfig = {
     <>
       <meta
         name="description"
-        content="Public docs, issues, and discussions for the closed-source React Immersive package."
+        content={DOCS_DESCRIPTION}
       />
       <meta property="og:site_name" content="React Immersive Docs" />
       <meta
         property="og:description"
-        content="Public docs, issues, and discussions for the closed-source React Immersive package."
+        content={DOCS_DESCRIPTION}
       />
       <meta property="og:type" content="website" />
     </>

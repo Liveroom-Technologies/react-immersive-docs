@@ -1,7 +1,7 @@
 import {
   patchSceneConfig,
   type SceneConfig,
-} from "@liveroom-tech/react-immersive";
+} from "@liveroom-tech/react-immersive/utils";
 import { sceneConfig } from "./sceneConfig";
 
 // Keep the BindingBuilder export intact, then layer the demo's cinematic look
