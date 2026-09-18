@@ -4,7 +4,7 @@ const DOCS_REPO_URL =
   "https://github.com/liveroom-technologies/react-immersive-docs";
 const DOCS_ISSUES_URL = `${DOCS_REPO_URL}/issues`;
 const DOCS_DESCRIPTION =
-  "Documentation for React Immersive, a React 3D model viewer for interactive GLB/GLTF assets, mesh selection, object bindings, camera controls, and WebXR.";
+  "Documentation for React Immersive, a React 3D model viewer for GLB/GLTF, OBJ, FBX, USDZ, and streamed 3D Tiles with object bindings, camera controls, and WebXR.";
 
 const config: DocsThemeConfig = {
   logo: (

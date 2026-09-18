@@ -11,10 +11,12 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
 ## Features
 
 - **GLB/GLTF, OBJ/MTL, FBX, and USDZ rendering** via React Three Fiber
+- **3D Tiles streaming** for large processed scenes, with object catalogs and configurable client caching
 - **Mesh selection** by object name with built-in side panels
 - **Object bindings**, drive transforms, color, texture, visibility, and actions from a plain data record
 - **Object move & rotate controls**, geometry-centered handles with World or Local axis alignment
 - **Shadows & post-processing**, soft shadows (auto-tuned for interiors), SSAO, bloom, and ACES tone mapping, toggleable via the `shadows` prop
+- **Orbit and pointer-lock camera modes**, camera movement limits, auto-rotation, and load-progress callbacks
 - **SimpleModelViewer**, a lightweight model inspection viewer with no `objectBindings` required
 - **BindingBuilder**, browser-based design-time tool for generating bindings and positioning model objects
 - **Hooks API**:
@@ -27,6 +29,7 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
   - [`useViewerModel`](/hooks/use-viewer-model)
   - [`useViewerActions`](/hooks/use-viewer-actions)
   - [`useObjectBinding`](/hooks/use-object-binding)
+  - [`useObjectBindingIds`](/hooks/use-object-binding-ids)
   - [`useObjectBindings`](/hooks/use-object-bindings)
   - [`useSceneConfig`](/hooks/use-scene-config)
   - [`useShareableViewerState`](/hooks/use-shareable-viewer-state)

@@ -13,6 +13,10 @@ The primary exported component. Renders a GLB, GLTF, OBJ, FBX, or USDZ model wit
 ```ts
 type Props = {
   modelUrl: string;
+  tilesetUrl?: string | null;
+  tilesErrorTarget?: number;
+  tilesCacheSize?: number;
+  onObjectCatalog?: (objects: TileObjectCatalogEntry[]) => void;
   modelFormat?: "glb" | "gltf" | "obj" | "fbx" | "usdz";
   licenseKey: string;
   objectBindings: Record<string, ObjectBinding>;
@@ -23,6 +27,11 @@ type Props = {
   onObjectHover?: (binding: ObjectBinding | null) => void;
   onModelLoaded?: (scene: Object3D) => void;
   onLoadError?: (error: unknown) => void;
+  onProgress?: (event: ProgressEvent) => void;
+  cameraControllerType?: "orbit" | "pointerLock";
+  onCameraControllerChange?: (
+    controller: "orbit" | "pointerLock",
+  ) => void;
   onAction?: (event: ObjectActionEvent) => void;
   onHiddenObjectsChange?: (next: Record<string, boolean>) => void;
   onCameraChange?: (camera: Camera, controls: CameraControls) => void;
@@ -34,6 +43,7 @@ type Props = {
   onActiveAnnotationChange?: (annotation: AnnotationMarker | null) => void;
   lights?: React.ReactNode;
   camera?: React.ComponentProps<typeof Canvas>["camera"];
+  cameraLimits?: CameraLimits;
   backgroundColor?: string;
   shadows?: boolean;
   showObjectBindingDataPanel?: boolean;
@@ -90,6 +100,8 @@ type Props = {
   showAnnotationOnHover?: boolean;
   onSceneConfigChange?: (config: SceneConfig) => void;
   showViewGizmo?: boolean;
+  autoRotate?: boolean;
+  autoRotateSpeed?: number;
 };
 ```
 
@@ -116,6 +128,38 @@ Optional explicit format for extensionless or signed URLs. Supported file extens
 This is separate from `usdzUrl`: `modelUrl` renders USDZ inside the viewer,
 while `usdzUrl` launches the native Apple Quick Look experience when XR is
 enabled.
+
+---
+
+### 3D Tiles streaming
+
+Use `tilesetUrl` to stream a processed 3D Tiles model instead of downloading
+`modelUrl` as one monolithic asset. `modelUrl` remains required by the component
+API, but `tilesetUrl` is the render source while streaming is enabled.
+
+```tsx
+<ModelViewer
+  modelUrl="/models/campus.glb"
+  tilesetUrl="/models/campus/tileset.json"
+  tilesErrorTarget={8}
+  tilesCacheSize={800}
+  onObjectCatalog={(objects) => console.log(objects)}
+  {...props}
+/>
+```
+
+- `tilesErrorTarget` controls the screen-space error target. Lower values load
+  sharper tiles and use more bandwidth/GPU memory. Default: `8`.
+- `tilesCacheSize` is the maximum number of parsed tiles kept in the client
+  cache. Default: `800`.
+- `onObjectCatalog` receives the bindable-object catalog from `objects.json`
+  before all referenced tiles have loaded. Each `TileObjectCatalogEntry`
+  contains `name`, `triangles`, `minimum`, and `maximum`.
+
+Bindings, selection, hover, material overrides, transforms, exploded view, and
+scene renderer modes use the same public API in streamed and monolithic modes.
+The tileset and its tile payloads must be browser-accessible, and the optional
+object catalog must sit beside `tileset.json` as `objects.json`.
 
 ---
 
@@ -297,6 +341,18 @@ Called if the model fails to load or render.
 
 ```ts
 onLoadError?: (error: unknown) => void
+```
+
+---
+
+### `onProgress`
+
+Called with the loader's `ProgressEvent` while a monolithic model is being
+downloaded. When `event.lengthComputable` is true, progress is
+`event.loaded / event.total`; the built-in loading overlay uses the same value.
+
+```ts
+onProgress?: (event: ProgressEvent) => void
 ```
 
 ---
@@ -593,6 +649,32 @@ Renders an on-screen joystick/zoom controller for moving the camera with a mouse
 
 ---
 
+### `cameraLimits`
+
+Constrains orbit-camera distance, angles, and panning. Angles use radians.
+
+```ts
+type CameraLimits = {
+  minDistance?: number; // default 0
+  maxDistance?: number; // default Infinity
+  minPolarAngle?: number; // default 0
+  maxPolarAngle?: number; // default Math.PI
+  minAzimuthAngle?: number; // default -Infinity
+  maxAzimuthAngle?: number; // default Infinity
+  panBoundary?: [
+    min: [number, number, number],
+    max: [number, number, number],
+  ];
+  boundaryEnclosesCamera?: boolean; // default false
+  boundaryFriction?: number; // default 0
+};
+```
+
+`panBoundary` is an axis-aligned world-space box. These limits apply to the
+orbit controller; pointer-lock mode is not orbiting around the same target.
+
+---
+
 ### `mouseControllerPosition`
 
 Placement of the on-screen controller. Default: `"center-bottom"`.
@@ -670,9 +752,9 @@ pure `patchSceneConfig` alternative.
 ### `onSceneConfigChange`
 
 Called with an updated `SceneConfig` when viewer-owned scene editing changes
-the configuration. Currently this is used when a light-position gizmo moves a
-scene-config light. Update your controlled `sceneConfig` state with the value
-returned by this callback.
+the configuration. Currently this is used when a light-position or rotation
+gizmo moves a scene-config light. Update controlled `sceneConfig` state with
+the value returned by this callback.
 
 ```ts
 onSceneConfigChange?: (config: SceneConfig) => void
@@ -764,6 +846,45 @@ rotations use radians.
 Optional boolean controlling orbit, pan, and zoom input. Default: `true`.
 Camera controls are paused whenever `moveModeEnabled` is on so pointer drags
 manipulate the object.
+
+---
+
+### `cameraControllerType` / `onCameraControllerChange`
+
+Selects the active camera interaction mode:
+
+- `"orbit"` (default) uses orbit, pan, and zoom controls.
+- `"pointerLock"` captures the pointer for first-person look-around. Leaving
+  pointer lock returns the viewer to orbit mode.
+
+The viewer's camera-controller menu can manage this internally. Pass
+`cameraControllerType` to control it from application state and update that
+state from `onCameraControllerChange`.
+
+```tsx
+const [controller, setController] = useState<"orbit" | "pointerLock">("orbit");
+
+<ModelViewer
+  {...props}
+  cameraControllerType={controller}
+  onCameraControllerChange={setController}
+/>
+```
+
+Auto-rotation pauses while pointer-lock mode is active.
+
+---
+
+### `autoRotate` / `autoRotateSpeed`
+
+Enables automatic orbiting and controls its speed. Defaults are `false` and
+`1`. Values from `sceneConfig.model.autoRotate` and
+`sceneConfig.model.autoRotateSpeed` take precedence when supplied, so a scene
+exported from `BindingBuilder` can carry the same behavior.
+
+```tsx
+<ModelViewer {...props} autoRotate autoRotateSpeed={0.75} />
+```
 
 ---
 

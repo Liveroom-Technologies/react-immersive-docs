@@ -9,10 +9,10 @@ import { Callout } from "nextra/components";
 Create high-frequency material, transform, and lighting effects without
 accessing Three.js objects or putting animation values in React state.
 
-The hook uses one request-animation-frame scheduler, invalidates demand-rendered
+The hook runs one request-animation-frame scheduler, invalidates demand-rendered
 viewers automatically, and restores runtime changes when it unmounts.
 
-## Usage
+## Flicker example
 
 ```tsx
 import { useEffect } from "react";
@@ -47,7 +47,7 @@ function Bulbs() {
   } = useViewerEffects();
 
   useEffect(() => {
-    flicker(channels, {
+    const id = flicker(channels, {
       id: "bulbs",
       minLevel: 0.1,
       maxLevel: 1,
@@ -55,7 +55,7 @@ function Bulbs() {
       synchronized: true,
     });
 
-    return () => stopEffect("bulbs");
+    return () => stopEffect(id);
   }, [flicker, stopEffect]);
 
   return (
@@ -90,9 +90,9 @@ function Bulbs() {
   attach to the target object and follow its transform.
 </Callout>
 
-## Channels
+## Effect channels
 
-`transition`, `pulse`, and `flicker` use the same channel structure:
+The same channel structure works with `transition`, `pulse`, and `flicker`:
 
 ```tsx
 const channels: ViewerEffectChannels = {
@@ -135,10 +135,10 @@ timeline(
 ```
 
 When `synchronized` is `true`, every target receives the same level. When it is
-`false`, array items receive independent levels or phases. Aligned arrays in
-separate channels continue to describe the same logical objects.
+`false`, array items receive independent levels or phases while aligned channel
+arrays continue to describe the same logical object.
 
-## Immediate operations
+## Immediate runtime operations
 
 ```tsx
 setMaterial("screen", {
@@ -162,8 +162,8 @@ const position = getWorldPosition("door");
 Selectors can target several bindings for material and transform operations.
 `getWorldPosition` remains a single-object lookup.
 
-Transform rotations use radians. Values are snapshotted when first changed so
-`resetRuntime` can restore them.
+Transform rotations use radians. Immediate changes are snapshotted the first
+time they are applied so `resetRuntime` can restore the original values.
 
 ## Point lights
 
@@ -182,8 +182,8 @@ updatePointLight("status-light", { intensity: 140 });
 removePointLight("status-light");
 ```
 
-react-immersive creates and disposes these lights. Application code does not
-import `PointLight` or render React Three Fiber light elements.
+These lights are created and disposed by react-immersive. Application code does
+not import `PointLight` or render React Three Fiber light elements.
 
 ## Returns
 
@@ -192,18 +192,18 @@ import `PointLight` or render React Three Fiber light elements.
 | `handleViewerReady` | Connect the hook to `ModelViewer.onViewerReady` |
 | `setMaterial` | Apply an immediate runtime material patch |
 | `setTransform` | Apply position, rotation, scale, or visibility at runtime |
-| `getWorldPosition` | Read a bound object's world position |
+| `getWorldPosition` | Read a bound object's world position as a tuple |
 | `addPointLight` | Create a point light attached to a bound object |
-| `updatePointLight` | Update or reattach a point light |
+| `updatePointLight` | Update or reattach a runtime point light |
 | `removePointLight` | Dispose a runtime point light |
 | `transition` | Run a finite eased channel transition |
 | `timeline` | Sequence transitions and holds, optionally repeating |
 | `pulse` | Run repeating channel pulses |
 | `flicker` | Run synchronized or independent randomized flicker |
-| `overrideEffect` | Temporarily force an effect level |
+| `overrideEffect` | Temporarily force an effect level, such as a blackout or surge |
 | `stopEffect` | Stop one effect by ID |
 | `stopAllEffects` | Stop every active effect |
-| `resetRuntime` | Restore snapshots and remove runtime lights |
+| `resetRuntime` | Stop effects, restore snapshots, and remove runtime lights |
 
 ## Composing viewer-ready handlers
 

@@ -78,13 +78,18 @@ See the
   shadows, wireframe, post-processing, annotations, per-clip animation options,
   and a cinematic camera path), the same `SceneConfig` shape consumed by
   `ModelViewer`'s `sceneConfig` prop
+- Configure scene auto-rotation and speed. These values are exported as
+  `sceneConfig.model.autoRotate` and `sceneConfig.model.autoRotateSpeed`
+- Position and rotate directional, point, and spot lights with transform
+  gizmos; spot lights also expose angle and penumbra controls
 - Switch the model renderer between **PBR**, **Matcap**, and **UV Checker**.
   UV Checker overlays a numbered directional chart to diagnose stretching,
   seams, rotation, texel-density differences, and missing UV0 coordinates
 - Author a **cinematic camera path** visually in the **Cinematic** sub-tab:
   frame the model in the preview, click **Add waypoint from current view** to
-  capture the camera pose, then reorder, fly-to-preview (📍), or delete
-  waypoints. Toggle Enable / Loop / Auto-play and the glide Duration. The path
+  capture the camera pose, then set its segment duration, reorder,
+  fly-to-preview (📍), or delete waypoints. Toggle Enable / Loop / Auto-play and
+  the overall glide Duration. The path
   is stored on `sceneConfig.cinematic` and replayed by
   [`ModelViewer`'s `cinematic` prop](/reference/model-viewer#cinematic)
 - Undo/redo the scene config independently of the Object tab's bindings
@@ -95,7 +100,31 @@ See the
 
 ### Preview
 
-- Live preview of the selected node in an embedded `ModelViewer`
+- Live preview of the selected node in an embedded `ModelViewer`, including
+  loading progress and orbit/pointer-lock camera modes
+
+### Autosave and restoring a session
+
+`BindingBuilder` keeps your work in the browser, so a reload or a closed tab
+doesn't lose it:
+
+- Once you change something, the session is saved shortly after each edit, and
+  again when the tab is hidden or closed. A session is the model, its object
+  bindings, and the scene settings. An uploaded model file is saved with it, so
+  it doesn't need uploading again.
+- **Restore last session** (the history button in the preview toolbar) reopens
+  the saved session. One session is kept per browser, and each save replaces
+  the last.
+- While there are edits on screen, leaving or reloading the page asks for
+  confirmation first. Loading or restoring a model without changing it doesn't.
+- Sessions live in this browser's IndexedDB, in a database named
+  `react-immersive:binding-builder`. They aren't shared across browsers or
+  devices, and private browsing may discard them. If the browser refuses to
+  store a session, usually for lack of space, `BindingBuilder` says so; export
+  your work to keep it.
+
+Autosave is a safety net, not a way to keep or share work: export JSON or
+TypeScript to keep bindings and scene settings with your application.
 
 ### Moving and rotating objects
 
