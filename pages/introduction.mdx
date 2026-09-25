@@ -149,7 +149,7 @@ Only objects listed in `objectBindings` are rendered interactively.
 
 With the `shadows` prop enabled (the default), the viewer renders soft shadows and a post-processing stack (SSAO ambient occlusion, bloom, vignette, ACES filmic tone mapping). The default light rig uses ambient + hemisphere fill and a directional key light that casts shadows.
 
-Interior models (rooms, dollhouses) are a special case: the large mesh that forms the walls/ceiling enclosure is detected by its bounding-box size and excluded from **casting** shadows while still **receiving** them. This prevents a closed shell from blocking a top-down light and sealing the interior in darkness, so furniture and decor cast realistic contact shadows onto the floor. Pass `shadows={false}` to turn shadows off entirely, or a custom `lights` prop to replace the default rig.
+Interior models (rooms, dollhouses) are a special case: the large mesh that forms the walls/ceiling enclosure is detected by its bounding-box size and excluded from **casting** shadows while still **receiving** them. This prevents a closed shell from blocking a top-down light and sealing the interior in darkness, so furniture and decor cast realistic contact shadows onto the floor. Pass `shadows={false}` to turn shadows off entirely, or set your own lights in `sceneConfig.lighting` to replace the default rig.
 
 ## UI Shell
 

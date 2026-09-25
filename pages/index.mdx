@@ -17,7 +17,7 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
 - **Object move & rotate controls**, geometry-centered handles with World or Local axis alignment
 - **Shadows & post-processing**, soft shadows (auto-tuned for interiors), SSAO, bloom, and ACES tone mapping, toggleable via the `shadows` prop
 - **Orbit and pointer-lock camera modes**, camera movement limits, auto-rotation, and load-progress callbacks
-- **SimpleModelViewer**, a lightweight model inspection viewer with no `objectBindings` required
+- **SimpleModelViewer**, a lightweight model inspection viewer with no bindings or actions
 - **BindingBuilder**, browser-based design-time tool for generating bindings and positioning model objects
 - **Hooks API**:
   - [`useViewerCamera`](/hooks/use-viewer-camera)
@@ -40,21 +40,21 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
   <Tabs.Tab>
 
     ```bash
-    npm install @liveroom-tech/react-immersive
+    npm install @liveroom-tech/react-immersive three @react-three/fiber
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    pnpm add @liveroom-tech/react-immersive
+    pnpm add @liveroom-tech/react-immersive three @react-three/fiber
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    yarn add @liveroom-tech/react-immersive
+    yarn add @liveroom-tech/react-immersive three @react-three/fiber
     ```
 
   </Tabs.Tab>
@@ -90,8 +90,9 @@ export default function App() {
 }
 ```
 
-`objectBindings` is required. You can author it by hand, or generate starter
-bindings in [`BindingBuilder`](/reference/binding-builder) and export them as
+Without `objectBindings`, the viewer generates a binding for every mesh when the
+model loads. To choose which objects are interactive and what they do, author
+the bindings by hand, or generate starter bindings in [`BindingBuilder`](/reference/binding-builder) and export them as
 `objectBindings.json` or a TypeScript file to import into your app.
 
 <Callout type="info">
@@ -104,7 +105,8 @@ bindings in [`BindingBuilder`](/reference/binding-builder) and export them as
 If you don't need `objectBindings`-driven styling and actions, [`SimpleModelViewer`](/reference/simple-model-viewer) gives you a lightweight viewer for inspecting GLB, GLTF, OBJ, FBX, or USDZ assets. It can also run in an upload-first mode for ad-hoc local model inspection:
 
 ```tsx
-import { SimpleModelViewer } from "@liveroom-tech/react-immersive";
+import "@liveroom-tech/react-immersive/simple-model-viewer.css";
+import { SimpleModelViewer } from "@liveroom-tech/react-immersive/simple-model-viewer";
 
 export default function App() {
   return (

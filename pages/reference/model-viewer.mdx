@@ -8,24 +8,76 @@ import { Callout } from "nextra/components";
 
 The primary exported component. Renders a GLB, GLTF, OBJ, FBX, or USDZ model with orbit/pan/zoom controls, built-in side panels, and a full callback API.
 
+## Presets and grouped props
+
+`preset` sets `ModelViewer` up for a common kind of page:
+
+| Preset | For | What it sets |
+| --- | --- | --- |
+| `minimal` | Just the model | Hides both panels, the download and reset buttons, and tour controls |
+| `showcase` | A product on display | Everything `minimal` does, plus auto-rotation |
+| `configurator` | Customers changing parts | Shows the selected object's panel and the reset button; hides the scene objects panel and download |
+| `inspector` | Checking a model | Every panel, the view gizmo, the measure, UV checker, and exploded-view tools, and keyboard navigation |
+
+`MODEL_VIEWER_PRESETS` lists exactly which props each preset sets.
+
+Related props are also available as groups, which keeps a configured viewer
+readable:
+
+```tsx
+<ModelViewer
+  modelUrl="/car.glb"
+  licenseKey="your-license-key"
+  preset="configurator"
+  ui={{ download: "car.glb" }}
+  tools={{ measure: { unit: "cm" } }}
+  controls={{ autoRotate: 0.5, zoom: false, limits: { maxDistance: 20 } }}
+  perf={{ profile: "low" }}
+  xr={{ enabled: true, usdzUrl: "/car.usdz" }}
+/>
+```
+
+| Group | Fields, and the flat prop each one sets |
+| --- | --- |
+| `ui` | `objectPanel` (`showObjectBindingDataPanel`), `sceneObjects` (`showSceneObjectsPanel`), `download` (`showDownloadButton`; a string also sets `downloadFilename`), `reset` (`showResetButton`), `loadingOverlay` (`showLoadingOverlay`), `viewGizmo` (`showViewGizmo`), `mouseController` (`showMouseController`; `{ position, opacity }` also sets `mouseControllerPosition` and `mouseControllerOpacity`), `annotationNavigation` (`showAnnotationNavigation`), `annotationOnHover` (`showAnnotationOnHover`), `highlightOnHover` |
+| `tools` | `measure` (`showMeasureTools`; `{ unit }` also sets `measurementUnit`), `uvChecker` (`showUvCheckerButton`), `explode` (`showExplodeControls`), `texturePositioning` (`texturePositioning`) |
+| `controls` | `enabled` (`enableCameraControls`), `keyboard` (`enableKeyboardNavigation`), `zoom` (the opposite of `disableZoom`), `zoomOnSelect` (`zoomOnSelected`), `autoRotate` (a number also sets `autoRotateSpeed`), `refitOnResize`, `limits` (`cameraLimits`), `moveSensitivity`, `zoomSensitivity` |
+| `perf` | `renderMode`, `maxDpr`, `profile` (`performanceProfile`), `preserveDrawingBuffer` |
+| `tiles` | `url` (`tilesetUrl`), `errorTarget` (`tilesErrorTarget`), `cacheSize` (`tilesCacheSize`) |
+| `xr` | `enabled` (`enableXR`), `usdzUrl`, `scaleMode` (`arScaleMode`), `mobileHandoffUrl` |
+| `decoders` | `draco` (`dracoDecoderPath`), `ktx2` (`ktx2TranscoderPath`), `meshopt` |
+
+A preset only fills in defaults: a flat prop overrides it, and a grouped prop
+overrides both. The flat props keep working exactly as before.
+
 ## Props
 
 ```ts
 type Props = {
+  preset?: "minimal" | "showcase" | "configurator" | "inspector";
+  ui?: ModelViewerUiOptions;
+  tools?: ModelViewerToolsOptions;
+  controls?: ModelViewerControlsOptions;
+  perf?: ModelViewerPerfOptions;
+  tiles?: ModelViewerTilesOptions;
+  xr?: ModelViewerXrOptions;
+  decoders?: ModelViewerDecoderOptions;
   modelUrl: string;
   tilesetUrl?: string | null;
   tilesErrorTarget?: number;
   tilesCacheSize?: number;
-  onObjectCatalog?: (objects: TileObjectCatalogEntry[]) => void;
+  onObjectCatalog?: (objects: ViewerObjectInfo[]) => void;
   modelFormat?: "glb" | "gltf" | "obj" | "fbx" | "usdz";
   licenseKey: string;
-  objectBindings: Record<string, ObjectBinding>;
+  objectBindings?: Record<string, ObjectBinding> | "auto"; // default "auto"
   selectedObject?: ObjectBinding | null;
   panelHoveredObject?: ObjectBinding | null;
   onObjectBindingsChange?: (next: Record<string, ObjectBinding>) => void;
   onObjectSelect?: (binding: ObjectBinding | null) => void;
   onObjectHover?: (binding: ObjectBinding | null) => void;
-  onModelLoaded?: (scene: Object3D) => void;
+  onObjectDoubleClick?: (event: ObjectPointerEvent) => boolean | void;
+  onObjectContextMenu?: (event: ObjectPointerEvent) => void;
+  onModelLoaded?: (model: ViewerModelInfo) => void;
   onLoadError?: (error: unknown) => void;
   onProgress?: (event: ProgressEvent) => void;
   cameraControllerType?: "orbit" | "pointerLock";
@@ -34,15 +86,15 @@ type Props = {
   ) => void;
   onAction?: (event: ObjectActionEvent) => void;
   onHiddenObjectsChange?: (next: Record<string, boolean>) => void;
-  onCameraChange?: (camera: Camera, controls: CameraControls) => void;
+  onCameraChange?: (state: ViewerCameraState) => void;
   onViewerReady?: (viewer: ViewerReadyState) => void;
   onTextureUpload?: (file: File, objectId: string) => Promise<string>;
+  texturePositioning?: boolean | TexturePositioningControls;
   onAnimationsReady?: (controls: AnimationControls) => void;
   onAnnotationsChange?: (annotations: AnnotationMarker[]) => void;
   activeAnnotation?: AnnotationMarker | null;
   onActiveAnnotationChange?: (annotation: AnnotationMarker | null) => void;
-  lights?: React.ReactNode;
-  camera?: React.ComponentProps<typeof Canvas>["camera"];
+  camera?: ViewerCameraConfig;
   cameraLimits?: CameraLimits;
   backgroundColor?: string;
   shadows?: boolean;
@@ -100,6 +152,8 @@ type Props = {
   showAnnotationOnHover?: boolean;
   onSceneConfigChange?: (config: SceneConfig) => void;
   showViewGizmo?: boolean;
+  overlay?: React.ReactNode;
+  unsafe_sceneChildren?: React.ReactNode;
   autoRotate?: boolean;
   autoRotateSpeed?: number;
 };
@@ -153,8 +207,7 @@ API, but `tilesetUrl` is the render source while streaming is enabled.
 - `tilesCacheSize` is the maximum number of parsed tiles kept in the client
   cache. Default: `800`.
 - `onObjectCatalog` receives the bindable-object catalog from `objects.json`
-  before all referenced tiles have loaded. Each `TileObjectCatalogEntry`
-  contains `name`, `triangles`, `minimum`, and `maximum`.
+  before all referenced tiles have loaded. See [`onObjectCatalog`](#onobjectcatalog).
 
 Bindings, selection, hover, material overrides, transforms, exploded view, and
 scene renderer modes use the same public API in streamed and monolithic modes.
@@ -187,7 +240,8 @@ A first-time visitor without a valid grant fails closed if both attempts fail.
 
 ### `objectBindings`
 
-**Required.** A map keyed by the model node identifier. A uniquely named mesh
+A map keyed by the model node identifier, or `"auto"`, the default (see
+[Generating bindings automatically](#generating-bindings-automatically)). A uniquely named mesh
 keeps its authored name. When a model contains duplicate node names, each
 duplicate receives a stable traversal-order identifier such as `Cube [1]` and
 `Cube [2]`; the original `Object3D.name` is not mutated, so animation tracks
@@ -211,6 +265,45 @@ transmission/volume, and face sidedness, plus a texture-map slot for each.
 See [`ObjectBindingMaterial`](/reference/types#objectbindingmaterial) for the
 full field list and the per-slot color-space handling (color maps are decoded
 as sRGB, data maps stay linear).
+
+#### Generating bindings automatically
+
+`objectBindings` defaults to `"auto"`: leave it out and the viewer generates a
+binding for every mesh when the model loads:
+
+```tsx
+<ModelViewer modelUrl="/model.glb" licenseKey={licenseKey} />
+```
+
+Each generated binding is keyed by the node identifier, with a readable
+`label`, an inferred `type`, a unique `id`, and built-in actions
+(`change-color`, `change-material`, `toggle-visibility`, or the three light
+actions for meshes whose names contain "light"). For a streamed model
+(`tilesetUrl`), bindings come from the object catalog.
+
+The generated bindings are reported through `onObjectBindingsChange`. To keep
+and refine them, store them and pass them back. After the first change the
+viewer is controlled by your state; set it back to `"auto"` when you switch
+models:
+
+```tsx
+const [objectBindings, setObjectBindings] = useState<
+  Record<string, ObjectBinding> | "auto"
+>("auto");
+
+<ModelViewer
+  modelUrl={modelUrl}
+  licenseKey={licenseKey}
+  objectBindings={objectBindings}
+  onObjectBindingsChange={setObjectBindings}
+/>;
+```
+
+While the prop is `"auto"`, a reload of the same model keeps the bindings it
+already had, so runtime edits survive; a different `modelUrl` starts fresh.
+`buildBindingsFromNodes`, `createDefaultBinding`, and `inferType` are exported
+from `@liveroom-tech/react-immersive/utils` for building the same defaults
+yourself. They're the same defaults `BindingBuilder` generates.
 
 ```ts
 const objectBindings = {
@@ -293,6 +386,51 @@ onObjectHover?: (binding: ObjectBinding | null) => void
 
 ---
 
+### `onObjectDoubleClick`
+
+Optional callback called when the user double-clicks an object.
+
+```ts
+onObjectDoubleClick?: (event: ObjectPointerEvent) => boolean | void
+
+type ObjectPointerEvent = {
+  binding: ObjectBinding;
+  clientX: number; // viewport coordinates
+  clientY: number;
+  pointerType: string; // "mouse" | "pen" | "touch"
+};
+```
+
+Return `true` to say you handled it: the viewer then skips its own double-click
+behavior, which moves the camera's orbit point to that spot (or starts texture
+positioning, when `texturePositioning` is on). Return nothing to keep it.
+
+---
+
+### `onObjectContextMenu`
+
+Optional callback called when the user right-clicks an object, or long-presses
+it on a touch screen. Use it to open your own menu:
+
+```tsx
+<ModelViewer
+  {...props}
+  onObjectContextMenu={({ binding, clientX, clientY }) =>
+    openMenu({ for: binding.id, x: clientX, y: clientY })
+  }
+/>
+```
+
+It receives the same `ObjectPointerEvent` as `onObjectDoubleClick`, with the
+position where the gesture started, ready for a `position: fixed` menu. A
+right-click fires when the button is released without the pointer moving, so a
+right-drag still pans the camera. A long-press fires after half a second, and
+not if the finger moves or a second finger touches down (a pinch); lifting the
+finger afterwards doesn't select the object. Objects with `selectable: false`
+don't fire it.
+
+---
+
 ### `onObjectBindingsChange`
 
 Fired when the viewer's built-in UI updates binding data. Wire this back into your state to keep the viewer and your app in sync.
@@ -325,13 +463,41 @@ onHiddenObjectsChange?: (next: Record<string, boolean>) => void
 
 ---
 
+### `onObjectCatalog`
+
+Lists every bindable object in the model: each named mesh, under the identifier
+`objectBindings` is keyed by. It's the quickest way to find out what your meshes
+are called:
+
+```tsx
+<ModelViewer
+  modelUrl="/model.glb"
+  licenseKey={licenseKey}
+  onObjectCatalog={(objects) => console.table(objects)}
+/>
+```
+
+It fires each time a model loads. For a streamed model (`tilesetUrl`), the list
+comes from `objects.json`, before the tiles containing those objects have
+necessarily loaded. Each entry is a
+[`ViewerObjectInfo`](/reference/types#viewerobjectinfo). To keep the list in
+state, pass [`useViewerModel`](/hooks/use-viewer-model)'s
+`handleObjectCatalog`.
+
 ### `onModelLoaded`
 
-Called after the model scene has been loaded.
+Called after the model has loaded, with its bounds and mesh count.
 
 ```ts
-onModelLoaded?: (scene: Object3D) => void
+onModelLoaded?: (model: ViewerModelInfo) => void
+
+type ViewerModelInfo = {
+  bounds: { min: Vec3; max: Vec3; center: Vec3; size: Vec3 }; // world space
+  objectCount: number; // meshes in the loaded scene
+};
 ```
+
+For the model's object names, use [`onObjectCatalog`](#onobjectcatalog).
 
 ---
 
@@ -342,6 +508,12 @@ Called if the model fails to load or render.
 ```ts
 onLoadError?: (error: unknown) => void
 ```
+
+Whether or not you pass it, `ModelViewer` shows a message in place of the model
+that explains the likely cause: a missing file (404), refused access (401/403),
+a blocked cross-origin request (CORS), a web page served instead of a model, or
+a file that isn't the expected format. It includes the URL and the underlying
+error. Set `showLoadingOverlay={false}` to show your own instead.
 
 ---
 
@@ -373,6 +545,20 @@ type ObjectActionEvent = {
 onAction?: (event: ObjectActionEvent) => void
 ```
 
+`ModelViewer` performs `change-color`, `change-material`, `toggle-visibility`,
+`toggle-light`, `change-light-color`, and `set-brightness` itself. The light
+actions turn the object's light on and off, open a color picker, and open a
+0–200% brightness slider. If scene lights are attached to the object they
+control those, updating `sceneConfig.lighting` (through `onSceneConfigChange` if
+you pass it, otherwise inside the viewer); otherwise they control the object's
+own glow, saved on its binding as `style.material.emissive` and
+`emissiveIntensity`. Any other action id does something only when
+you handle it here (pass `useViewerActions().handleAction` to run an action's
+declared `effects`). Without `onAction`, those buttons do nothing, and the
+viewer logs a console warning naming each one. `ACTION_CATALOG` and
+`findCatalogAction`, from `@liveroom-tech/react-immersive/utils`, list the ids
+`BindingBuilder` offers and whether the viewer or your app handles each one.
+
 ---
 
 ### `onViewerReady`
@@ -383,11 +569,15 @@ Called once camera controls are available and again when the viewer publishes up
 onViewerReady?: (viewer: ViewerReadyState) => void
 
 type ViewerReadyState = {
-  controls: CameraControls;
-  scene: Object3D | null;
   objectBindings: Record<string, ObjectBinding>;
-  nodeRefs: Record<string, Object3D>;
+  homeCameraState: { position: Vec3; target: Vec3 } | null;
   captureImage: (options?: CaptureImageOptions) => Promise<string>;
+  invalidate: () => void;
+  raw: {
+    controls: CameraControls; // camera-controls
+    scene: Object3D | null; // three.js
+    nodes: Record<string, Object3D>; // model nodes by binding key and name
+  };
 };
 
 type CaptureImageOptions = {
@@ -396,6 +586,11 @@ type CaptureImageOptions = {
   transparent?: boolean;
 };
 ```
+
+`raw` holds the live three.js scene, the camera-controls instance, and the
+model's nodes, for integrations the rest of the API doesn't cover. You don't
+need it for anything the hooks and props already do, and its shapes are those
+libraries' own, so they can change when those libraries do.
 
 `captureImage` requires the opt-in `preserveDrawingBuffer` prop, forces a render, and resolves with a `data:image/png` URL of the canvas. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG has an alpha channel. It rejects if called before the viewer is ready or when framebuffer preservation is disabled.
 
@@ -418,11 +613,24 @@ For turning the current camera/visibility/selection into a shareable link, see [
 
 ### `onCameraChange`
 
-Called whenever the camera controls update.
+Called whenever the camera moves, with its plain state. It fires often while
+the user orbits, pans, or zooms.
 
 ```ts
-onCameraChange?: (camera: Camera, controls: CameraControls) => void
+onCameraChange?: (state: ViewerCameraState) => void
+
+type ViewerCameraState = {
+  position: [number, number, number];
+  target: [number, number, number];
+  fov: number | null;
+  zoom: number;
+  azimuthAngle?: number; // radians, for setCameraState to restore
+  polarAngle?: number; // radians
+};
 ```
+
+It's the same state [`useViewerCamera`](/hooks/use-viewer-camera) exposes
+as `cameraState`, and `setCameraState` restores it.
 
 ---
 
@@ -451,6 +659,41 @@ When omitted, the viewer falls back to `URL.createObjectURL(file)`, a session-sc
   }}
 />
 ```
+
+---
+
+### `texturePositioning`
+
+Turns on texture positioning for objects with an uploaded texture. Off by
+default. When on, the **Change Material** panel gains Offset X/Y and Rotation
+controls, and double-clicking the object puts the viewer in Move/Zoom mode:
+drag to move the texture, scroll to scale it, and click the canvas or
+**Done positioning** to finish.
+
+```tsx
+<ModelViewer modelUrl="/sofa.glb" licenseKey="your-license-key" texturePositioning />
+```
+
+Changes are written to the binding's `style.material.texture` (`offset`,
+`rotation` in radians, and `scale`), so they reach `onObjectBindingsChange`
+and your saved bindings like any other edit.
+
+To handle some of it yourself, pass an object instead of `true`. Any field you
+leave out keeps the viewer's own behavior:
+
+```ts
+type TexturePositioningControls = {
+  offset?: [number, number]; // shown in the Offset fields instead of the binding's
+  rotationDegrees?: number; // shown in the Rotation field, 0–360
+  onOffsetChange?: (objectId: string, axisIndex: 0 | 1, value: number) => void;
+  onRotationChange?: (objectId: string, degrees: number) => void;
+  isPositioning?: boolean; // shows "Done positioning" instead of the hint
+  onEndPositioning?: () => void; // after Done positioning ends the mode
+};
+```
+
+`onOffsetChange` and `onRotationChange` replace the viewer's writes from the
+panel fields; dragging and scrolling on the canvas still write to the binding.
 
 ---
 
@@ -484,31 +727,71 @@ Wire to `useViewerAnimations().handleAnimationsReady` for the simplest integrati
 
 ---
 
-### `lights`
+### Lighting
 
-Optional custom lighting rendered inside the scene. When omitted, `ModelViewer` uses its default light rig.
+Lighting lives in `sceneConfig.lighting`: an ambient light plus a list of
+directional, point, spot, and hemisphere lights. Without a `sceneConfig`,
+`ModelViewer` uses its default rig (ambient, a hemisphere fill, and a
+shadow-casting key light). To use your own lights, patch the default scene
+config. `sceneLight` fills in every setting you leave out:
 
 ```tsx
-function CustomLights() {
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[4, 8, 4]} intensity={1.6} castShadow />
-      <pointLight position={[-3, 3, 2]} intensity={0.8} />
-    </>
-  );
-}
+import {
+  DEFAULT_SCENE_CONFIG,
+  patchSceneConfig,
+  sceneLight,
+} from "@liveroom-tech/react-immersive/utils";
 
-<ModelViewer lights={<CustomLights />} ... />
+const sceneConfig = patchSceneConfig(DEFAULT_SCENE_CONFIG, {
+  lighting: {
+    ambient: { intensity: 0.5 },
+    lights: [
+      sceneLight({ id: "key", type: "directional", position: [4, 8, 4], intensity: 1.6, castShadow: true }),
+      sceneLight({ id: "fill", type: "point", position: [-3, 3, 2], intensity: 0.8 }),
+    ],
+  },
+});
+
+<ModelViewer
+  modelUrl="/model.glb"
+  licenseKey="your-license-key"
+  sceneConfig={sceneConfig}
+/>;
 ```
+
+To change lights while the app runs, use the lights controller from
+`useViewer` (or `useSceneConfig`):
+
+```tsx
+const viewer = useViewer({ sceneConfig });
+
+viewer.scene.lights.setIntensity("key", 2.2);
+viewer.scene.lights.toggle("fill");
+viewer.scene.lights.add({ id: "bulb", type: "point", color: "#ffd27d", intensity: 4 });
+viewer.scene.lights.attach("bulb", { objectId: "Lamp", offset: [0, 1.4, 0] });
+```
+
+An attached light follows the object, offset from the object's origin in its
+local space (the origin is often at its base, not its center). Lighting set up
+in `BindingBuilder`'s Scene tab exports as the same `sceneConfig`.
 
 ---
 
 ### `camera`
 
-Optional camera configuration passed through to the underlying React Three Fiber `Canvas`.
+Optional starting camera: where it is and its lens.
 
-`ModelViewer` only sets a default `fov: 50`, it does not set a default position, so an unset position falls back to React Three Fiber's own `Canvas` default (`[0, 0, 5]`). Pass an explicit `position` for predictable framing.
+```ts
+type ViewerCameraConfig = {
+  position?: [number, number, number];
+  fov?: number; // vertical field of view in degrees; default 50
+  near?: number;
+  far?: number;
+  zoom?: number;
+};
+```
+
+Without a `position`, the camera starts at `[0, 0, 5]`. Pass one for predictable framing.
 
 ```tsx
 <ModelViewer
@@ -550,7 +833,8 @@ When `true`, the canvas renders soft shadows: the default light rig casts a dire
   excluded from **casting** shadows (it still **receives** them). Without this,
   a closed shell would block a top-down light and seal the interior in darkness.
   Furniture and decor then cast realistic contact shadows onto the floor. Pass a
-  custom [`lights`](#lights) rig to fully override the default lighting.
+  your own lights in `sceneConfig.lighting` (see [Lighting](#lighting)) to replace
+  the default rig.
 </Callout>
 
 ---
@@ -580,6 +864,61 @@ type CustomObjectBindingDataPanelProps = {
 ### `showSceneObjectsPanel`
 
 Controls whether the built-in right scene objects panel is rendered. Default: `true`.
+
+---
+
+### `overlay`
+
+Your own UI over the 3D view: badges, HUDs, buttons, custom panels. It sits
+above the model and below the viewer's toolbars and banners.
+
+```tsx
+<ModelViewer
+  modelUrl="/sofa.glb"
+  licenseKey="your-license-key"
+  overlay={
+    <div style={{ position: "absolute", top: 16, left: 16 }}>
+      In stock <button onClick={addToCart}>Add to cart</button>
+    </div>
+  }
+/>
+```
+
+The layer covers the view but lets pointer events through, so the model stays
+draggable around your elements. Its direct children receive pointer events, so
+position them yourself (for example with `position: "absolute"`) rather than
+wrapping everything in one full-size container.
+
+---
+
+### `unsafe_sceneChildren`
+
+react-three-fiber elements rendered inside the scene, for anything the viewer
+can't do itself, such as custom geometry, a helper, or an effect driven by
+`useFrame`:
+
+```tsx
+import { useFrame } from "@react-three/fiber";
+
+function Marker() {
+  const ref = useRef<Mesh>(null);
+  useFrame((_, delta) => (ref.current!.rotation.y += delta));
+  return (
+    <mesh ref={ref} position={[0, 1.5, 0]}>
+      <boxGeometry args={[0.3, 0.3, 0.3]} />
+      <meshStandardMaterial color="hotpink" />
+    </mesh>
+  );
+}
+
+<ModelViewer {...props} unsafe_sceneChildren={<Marker />} />;
+```
+
+They're rendered inside their own `Suspense` boundary, so a child that loads
+assets doesn't hold up the model. Because they work with three.js directly,
+they're outside the viewer's own API: the name says so, and they can break when
+three.js or react-three-fiber change. Prefer the props and hooks for anything
+they cover.
 
 ---
 
@@ -628,7 +967,7 @@ Shows the "reset camera view" button in the bottom-right action bar. Default: `t
 
 ### `showLoadingOverlay`
 
-Controls whether the built-in loading overlay is shown while the model is loading and the initial camera fit is settling. Default: `true`.
+Controls whether the built-in loading overlay is shown while the model is loading and the initial camera fit is settling, and the load-error message if the model fails to load (see [`onLoadError`](#onloaderror)). Default: `true`.
 
 ---
 
@@ -651,16 +990,31 @@ Renders an on-screen joystick/zoom controller for moving the camera with a mouse
 
 ### `cameraLimits`
 
-Constrains orbit-camera distance, angles, and panning. Angles use radians.
+Constrains how far the orbit camera can zoom, tilt, turn, and pan. Angles are
+in degrees.
+
+```tsx
+<ModelViewer
+  modelUrl="/car.glb"
+  licenseKey="your-license-key"
+  cameraLimits={{
+    minDistance: 2,
+    maxDistance: 12,
+    maxPolarAngle: 85, // stay above the floor
+    minAzimuthAngle: -60, // turn at most 60° either side of the front
+    maxAzimuthAngle: 60,
+  }}
+/>
+```
 
 ```ts
 type CameraLimits = {
   minDistance?: number; // default 0
   maxDistance?: number; // default Infinity
-  minPolarAngle?: number; // default 0
-  maxPolarAngle?: number; // default Math.PI
-  minAzimuthAngle?: number; // default -Infinity
-  maxAzimuthAngle?: number; // default Infinity
+  minPolarAngle?: number; // degrees, default 0
+  maxPolarAngle?: number; // degrees, default 180
+  minAzimuthAngle?: number; // degrees, default -Infinity
+  maxAzimuthAngle?: number; // degrees, default Infinity
   panBoundary?: [
     min: [number, number, number],
     max: [number, number, number],
@@ -669,6 +1023,11 @@ type CameraLimits = {
   boundaryFriction?: number; // default 0
 };
 ```
+
+- **Polar** is the vertical angle: `0` looks straight down from above, `90` is
+  level with the target, and `180` looks straight up from below.
+- **Azimuth** is the horizontal angle around the vertical axis: `0` views the
+  target from the front (+Z), `90` from its right (+X), and `-90` from its left.
 
 `panBoundary` is an axis-aligned world-space box. These limits apply to the
 orbit controller; pointer-lock mode is not orbiting around the same target.
@@ -878,9 +1237,9 @@ Auto-rotation pauses while pointer-lock mode is active.
 ### `autoRotate` / `autoRotateSpeed`
 
 Enables automatic orbiting and controls its speed. Defaults are `false` and
-`1`. Values from `sceneConfig.model.autoRotate` and
-`sceneConfig.model.autoRotateSpeed` take precedence when supplied, so a scene
-exported from `BindingBuilder` can carry the same behavior.
+`1`. When these props aren't passed, `sceneConfig.model.autoRotate` and
+`sceneConfig.model.autoRotateSpeed` apply, so a scene exported from
+`BindingBuilder` can carry the same behavior. When they are passed, they win.
 
 ```tsx
 <ModelViewer {...props} autoRotate autoRotateSpeed={0.75} />
@@ -1131,8 +1490,8 @@ type CinematicConfig = {
 type CinematicWaypoint = {
   position: [number, number, number];
   target: [number, number, number]; // world-space look-at point
-  azimuthAngle?: number; // preserves orbit rotation at vertical poles
-  polarAngle?: number;
+  azimuthAngle?: number; // radians, captured by BindingBuilder; omit by hand
+  polarAngle?: number; // radians
 };
 ```
 

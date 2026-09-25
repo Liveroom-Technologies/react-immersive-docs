@@ -73,9 +73,9 @@ An attached light follows the model object's complete world transform. The
 name. The offset is measured in the object's local space. Use `lights.detach`
 to return to the light's stored world position.
 
-Pass `sceneConfig` to `ModelViewer` and leave the custom `lights` prop unset.
-That prop is an advanced replacement for the scene-config lighting tree, so
-scene-light controller changes do not affect custom React light elements.
+Pass `sceneConfig` to `ModelViewer`. To list lights in an initial config,
+`sceneLight` from `@liveroom-tech/react-immersive/utils` fills in each light's
+defaults.
 
 The controller provides:
 

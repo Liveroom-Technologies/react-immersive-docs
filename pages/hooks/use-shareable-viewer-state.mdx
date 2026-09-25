@@ -108,7 +108,7 @@ const { getShareUrl, restoreFromUrl } = useShareableViewerState({
   you use `autoSync` but don't need restore-on-load, still call
   `restoreFromUrl()` once (it's a no-op when there's nothing in the hash),
   otherwise auto-sync never activates.
-- `restoreFromUrl` depends on `viewer.controls` being available, so call it
+- `restoreFromUrl` depends on `viewer.raw.controls` being available, so call it
   from inside (or after) `onViewerReady`, not before the viewer has mounted.
   It's also safe to call from there even though `onViewerReady` fires
   repeatedly (camera changes, model load, binding changes): only the first

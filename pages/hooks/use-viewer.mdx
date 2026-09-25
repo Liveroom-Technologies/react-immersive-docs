@@ -1,0 +1,85 @@
+---
+title: useViewer
+---
+
+# `useViewer`
+
+Every viewer hook in one, already connected to each other and to `ModelViewer`.
+Spread its `props` onto the viewer and control everything else by name.
+
+## Usage
+
+```tsx
+import { ModelViewer, useViewer } from "@liveroom-tech/react-immersive";
+
+export default function Configurator() {
+  const viewer = useViewer();
+
+  return (
+    <>
+      <ModelViewer
+        modelUrl="/car.glb"
+        licenseKey={licenseKey}
+        {...viewer.props}
+      />
+      <button
+        onClick={() =>
+          viewer.bindings.setBaseColor({ group: "paint" }, "#b91c1c")
+        }
+      >
+        Paint it red
+      </button>
+    </>
+  );
+}
+```
+
+Props you set on `ModelViewer` after the spread take precedence, so other props
+(`showViewGizmo`, `sceneConfig`, and so on) work as usual.
+
+## Options
+
+All options are optional.
+
+| Name | Type | Description |
+|------|------|-------------|
+| `bindings` | `Record<string, ObjectBinding> \| (() => Record<string, ObjectBinding>) \| "auto"` | The starting bindings. Defaults to `"auto"`: a binding for every mesh, generated when the model loads |
+| `sceneConfig` | `SceneConfig \| (() => SceneConfig)` | The starting scene config |
+| `camera` | `UseViewerCameraOptions` | Initial camera position, target, and named presets |
+| `onAction` | `(event: ObjectActionEvent) => void` | Called for every action button, after built-in behavior and declared `effects` |
+| `onObjectSelect` | `(binding: ObjectBinding \| null) => void` | Called when the selection changes |
+| `onObjectHover` | `(binding: ObjectBinding \| null) => void` | Called when the hovered object changes |
+| `onLoadError` | `(error: unknown) => void` | Called if the model fails to load |
+
+With `"auto"` bindings, a binding the viewer already has for an object keeps
+its edits when the model reloads; objects with new names get fresh bindings.
+
+## Returns
+
+| Name | Same as | Use it for |
+|------|---------|------------|
+| `props` | | Spread onto `ModelViewer` |
+| `bindings` | [`useObjectBindings`](/hooks/use-object-bindings) | Colors, textures, materials, visibility, transforms, metadata |
+| `selection` | [`useViewerSelection`](/hooks/use-viewer-selection) | The selected object, and selecting from your own UI |
+| `hover` | [`useViewerHover`](/hooks/use-viewer-hover) | The hovered object |
+| `camera` | [`useViewerCamera`](/hooks/use-viewer-camera) | Focusing objects, resetting, saved views |
+| `model` | [`useViewerModel`](/hooks/use-viewer-model) | Loading state, errors, bounds, and the model's `objects` |
+| `animations` | [`useViewerAnimations`](/hooks/use-viewer-animations) | Playing the model's animation clips |
+| `actions` | [`useViewerActions`](/hooks/use-viewer-actions) | Running binding actions from code |
+| `scene` | [`useSceneConfig`](/hooks/use-scene-config) | Lighting, environment, background, post-processing |
+| `effects` | [`useViewerEffects`](/hooks/use-viewer-effects) | Transitions, pulses, flicker, runtime lights |
+| `connection` | [`useViewerConnection`](/hooks/use-viewer-connection) | The live viewer and `captureImage` |
+
+Each part is that hook's full result, so everything the hook offers is
+available: `viewer.camera.focusObject("door")`, `viewer.model.objects`,
+`viewer.animations.play("Open")`, `viewer.scene.lights.setIntensity("key", 2)`.
+
+`useViewer` passes `sceneConfig` to `ModelViewer` only once you've supplied one
+or changed the scene through `viewer.scene`, so the default scene behaves
+exactly as if no scene config were passed.
+
+## When to use the individual hooks
+
+Use the hooks one by one when state lives elsewhere: for example, when a store
+owns the bindings and passes them to `ModelViewer`, or when you only need one
+piece, such as the camera.

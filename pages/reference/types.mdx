@@ -11,7 +11,7 @@ The core data record for each interactive mesh in the viewer.
 ```ts
 type ObjectBinding = {
   id: string;
-  type: ObjectBindingType;
+  type?: ObjectBindingType; // defaults to "other"
   modelObjectId: string;
   label?: string;
   group?: string;
@@ -104,7 +104,12 @@ pivot does not modify the model file's origin.
 
 ## `ObjectBindingType`
 
-A large union covering vehicles, rooms, furniture, characters, weapons, environment, and more.
+What kind of object a binding is, used to group and filter bindings (for
+example `hideObject({ type: "wheel" })`). Any string works. The listed values
+cover vehicles, rooms, furniture, characters, weapons, environment, and more,
+and your editor suggests them; a domain they don't cover can use its own, such
+as `"bone"` or `"turbine-blade"`. A binding without a `type` counts as
+`"other"`.
 
 ```ts
 type ObjectBindingType =
@@ -119,8 +124,9 @@ type ObjectBindingType =
   | "furniture"
   | "decor"
   | "electronics"
-  | "other";
-// ... and more
+  | "other"
+  // ... and more suggestions
+  | (string & {}); // any other string
 ```
 
 ---
@@ -336,6 +342,21 @@ type ObjectActionEvent = {
 
 ---
 
+## `ObjectPointerEvent`
+
+The event shape passed to `onObjectDoubleClick` and `onObjectContextMenu`.
+
+```ts
+type ObjectPointerEvent = {
+  binding: ObjectBinding;
+  clientX: number; // viewport coordinates, e.g. for a position: fixed menu
+  clientY: number;
+  pointerType: string; // "mouse" | "pen" | "touch"
+};
+```
+
+---
+
 ## `AnimationControls`
 
 Provided via `onAnimationsReady`.
@@ -445,30 +466,34 @@ type SceneConfig = {
 };
 ```
 
-`model.autoRotate` and `model.autoRotateSpeed` override the equivalent direct
-`ModelViewer` props when present. Import `DEFAULT_SCENE_CONFIG` when creating a
-scene from code so new sections and defaults remain populated, then update it
-with `useSceneConfig` or `patchSceneConfig`.
+`model.autoRotate` and `model.autoRotateSpeed` apply when the equivalent
+`ModelViewer` props aren't passed; passed props win. Import
+`DEFAULT_SCENE_CONFIG` when creating a scene from code so new sections and
+defaults remain populated, then update it with `useSceneConfig` or
+`patchSceneConfig`. For `lighting.lights`, `sceneLight({ id, ...settings })`
+builds a complete light, filling in the settings you leave out.
 
 ---
 
 ## 3D Tiles types
 
-`onObjectCatalog` receives one entry for every bindable logical object in a
-streamed model:
+### `ViewerObjectInfo`
+
+`onObjectCatalog` receives one entry for every bindable object in the model,
+whether it's loaded whole or streamed:
 
 ```ts
-type TileObjectCatalogEntry = {
-  name: string;
+type ViewerObjectInfo = {
+  name: string; // the key to use in objectBindings
   triangles: number;
   minimum: [number, number, number];
   maximum: [number, number, number];
 };
 ```
 
-The package also exports `StreamingTilesModelProps` for advanced integrations
-that need to describe the lower-level streaming renderer configuration. Most
-applications should use the documented `ModelViewer` streaming props instead.
+`minimum` and `maximum` are the object's bounds in the model's own units, in
+Z-up coordinates as in 3D Tiles: a point at glTF `(x, y, z)` is `(x, -z, y)`
+here. They don't change when the viewer moves or scales the model.
 
 ---
 
@@ -487,8 +512,8 @@ type CinematicConfig = {
 type CinematicWaypoint = {
   position: [number, number, number];
   target: [number, number, number]; // world-space look-at point
-  azimuthAngle?: number; // preserves orbit rotation at vertical poles
-  polarAngle?: number;
+  azimuthAngle?: number; // radians, captured by BindingBuilder; omit by hand
+  polarAngle?: number; // radians
   segmentDuration?: number; // seconds spent reaching the next waypoint
 };
 ```
@@ -513,8 +538,8 @@ type SceneCinematicConfig = {
 type SceneCinematicWaypoint = {
   position: [number, number, number];
   target: [number, number, number];
-  azimuthAngle?: number;
-  polarAngle?: number;
+  azimuthAngle?: number; // radians, captured by BindingBuilder; omit by hand
+  polarAngle?: number; // radians
   segmentDuration?: number;
 };
 ```
@@ -559,17 +584,19 @@ described with the API it belongs to.
 
 | Types | Described with |
 | --- | --- |
-| `ModelViewerProps`, `ObjectTransformSpace`, `XRScaleMode`, `ModelFormat`, `StreamingTilesModelProps`, `TileObjectCatalogEntry` | [`ModelViewer`](/reference/model-viewer) |
-| `SimpleModelViewerProps` | [`SimpleModelViewer`](/reference/simple-model-viewer) |
-| `BindingBuilderProps` | [`BindingBuilder`](/reference/binding-builder) |
+| `ModelViewerProps`, `ModelViewerPreset`, `GroupedModelViewerProps`, `ModelViewerUiOptions`, `ModelViewerToolsOptions`, `ModelViewerControlsOptions`, `ModelViewerPerfOptions`, `ModelViewerTilesOptions`, `ModelViewerXrOptions`, `ModelViewerDecoderOptions`, `ObjectTransformSpace`, `TexturePositioningControls`, `XRScaleMode`, `ModelFormat`, `AnnotationMarker`, `CameraLimits`, `CameraControllerType`, `MouseControllerPosition`, `PerformanceProfile`, `ViewerObjectInfo` | [`ModelViewer`](/reference/model-viewer) |
+| `SimpleModelViewerProps` (from `/simple-model-viewer`) | [`SimpleModelViewer`](/reference/simple-model-viewer) |
+| `BindingBuilderProps` (from `/binding-builder`) | [`BindingBuilder`](/reference/binding-builder) |
 | `ObjectBindingMaterialBlendingMode`, `ObjectBindingMaterialSide`, `ObjectBindingTextureSlot`, `ObjectBindingTextureChannel` | [`ObjectBindingMaterial`](#objectbindingmaterial) |
 | `AnimationActionEffect`, `CameraActionEffect`, `ObjectBindingsActionEffect`, `SceneConfigActionEffect`, `VisibilityActionEffect` | [`ObjectBindingAction`](#objectbindingaction) |
-| `AnimationLoopMode`, `SceneAnimationClipConfig`, `SceneLightType` | [`SceneConfig`](#sceneconfig) and [`SceneLight`](#scenelight) |
-| `HiddenObjectsState`, `ObjectBindingsController`, `BindingEdit`, `ObjectBindingSelector` | [`useObjectBindings`](/hooks/use-object-bindings) |
+| `AnimationLoopMode`, `SceneAnimationClipConfig`, `SceneLightType`, `SceneModelConfig`, `SceneCameraConfig`, `SceneLightingConfig`, `SceneShadowConfig`, `SceneEnvironmentConfig`, `SceneWireframeConfig`, `SceneBackgroundConfig`, `SceneGroundShadowConfig`, `ScenePostProcessingConfig`, `SceneAnnotationMarker`, `EnvironmentPreset`, `GlitchModeName`, `KernelSizeName`, `RampTypeName` | [`SceneConfig`](#sceneconfig) and [`SceneLight`](#scenelight) |
+| `HiddenObjectsState`, `ObjectBindingsController`, `BindingEdit`, `ObjectBindingSelector`, `DeepPartial` | [`useObjectBindings`](/hooks/use-object-bindings) |
 | `ViewerSelectionProps` | [`useViewerSelection`](/hooks/use-viewer-selection) |
-| `ViewerModelBounds`, `ViewerModelProps` | [`useViewerModel`](/hooks/use-viewer-model) |
+| `ViewerHoverProps` | [`useViewerHover`](/hooks/use-viewer-hover) |
+| `ShareableViewerStateProps`, `UseShareableViewerStateOptions` | [`useShareableViewerState`](/hooks/use-shareable-viewer-state) |
+| `ViewerModelBounds`, `ViewerModelInfo`, `ViewerModelProps` | [`useViewerModel`](/hooks/use-viewer-model) |
 | `ViewerActionAnimationController`, `ViewerActionBindingsController`, `ViewerActionCameraController`, `ViewerActionSceneController`, `ViewerActionsOptions`, `ViewerActionsProps` | [`useViewerActions`](/hooks/use-viewer-actions) |
-| `HomeCameraState`, `ViewerCameraProps`, `UseViewerCameraOptions` | [`useViewerCamera`](/hooks/use-viewer-camera) |
+| `HomeCameraState`, `ViewerCameraConfig`, `ViewerCameraProps`, `UseViewerCameraOptions` | [`useViewerCamera`](/hooks/use-viewer-camera) |
 | `ViewerConnectionController`, `ViewerReadyConsumer`, `ViewerReadyHandler` | [`useViewerConnection`](/hooks/use-viewer-connection) |
 | `AnimationClipInfo`, `ViewerAnimationsProps` | [`useViewerAnimations`](/hooks/use-viewer-animations) |
 | `RuntimeMaterialPatch`, `RuntimeMaterialRanges`, `RuntimePointLightOptions`, `RuntimePointLightPatch`, `RuntimeTransformPatch`, `RuntimeTransformRanges`, `UseViewerEffectsOptions`, `ViewerEffectEasing`, `ViewerEffectsController`, `ViewerEffectRange`, `ViewerEffectTarget`, `ViewerFlickerOptions`, `ViewerLightEffectChannel`, `ViewerMaterialEffectChannel`, `ViewerTimelineOptions`, `ViewerTimelineStep`, `ViewerPulseOptions`, `ViewerTransformEffectChannel`, `ViewerTransitionOptions`, `ViewerVector3` | [`useViewerEffects`](/hooks/use-viewer-effects) |

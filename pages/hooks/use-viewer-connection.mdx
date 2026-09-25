@@ -25,7 +25,7 @@ const connection = useViewerConnection(
   camera,
   effects,
   (viewer) => {
-    console.log("Loaded scene", viewer.scene);
+    console.log("Loaded scene", viewer.raw.scene);
   },
 );
 

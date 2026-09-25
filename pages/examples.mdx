@@ -174,6 +174,7 @@ A custom-apparel demo where shoppers upload their own artwork onto a product:
 - A real app uploads it to storage and returns a durable URL (here a data URL)
 - The returned URL is committed to `style.material.texture.path`
 - `copyMaterial` and the `shirt` binding group broadcast the print without a manual ID array
+- `texturePositioning` lets shoppers drag, scale, and rotate the print; the result lands in `style.material.texture`, so it's broadcast the same way
 - `setBaseColor` and `clearTexture` drive the same grouped binding state
 - The viewer download menu exports the shirt's editable UV layout as SVG
 

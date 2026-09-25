@@ -12,34 +12,48 @@ import { Callout, Steps, Tabs } from "nextra/components";
   <Tabs.Tab>
 
     ```bash
-    npm install @liveroom-tech/react-immersive
+    npm install @liveroom-tech/react-immersive three @react-three/fiber
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    pnpm add @liveroom-tech/react-immersive
+    pnpm add @liveroom-tech/react-immersive three @react-three/fiber
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    yarn add @liveroom-tech/react-immersive
+    yarn add @liveroom-tech/react-immersive three @react-three/fiber
     ```
 
   </Tabs.Tab>
 </Tabs>
 
+`three` and `@react-three/fiber` are peer dependencies, along with React 19, so
+your app has exactly one copy of each. Everything else installs with the
+package.
+
 ## Import Styles
 
-Import the static stylesheet once from your application root. In a Next.js App
-Router project, put this in `app/layout.tsx`:
+Import the stylesheet for each component you use, once, from your application
+root. In a Next.js App Router project, put these in `app/layout.tsx`:
 
 ```tsx
-import "@liveroom-tech/react-immersive/styles.css";
+import "@liveroom-tech/react-immersive/styles.css"; // ModelViewer
+import "@liveroom-tech/react-immersive/simple-model-viewer.css"; // SimpleModelViewer
+import "@liveroom-tech/react-immersive/binding-builder.css"; // BindingBuilder
 ```
+
+`SimpleModelViewer` and `BindingBuilder` are imported from their own entry
+points, `@liveroom-tech/react-immersive/simple-model-viewer` and
+`@liveroom-tech/react-immersive/binding-builder`, so an app downloads only the
+components it uses.
+
+If a component's stylesheet is missing, it renders unstyled, and in
+development it logs a console warning naming the import to add.
 
 ## Get a License Key
 
@@ -55,6 +69,31 @@ import "@liveroom-tech/react-immersive/styles.css";
 </Callout>
 
 ## Quick Start
+
+To see your model working before you write any bindings, let the viewer
+generate them:
+
+```tsx
+import { ModelViewer } from "@liveroom-tech/react-immersive";
+
+export default function App() {
+  return (
+    <div style={{ height: "100vh", overflow: "hidden" }}>
+      <ModelViewer
+        modelUrl="/model.glb"
+        licenseKey={process.env.NEXT_PUBLIC_LICENSE_KEY!}
+      />
+    </div>
+  );
+}
+```
+
+Every mesh can then be hovered and selected, with Change Color, Change
+Material, and Toggle Visibility in the side panel (or light controls for meshes
+whose names contain "light"). See
+[generating bindings automatically](/reference/model-viewer#generating-bindings-automatically)
+to keep and refine them. The steps below write the bindings yourself, which
+gives you control over labels, actions, metadata, and camera views.
 
 <Steps>
 
@@ -139,71 +178,31 @@ export default function App() {
 }
 ```
 
-### Add hooks for external control
+### Control the viewer from your app
 
-Use the provided hooks to drive camera, selection, hover, animations, and more from outside the viewer.
+`useViewer` connects every viewer hook to `ModelViewer` at once. Spread its
+`props` onto the viewer, then drive bindings, camera, selection, animations,
+and scene settings from your own UI.
 
 ```tsx
-import {
-  ModelViewer,
-  useViewerSelection,
-  useViewerCamera,
-  useViewerModel,
-  useObjectBindings,
-  useViewerActions,
-  useViewerAnimations,
-  useViewerHover,
-  useObjectBinding,
-} from "@liveroom-tech/react-immersive";
-import { objectBindings as initialBindings } from "./objectBindings";
+import { ModelViewer, useViewer } from "@liveroom-tech/react-immersive";
+import { objectBindings } from "./objectBindings";
 
 export default function Example() {
-  const bindings = useObjectBindings(initialBindings);
-  const {
-    objectBindings,
-    setObjectBindings,
-    hiddenObjects,
-    toggleObjectVisibility,
-  } = bindings;
-
-  const { selectedObjectBinding, handleObjectSelect } = useViewerSelection();
-  const { hoveredObjectBinding, handleHoveredObject } = useViewerHover();
-  const camera = useViewerCamera();
-  const {
-    cameraState,
-    resetView,
-    focusObject,
-    fitScene,
-    handleCameraChange,
-    handleViewerReady,
-  } = camera;
-  const { isLoading, isReady, error, handleModelLoaded, handleLoadError } =
-    useViewerModel();
-  const animations = useViewerAnimations();
-  const { clips, isPlaying, play, pause, handleAnimationsReady } = animations;
-  const { getActionsForObject, handleAction, runAction } = useViewerActions({
-    bindings,
-    camera,
-    animations,
+  const viewer = useViewer({
+    bindings: objectBindings,
     onAction: (event) => console.log(event),
   });
+  const { toggleObjectVisibility } = viewer.bindings;
+  const { resetView, focusObject } = viewer.camera;
+  const { clips, play } = viewer.animations;
 
   return (
     <div style={{ height: "100vh", overflow: "hidden" }}>
       <ModelViewer
         modelUrl="/red_room.glb"
         licenseKey="your-license-key"
-        objectBindings={objectBindings}
-        selectedObject={selectedObjectBinding}
-        onObjectSelect={handleObjectSelect}
-        onObjectHover={handleHoveredObject}
-        onCameraChange={handleCameraChange}
-        onModelLoaded={handleModelLoaded}
-        onLoadError={handleLoadError}
-        onObjectBindingsChange={setObjectBindings}
-        onViewerReady={handleViewerReady}
-        onAnimationsReady={handleAnimationsReady}
-        onAction={handleAction}
+        {...viewer.props}
       />
 
       <button onClick={() => toggleObjectVisibility("some-object-id")}>
@@ -222,5 +221,10 @@ export default function Example() {
   );
 }
 ```
+
+Leave out `bindings` and `useViewer` generates them from the model, like
+`objectBindings="auto"`. See [`useViewer`](/hooks/use-viewer) for
+everything it returns, and the other [hooks](/hooks/use-viewer-selection)
+for wiring individual pieces yourself.
 
 </Steps>

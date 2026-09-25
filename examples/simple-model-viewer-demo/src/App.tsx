@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SimpleModelViewer } from "@liveroom-tech/react-immersive";
+import { SimpleModelViewer } from "@liveroom-tech/react-immersive/simple-model-viewer";
 import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
 
 export default function App() {

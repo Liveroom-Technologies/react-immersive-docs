@@ -53,11 +53,11 @@ const {
 | `setCameraTarget`    | `(target, transition?) => Promise<boolean>`          | Sets the camera target to a given `[x, y, z]`                                 |
 | `setCameraState`     | `(state, transition?) => Promise<boolean>`            | Restores a complete camera state                                              |
 | `lookAt`             | `(position, target, transition?) => Promise<boolean>`  | Moves the camera position and target together                                 |
-| `orbitTo`            | `(azimuth, polar, transition?) => Promise<boolean>`    | Moves to orbit angles in radians                                              |
+| `orbitTo`            | `(azimuth, polar, transition?) => Promise<boolean>`    | Orbits to angles in degrees (azimuth 0 = front, 90 = right; polar 0 = straight down, 90 = level) |
 | `dollyTo`            | `(distance, transition?) => Promise<boolean>`          | Moves to a distance from the current target                                   |
 | `savePreset`         | `(name: string) => ViewerCameraState \| null`          | Saves the current view under a name                                           |
 | `goToPreset`         | `(name, transition?) => Promise<boolean>`               | Moves to a named view                                                         |
-| `handleCameraChange` | `(camera: Camera, controls: CameraControls) => void` | Callback to pass to `onCameraChange`                                          |
+| `handleCameraChange` | `(state: ViewerCameraState) => void` | Callback to pass to `onCameraChange`                                          |
 | `handleViewerReady`  | `(viewer: ViewerReadyState) => void`                 | Pass to `onViewerReady`, or compose with `useViewerConnection`                 |
 
 ## Example
@@ -68,7 +68,7 @@ const {
 <button onClick={() => fitScene()}>Fit Scene</button>
 <button onClick={() => setCameraTarget([0, 0, 0])}>Target Origin</button>
 <button onClick={() => lookAt([4, 2, 6], [0, 1, 0])}>Three-quarter view</button>
-<button onClick={() => orbitTo(Math.PI / 2, Math.PI / 3)}>Orbit</button>
+<button onClick={() => orbitTo(90, 60)}>View from the right</button>
 <button onClick={() => dollyTo(4)}>Move closer</button>
 <button onClick={() => savePreset("custom")}>Save View</button>
 <button onClick={() => goToPreset("custom")}>Restore View</button>

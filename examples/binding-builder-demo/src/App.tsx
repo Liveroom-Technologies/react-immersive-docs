@@ -1,4 +1,4 @@
-import { BindingBuilder } from "@liveroom-tech/react-immersive";
+import { BindingBuilder } from "@liveroom-tech/react-immersive/binding-builder";
 import { DemoPageHeader, ViewerWindow } from "./DemoLayout";
 
 export default function App() {

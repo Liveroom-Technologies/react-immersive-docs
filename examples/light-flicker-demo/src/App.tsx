@@ -140,7 +140,7 @@ export default function App() {
   const [preset, setPreset] = useState<FlickerPreset>("failing");
   const [powerOn, setPowerOn] = useState(true);
   const [controlsOpen, setControlsOpen] = useState(false);
-  const framedSceneRef = useRef<ViewerReadyState["scene"]>(null);
+  const framedSceneRef = useRef<ViewerReadyState["raw"]["scene"]>(null);
   const settings = PRESETS[preset];
   const effectChannels = useMemo<ViewerEffectChannels>(
     () => ({
@@ -260,8 +260,8 @@ export default function App() {
   ]);
 
   const setupBulbLights = useCallback((viewer: ViewerReadyState) => {
-    if (!viewer.scene || framedSceneRef.current === viewer.scene) return;
-    framedSceneRef.current = viewer.scene;
+    if (!viewer.raw.scene || framedSceneRef.current === viewer.raw.scene) return;
+    framedSceneRef.current = viewer.raw.scene;
 
     BULBS.forEach((bulb) => {
       addPointLight({

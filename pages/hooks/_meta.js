@@ -1,4 +1,5 @@
 export default {
+  "use-viewer": "useViewer",
   "use-viewer-selection": "useViewerSelection",
   "use-viewer-hover": "useViewerHover",
   "use-viewer-model": "useViewerModel",

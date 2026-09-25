@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "@liveroom-tech/react-immersive/styles.css";
+import "@liveroom-tech/react-immersive/simple-model-viewer.css";
 
 import App from "./App";
 import "./demo.css";

@@ -11,7 +11,8 @@ A lightweight viewer for cases where you want to load a GLB, GLTF, OBJ, FBX, or 
 ## Usage
 
 ```tsx
-import { SimpleModelViewer } from "@liveroom-tech/react-immersive";
+import "@liveroom-tech/react-immersive/simple-model-viewer.css";
+import { SimpleModelViewer } from "@liveroom-tech/react-immersive/simple-model-viewer";
 
 export default function App() {
   return (
@@ -66,7 +67,7 @@ type SimpleModelViewerProps = {
   ambientColor?: string;
   directionalIntensity?: number;
   directionalColor?: string;
-  onModelLoaded?: (scene: Object3D) => void;
+  onModelLoaded?: (model: ViewerModelInfo) => void;
   onLoadError?: (error: unknown) => void;
 };
 ```
@@ -239,7 +240,7 @@ false;
 Optional callback fired after the model scene has loaded.
 
 ```ts
-onModelLoaded?: (scene: Object3D) => void
+onModelLoaded?: (model: ViewerModelInfo) => void // { bounds, objectCount }
 ```
 
 ---
