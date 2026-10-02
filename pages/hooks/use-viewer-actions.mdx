@@ -96,10 +96,11 @@ const initialBindings = {
 | Visibility | `{ target, visibility: "show" \| "hide" \| "toggle" }` | `useObjectBindings` |
 | Camera | `{ camera: action }` | `useViewerCamera` |
 | Animation | `{ animation: action }` | `useViewerAnimations` |
+| Isolation | `{ isolation: ViewerIsolation \| null }` | `useViewerIsolation` |
 
 Object and visibility targets accept an object id, an array of ids, `{ group }`, `{ tag }`, or `{ type }`, just like `useObjectBindings`.
 
-Camera actions are `focus-object`, `fit-scene`, `reset`, `set-target`, and `set-state`. Animation actions are `play`, `pause`, `stop`, `set-speed`, and `seek`.
+Camera actions are `focus-object`, `fit-scene`, `reset`, `set-target`, and `set-state`. Animation actions are `play`, `pause`, `stop`, `set-speed`, and `seek`. `play` takes the same `alongside`, `fade`, and `reverse` options as `useViewerAnimations().play`, so an action can open a door without stopping other clips: `{ animation: { type: "play", clip: "DoorOpen", alongside: true } }`. The others take an optional `clip`, and act on every active clip without one.
 
 ## Parameters
 

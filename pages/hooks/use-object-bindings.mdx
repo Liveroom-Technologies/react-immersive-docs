@@ -77,6 +77,9 @@ const {
   setTransform,
   resetTransform,
   updateMetadata,
+  addDecal,
+  updateDecal,
+  removeDecal,
   hiddenObjects,
   hiddenObjectIds,
   hideObject,
@@ -224,6 +227,9 @@ an identifier array, or a group, tag, or type selector. `hiddenObjects` and
 | `setTransform`           | Merge a persistent local transform               |
 | `resetTransform`         | Restore the model-authored local transform       |
 | `updateMetadata`         | Merge metadata fields                            |
+| `addDecal`               | Print an image or text on the targets; returns the decal's id. See [Decals](/reference/model-viewer#decals) |
+| `updateDecal`            | Change a decal by id (size, rotation, text, ...)  |
+| `removeDecal`            | Remove a decal by id                             |
 | `hiddenObjects`          | Map of hidden binding keys                       |
 | `hiddenObjectIds`        | IDs of currently hidden bindings                 |
 | `hideObject`             | Hide one object or a group                       |

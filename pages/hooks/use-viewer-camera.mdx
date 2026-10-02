@@ -77,3 +77,11 @@ const {
 ```
 
 Each initial position or target is optional and is applied once for every loaded model. Set `initialTransition: true` to animate into it. The default is `false`. `cameraPresets` contains the current named preset record.
+
+## Viewer-ready capture methods
+
+`ViewerReadyState` includes `captureImage`, `captureVideo`, and `invalidate`.
+Compose `camera` with [`useViewerConnection`](/hooks/use-viewer-connection)
+to capture PNGs or record cinematic/turntable video while keeping camera controls
+connected. After [WebGL recovery](/reference/model-viewer#webgl-context-recovery),
+`handleViewerReady` reconnects to the rebuilt viewer.

@@ -40,16 +40,17 @@ const {
 | Name | Type | Description |
 |------|------|-------------|
 | `clips` | `string[]` | Animation clip names found in the model file |
-| `currentClip` | `string \| null` | Name of the currently playing clip, or `null` |
-| `isPlaying` | `boolean` | `true` while an animation is playing (not paused or stopped) |
-| `speed` | `number` | Current playback speed (default `1`) |
-| `time` | `number` | Live playback position of the current clip in seconds (updates while playing) |
-| `duration` | `number` | Length of the current clip in seconds |
-| `play` | `(clipName: string) => void` | Starts a clip by name; resumes if the same clip is paused |
-| `pause` | `() => void` | Pauses the currently playing clip at its current time |
-| `stop` | `() => void` | Stops the current clip and resets it |
-| `setSpeed` | `(speed: number) => void` | Changes the playback speed |
-| `seek` | `(time: number) => void` | Scrubs the current clip to an absolute time in seconds (works while playing or paused), clamped to the clip length |
+| `currentClip` | `string \| null` | The clip played most recently, while it's active, or `null` |
+| `isPlaying` | `boolean` | `true` while any clip is playing (not paused, finished, or stopped) |
+| `speed` | `number` | Playback speed of `currentClip` (default `1`) |
+| `time` | `number` | Live playback position of `currentClip` in seconds (updates while playing) |
+| `duration` | `number` | Length of `currentClip` in seconds |
+| `active` | `AnimationClipState[]` | Every active clip (playing, paused, or finished) with its `status`, `time`, `duration`, `speed`, and `reverse`, most recently played last |
+| `play` | `(clipName: string, options?: AnimationPlayOptions) => void` | Starts a clip, replacing those already playing unless `alongside` is set; `fade` blends over that many seconds, `reverse` plays it backwards. A paused clip resumes |
+| `pause` | `(clipName?: string) => void` | Pauses one clip, or every active clip |
+| `stop` | `(clipName?: string) => void` | Stops one clip, or every active clip, and resets the pose |
+| `setSpeed` | `(speed: number, clipName?: string) => void` | Changes the speed of one clip, or of every active clip and those played later without their own |
+| `seek` | `(time: number, clipName?: string) => void` | Scrubs one clip, or every active clip, to an absolute time in seconds (works while playing or paused), clamped to the clip length |
 | `handleAnimationsReady` | `(controls: AnimationControls) => void` | Callback to pass to `onAnimationsReady` |
 
 ## Playback Controls Example
@@ -64,7 +65,7 @@ const { clips, currentClip, isPlaying, play, pause, stop, setSpeed } =
 </button>
 
 // Stop
-<button onClick={stop}>Stop</button>
+<button onClick={() => stop()}>Stop</button>
 
 // Speed slider
 <input
@@ -83,6 +84,35 @@ const { clips, currentClip, isPlaying, play, pause, stop, setSpeed } =
   </button>
 ))}
 ```
+
+## Playing Several Clips
+Several clips can play at once. `play` replaces the clips already playing
+unless you pass `alongside: true`, and the other controls act on one clip when
+you name it, or on every active clip when you don't:
+
+```tsx
+const animations = useViewerAnimations();
+
+// Open both doors together, then close the left one.
+animations.play("DoorLeftOpen", { alongside: true });
+animations.play("DoorRightOpen", { alongside: true });
+animations.play("DoorLeftOpen", { alongside: true, reverse: true });
+
+// Blend from walking to running over half a second.
+animations.play("Run", { fade: 0.5 });
+
+animations.pause("Wheels"); // one clip
+animations.stop(); // every clip
+
+// What's active, and how far along each clip is
+animations.active.map(({ clip, status, time }) => `${clip}: ${status} at ${time}s`);
+```
+
+A clip whose `loopMode` is `"once"` holds its last pose when it finishes
+(`status: "finished"`) until it's stopped or played again, so an opened door
+stays open. `"ping-pong"` plays forwards then backwards, repeatedly. Playing a
+clip that's already playing in the same direction leaves it running; playing
+it the other way turns it around where it is.
 
 <Callout type="info">
   `onAnimationsReady` is called even when the model has no animations, with an empty `clips` array and no-op control functions.

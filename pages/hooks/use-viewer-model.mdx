@@ -17,6 +17,7 @@ const {
   error,
   bounds,
   objectCount,
+  materialVariants,
   objects,
   handleModelLoaded,
   handleObjectCatalog,
@@ -40,6 +41,7 @@ const {
 | `error` | `unknown \| null` | The most recent load/render error, or `null` |
 | `bounds` | `SceneBounds \| null` | Scene bounds: `min`, `max`, `center`, `size` |
 | `objectCount` | `number` | Number of mesh objects in the loaded scene |
+| `materialVariants` | `string[]` | Names of the model's glTF material variants; empty when it has none. See [`showMaterialVariants`](/reference/model-viewer#showmaterialvariants) |
 | `objects` | `ViewerObjectInfo[]` | Every bindable object in the model; filled once `handleObjectCatalog` is passed to `onObjectCatalog` |
 | `handleModelLoaded` | `(model: ViewerModelInfo) => void` | Callback to pass to `onModelLoaded` |
 | `handleObjectCatalog` | `(objects: ViewerObjectInfo[]) => void` | Callback to pass to `onObjectCatalog` |

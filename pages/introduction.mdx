@@ -102,6 +102,22 @@ both depending on what the experience needs.
   also need application behavior.
 </Callout>
 
+## Viewer tools and engagement
+
+- [Video export](/reference/model-viewer#video-export) records a cinematic
+  pass or turntable revolution as browser-supported WebM/MP4 for product media.
+- [Measurement tools](/reference/model-viewer#showmeasuretools) include
+  distance, angle, polygon area, point-to-plane distance, vertex/edge snapping,
+  and bounding-box dimensions.
+- [Fullscreen](/reference/model-viewer#showfullscreenbutton) expands the
+  viewer, including its panels and overlays, through `ui={{ fullscreen: true }}`.
+- [WebGL recovery](/reference/model-viewer#webgl-context-recovery) shows a
+  **Reload viewer** button after context loss and rebuilds when the context returns.
+- [Engagement analytics](/reference/model-viewer#onengagement--debugengagement)
+  exposes part views, variant choices, AR session duration, and tour outcomes
+  through `onEngagement`; `debugEngagement` logs events in the developer console.
+  Both are opt-in, and the viewer sends no telemetry automatically.
+
 ## When This Package Fits
 
 - **Product configurators** - let users recolor or retexture parts of a car, piece of furniture, or apparel

@@ -4,7 +4,7 @@ title: useViewerConnection
 
 # `useViewerConnection`
 
-Combines every feature that needs `ModelViewer.onViewerReady` into one typed connection. Camera, runtime effects, screenshots, and custom setup callbacks can share the same viewer without manual callback wiring.
+Combines every feature that needs `ModelViewer.onViewerReady` into one typed connection. Camera, runtime effects, screenshots, video export, and custom setup callbacks can share the same viewer without manual callback wiring.
 
 ## Usage
 
@@ -60,6 +60,43 @@ and rejects with a clear error before the viewer is ready or when framebuffer
 preservation is disabled. `invalidate` returns `false` before connection and
 `true` after requesting a frame.
 
+## Video recording
+
+`captureVideo(options?: CaptureVideoOptions): Promise<Blob>` records one
+turntable revolution or cinematic pass from the connected viewer. It is also
+available through `useViewer().connection`. Call it from a user action after
+loading and initial framing, rather than from `onViewerReady`, which runs
+repeatedly as the camera moves.
+
+```tsx
+const abort = new AbortController();
+const clip = await connection.captureVideo({
+  mode: "turntable",
+  format: "auto",
+  duration: 12,
+  fps: 30,
+  signal: abort.signal,
+});
+// Upload the Blob, or preview it with URL.createObjectURL(clip).
+// abort.abort() cancels and discards an in-progress recording.
+```
+
+Video recording does not require `preserveDrawingBuffer`. The browser must
+support `canvas.captureStream` and `MediaRecorder`; Auto prefers WebM, then MP4.
+Explicit unsupported formats reject. Recording uses the canvas's current pixel
+resolution and runs in real time, so keep the tab visible. It restores the
+previous camera and controls when it ends. Audio, HTML overlays, and GIF encoding
+are not included. Calls before framing, during XR, or during another recording
+reject. See [Video export](/reference/model-viewer#video-export) and
+[`CaptureVideoOptions`](/reference/types#capturevideooptions) for all options.
+
+## WebGL recovery
+
+After context loss, the viewer can rebuild automatically or through **Reload
+viewer**. `handleViewerReady` receives the rebuilt viewer and replaces the
+connection's live controls and node references. Custom setup consumers run again;
+use those fresh references instead of retaining objects from the old scene.
+
 ## Returns
 
 | Name | Description |
@@ -67,4 +104,5 @@ preservation is disabled. `invalidate` returns `false` before connection and
 | `handleViewerReady` | The single callback to pass to `ModelViewer.onViewerReady` |
 | `getViewer` | Return the latest `ViewerReadyState`, or `null` |
 | `captureImage` | Capture a PNG data URL from the connected viewer |
+| `captureVideo` | Record one cinematic pass or turntable revolution as a video `Blob` |
 | `invalidate` | Request a render frame from the connected viewer |

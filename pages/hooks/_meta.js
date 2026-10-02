@@ -7,6 +7,7 @@ export default {
   "use-viewer-connection": "useViewerConnection",
   "use-viewer-animations": "useViewerAnimations",
   "use-viewer-effects": "useViewerEffects",
+  "use-viewer-isolation": "useViewerIsolation",
   "use-viewer-actions": "useViewerActions",
   "use-object-binding": "useObjectBinding",
   "use-object-binding-ids": "useObjectBindingIds",

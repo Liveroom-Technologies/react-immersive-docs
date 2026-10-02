@@ -51,6 +51,13 @@ const config: DocsThemeConfig = {
   },
   head: (
     <>
+      <style>{`
+        footer > .nx-py-12 {
+          padding-block: 1rem;
+          font-size: 0.875rem;
+          line-height: 1.25rem;
+        }
+      `}</style>
       <meta
         name="description"
         content={DOCS_DESCRIPTION}

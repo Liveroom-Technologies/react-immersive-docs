@@ -1,0 +1,41 @@
+---
+title: useViewerIsolation
+---
+
+# `useViewerIsolation`
+
+State for focusing on some objects: `ModelViewer` ghosts (or hides)
+everything else, and clicks pass through to what's isolated. `useViewer`
+includes it as `viewer.isolation`.
+
+## Usage
+
+```tsx
+import { useViewerIsolation } from "@liveroom-tech/react-immersive";
+
+const { isolation, isolate, clearIsolation, handleIsolationChange } =
+  useViewerIsolation();
+
+<ModelViewer
+  isolation={isolation}
+  onIsolationChange={handleIsolationChange}
+  tools={{ isolate: true }}
+  ...
+/>
+
+<button onClick={() => isolate({ group: "gearbox" })}>Gearbox only</button>
+<button onClick={() => isolate("engine", { mode: "hide" })}>Hide all but the engine</button>
+<button onClick={clearIsolation}>Show all</button>
+```
+
+## Returns
+
+| Name | Type | Description |
+|------|------|-------------|
+| `isolation` | `ViewerIsolation \| null` | The current isolation, or `null` when everything shows normally |
+| `isolate` | `(target: ObjectBindingTarget, options?: { mode?, ghostOpacity? }) => void` | Isolates the target's objects: an id, a list of ids, `{ group }`, `{ tag }`, or `{ type }` |
+| `clearIsolation` | `() => void` | Shows everything again |
+| `handleIsolationChange` | `(isolation: ViewerIsolation \| null) => void` | Callback to pass to `onIsolationChange` |
+
+See [Isolating objects](/reference/model-viewer#isolating-objects) for
+how ghosting, hiding, and the built-in controls behave.

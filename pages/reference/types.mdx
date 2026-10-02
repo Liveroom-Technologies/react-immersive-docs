@@ -22,6 +22,7 @@ type ObjectBinding = {
   hoverable?: boolean;
   transform?: ObjectBindingTransform;
   style?: ObjectBindingStyle;
+  decals?: ObjectBindingDecal[]; // images and text on the surface; see ModelViewer's "Decals"
   actions?: ObjectBindingAction[];
   metrics?: Record<string, number>;
   metadata?: Record<string, unknown>;
@@ -289,12 +290,14 @@ type CameraAction =
   | { type: "set-target"; target: [number, number, number]; transition?: boolean }
   | { type: "set-state"; state: ViewerCameraState; transition?: boolean };
 
+// play replaces the clips already playing unless alongside is set; the others
+// act on clip, or on every active clip when it's left out.
 type AnimationAction =
-  | { type: "play"; clip: string }
-  | { type: "pause" }
-  | { type: "stop" }
-  | { type: "set-speed"; speed: number }
-  | { type: "seek"; time: number };
+  | ({ type: "play"; clip: string } & AnimationPlayOptions)
+  | { type: "pause"; clip?: string }
+  | { type: "stop"; clip?: string }
+  | { type: "set-speed"; speed: number; clip?: string }
+  | { type: "seek"; time: number; clip?: string };
 ```
 
 `ObjectBindingTarget` supports an object id, an array of ids, `{ group }`, `{ tag }`, or `{ type }`.
@@ -352,6 +355,7 @@ type ObjectPointerEvent = {
   clientX: number; // viewport coordinates, e.g. for a position: fixed menu
   clientY: number;
   pointerType: string; // "mouse" | "pen" | "touch"
+  surface?: { position: Vec3; normal: Vec3 }; // where on the object, in its own space
 };
 ```
 
@@ -362,24 +366,109 @@ type ObjectPointerEvent = {
 Provided via `onAnimationsReady`.
 
 ```ts
-type AnimationPlaybackState = {
-  currentClip: string | null;
-  isPlaying: boolean;
-  speed: number;
-  time: number; // live position of the current clip, in seconds
-  duration: number; // length of the current clip, in seconds
+type AnimationPlayOptions = {
+  alongside?: boolean; // keep the clips already playing (default false: replace them)
+  fade?: number; // seconds to fade in, and to fade out the clips it replaces
+  reverse?: boolean; // play backwards, from where the clip is or from its end
 };
 
+type AnimationClipState = {
+  clip: string;
+  status: "playing" | "paused" | "finished"; // finished: a play-once clip holding its last pose
+  time: number; // seconds
+  duration: number; // seconds
+  speed: number;
+  reverse: boolean;
+};
+
+type AnimationPlaybackState = {
+  currentClip: string | null; // the clip played most recently, while it's active
+  isPlaying: boolean; // whether any clip is playing
+  speed: number; // speed, position and length of currentClip
+  time: number;
+  duration: number;
+  active: AnimationClipState[]; // every active clip, most recently played last
+};
+
+// Leave out clipName to act on every active clip.
 type AnimationControls = {
   clips: string[];
   clipDetails?: { sourceName: string; duration: number }[];
-  play: (clipName: string) => void;
-  pause: () => void;
-  stop: () => void;
-  setSpeed: (speed: number) => void;
-  seek?: (time: number) => void; // scrub the current clip to an absolute time (seconds)
+  play: (clipName: string, options?: AnimationPlayOptions) => void;
+  pause: (clipName?: string) => void;
+  stop: (clipName?: string) => void; // stops and resets the pose
+  setSpeed: (speed: number, clipName?: string) => void;
+  seek?: (time: number, clipName?: string) => void; // absolute time, in seconds
   getState?: () => AnimationPlaybackState;
   subscribe?: (listener: (state: AnimationPlaybackState) => void) => () => void;
+};
+```
+
+---
+
+## `ViewerIsolation`
+
+`ModelViewer`'s `isolation` prop. See
+[Isolating objects](/reference/model-viewer#isolating-objects).
+
+```ts
+type ViewerIsolation = {
+  target: ObjectBindingTarget; // an id, a list of ids, { group }, { tag }, or { type }
+  mode?: "ghost" | "hide"; // default "ghost"
+  ghostOpacity?: number; // 0–1, default 0.12
+};
+```
+
+---
+
+## `SceneSectionConfig`
+
+`sceneConfig.section`. See
+[`showSectionTools`](/reference/model-viewer#showsectiontools).
+
+```ts
+type SceneSectionConfig = {
+  enabled: boolean;
+  axis: "x" | "y" | "z"; // world axis the cut runs across
+  position: number; // 0 at the model's minimum along the axis, 1 at its maximum
+  flip: boolean; // keep the higher side instead of the lower one
+};
+```
+
+`DEFAULT_SECTION_CONFIG` is `{ enabled: false, axis: "y", position: 0.5, flip: false }`.
+
+---
+
+## `SceneStyleRule`
+
+The rules in `sceneConfig.styleRules`, applied in order. See
+[Style rules](/reference/model-viewer#style-rules).
+
+```ts
+type SceneStyleRule = {
+  id: string;
+  label?: string;
+  target?: ObjectBindingTarget; // every bound object when left out
+  when?: SceneStyleCondition | SceneStyleCondition[]; // all must match
+  material?: ObjectBindingMaterial;
+  colorScale?: SceneStyleColorScale;
+  pulse?: boolean | SceneStylePulse;
+};
+
+type SceneStyleCondition =
+  | { metric: string; above?: number; below?: number }
+  | { status: ObjectBindingStatus | ObjectBindingStatus[] }
+  | { metadata: string; equals: string | number | boolean | null }; // "a.b" reaches nested keys
+
+type SceneStyleColorScale = {
+  metric: string;
+  stops: [number, string][]; // [value, "#rrggbb"]
+  channel?: "baseColor" | "emissive"; // default "baseColor"
+};
+
+type SceneStylePulse = {
+  color?: string; // default "#ff3b30"
+  speed?: number; // pulses per second, default 1
 };
 ```
 
@@ -451,6 +540,7 @@ type SceneConfig = {
     shading: "lit" | "unlit" | "normals";
     autoRotate?: boolean;
     autoRotateSpeed?: number;
+    materialVariant?: string | null; // glTF material variant name; null for the defaults
   };
   camera: SceneCameraConfig;
   lighting: SceneLightingConfig;
@@ -463,11 +553,15 @@ type SceneConfig = {
   animations: SceneAnimationConfig;
   annotations: SceneAnnotationMarker[];
   cinematic?: SceneCinematicConfig;
+  styleRules?: SceneStyleRule[]; // data-driven looks; see ModelViewer's "Style rules"
+  section?: SceneSectionConfig; // cut-away view; see ModelViewer's showSectionTools
 };
 ```
 
 `model.autoRotate` and `model.autoRotateSpeed` apply when the equivalent
-`ModelViewer` props aren't passed; passed props win. Import
+`ModelViewer` props aren't passed; passed props win. `model.materialVariant`
+selects one of the model's glTF material variants by name (see
+[`showMaterialVariants`](/reference/model-viewer#showmaterialvariants)). Import
 `DEFAULT_SCENE_CONFIG` when creating a scene from code so new sections and
 defaults remain populated, then update it with `useSceneConfig` or
 `patchSceneConfig`. For `lighting.lights`, `sceneLight({ id, ...settings })`
@@ -577,6 +671,83 @@ type CustomSceneObjectsPanelProps = {
 };
 ```
 
+## `CaptureVideoOptions`
+
+Options for `ViewerReadyState.captureVideo`, `useViewerConnection().captureVideo`,
+and `useViewer().connection.captureVideo`. The result is a video `Blob` in the
+browser-supported format. See [Video export](/reference/model-viewer#video-export)
+for readiness requirements and recording behavior.
+
+```ts
+type CaptureVideoOptions = {
+  /** Defaults to cinematic when a path is enabled, otherwise turntable. */
+  mode?: "cinematic" | "turntable";
+  /** Auto prefers WebM, then MP4. Explicit formats reject if unsupported. */
+  format?: "auto" | "webm" | "mp4";
+  /** Seconds per pass, in (0, 300]. Defaults to path timing or a 24s orbit. */
+  duration?: number;
+  /** Capture frame rate, from 1 to 60. Default 30. */
+  fps?: number;
+  /** Encoder target bitrate in bits per second. Default 8,000,000. */
+  videoBitsPerSecond?: number;
+  /** Aborting discards the recording and restores the viewer. */
+  signal?: AbortSignal;
+};
+```
+
+## `ViewerEngagementEvent`
+
+The discriminated event union received by `ModelViewer.onEngagement`. Narrow on
+`event.type` to access event-specific fields. See
+[Engagement analytics](/reference/model-viewer#onengagement--debugengagement)
+for event triggers, opt-in logging, and session semantics.
+
+```ts
+/** Engagement from deliberate viewer interactions, with model/session context. */
+type ViewerEngagementEvent = {
+  /** Ephemeral identifier for this viewer/model session; no persistent storage. */
+  sessionId: string;
+  /** ISO timestamp of the event. */
+  timestamp: string;
+  /** Milliseconds since tracking started for this model. */
+  elapsedMs: number;
+  modelUrl: string;
+  tilesetUrl: string | null;
+} & (
+  | {
+      type: "part-viewed";
+      objectId: string;
+      objectKey: string;
+      label?: string;
+      source: "canvas" | "panel";
+    }
+  | {
+      type: "variant-chosen";
+      variant: string | null;
+      previousVariant: string | null;
+    }
+  | { type: "ar-started" }
+  | {
+      type: "ar-ended";
+      durationMs: number;
+      reason: "session-ended" | "interrupted";
+    }
+  | {
+      type: "ar-launch-requested";
+      channel: "quick-look" | "mobile-handoff";
+    }
+  | { type: "tour-started"; annotationCount: number }
+  | { type: "tour-completed"; annotationCount: number; durationMs: number }
+  | {
+      type: "tour-stopped";
+      annotationCount: number;
+      durationMs: number;
+      reason: "stopped" | "restarted" | "annotations-changed" | "interrupted";
+    }
+);
+
+```
+
 ## Other exported types
 
 Every type below is exported from `@liveroom-tech/react-immersive` and is
@@ -590,6 +761,12 @@ described with the API it belongs to.
 | `ObjectBindingMaterialBlendingMode`, `ObjectBindingMaterialSide`, `ObjectBindingTextureSlot`, `ObjectBindingTextureChannel` | [`ObjectBindingMaterial`](#objectbindingmaterial) |
 | `AnimationActionEffect`, `CameraActionEffect`, `ObjectBindingsActionEffect`, `SceneConfigActionEffect`, `VisibilityActionEffect` | [`ObjectBindingAction`](#objectbindingaction) |
 | `AnimationLoopMode`, `SceneAnimationClipConfig`, `SceneLightType`, `SceneModelConfig`, `SceneCameraConfig`, `SceneLightingConfig`, `SceneShadowConfig`, `SceneEnvironmentConfig`, `SceneWireframeConfig`, `SceneBackgroundConfig`, `SceneGroundShadowConfig`, `ScenePostProcessingConfig`, `SceneAnnotationMarker`, `EnvironmentPreset`, `GlitchModeName`, `KernelSizeName`, `RampTypeName` | [`SceneConfig`](#sceneconfig) and [`SceneLight`](#scenelight) |
+| `ObjectBindingDecal`, `ObjectSurfacePoint` | [Decals](/reference/model-viewer#decals) |
+| `ViewerIsolation`, `IsolatedObjectBindings` | [`ViewerIsolation`](#viewerisolation) |
+| `ViewerIsolationProps` | [`useViewerIsolation`](/hooks/use-viewer-isolation) |
+| `SceneSectionConfig`, `SceneSectionAxis` | [`SceneSectionConfig`](#scenesectionconfig) |
+| `SceneStyleRule`, `SceneStyleCondition`, `SceneStyleColorScale`, `SceneStylePulse` | [`SceneStyleRule`](#scenestylerule) |
+| `StyledObjectBindings`, `StyledObjectPulse` | `applyStyleRules`, see [Style rules](/reference/model-viewer#style-rules) |
 | `HiddenObjectsState`, `ObjectBindingsController`, `BindingEdit`, `ObjectBindingSelector`, `DeepPartial` | [`useObjectBindings`](/hooks/use-object-bindings) |
 | `ViewerSelectionProps` | [`useViewerSelection`](/hooks/use-viewer-selection) |
 | `ViewerHoverProps` | [`useViewerHover`](/hooks/use-viewer-hover) |
@@ -598,5 +775,5 @@ described with the API it belongs to.
 | `ViewerActionAnimationController`, `ViewerActionBindingsController`, `ViewerActionCameraController`, `ViewerActionSceneController`, `ViewerActionsOptions`, `ViewerActionsProps` | [`useViewerActions`](/hooks/use-viewer-actions) |
 | `HomeCameraState`, `ViewerCameraConfig`, `ViewerCameraProps`, `UseViewerCameraOptions` | [`useViewerCamera`](/hooks/use-viewer-camera) |
 | `ViewerConnectionController`, `ViewerReadyConsumer`, `ViewerReadyHandler` | [`useViewerConnection`](/hooks/use-viewer-connection) |
-| `AnimationClipInfo`, `ViewerAnimationsProps` | [`useViewerAnimations`](/hooks/use-viewer-animations) |
+| `AnimationClipInfo`, `AnimationClipState`, `AnimationClipStatus`, `AnimationPlayOptions`, `ViewerAnimationsProps` | [`useViewerAnimations`](/hooks/use-viewer-animations) |
 | `RuntimeMaterialPatch`, `RuntimeMaterialRanges`, `RuntimePointLightOptions`, `RuntimePointLightPatch`, `RuntimeTransformPatch`, `RuntimeTransformRanges`, `UseViewerEffectsOptions`, `ViewerEffectEasing`, `ViewerEffectsController`, `ViewerEffectRange`, `ViewerEffectTarget`, `ViewerFlickerOptions`, `ViewerLightEffectChannel`, `ViewerMaterialEffectChannel`, `ViewerTimelineOptions`, `ViewerTimelineStep`, `ViewerPulseOptions`, `ViewerTransformEffectChannel`, `ViewerTransitionOptions`, `ViewerVector3` | [`useViewerEffects`](/hooks/use-viewer-effects) |

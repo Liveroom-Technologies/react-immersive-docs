@@ -14,10 +14,10 @@ The primary exported component. Renders a GLB, GLTF, OBJ, FBX, or USDZ model wit
 
 | Preset | For | What it sets |
 | --- | --- | --- |
-| `minimal` | Just the model | Hides both panels, the download and reset buttons, and tour controls |
+| `minimal` | Just the model | Hides both panels, the download and reset buttons, tour controls, and the material variant buttons |
 | `showcase` | A product on display | Everything `minimal` does, plus auto-rotation |
-| `configurator` | Customers changing parts | Shows the selected object's panel and the reset button; hides the scene objects panel and download |
-| `inspector` | Checking a model | Every panel, the view gizmo, the measure, UV checker, and exploded-view tools, and keyboard navigation |
+| `configurator` | Customers changing parts | Shows the selected object's panel, the reset button, and the material variant buttons; hides the scene objects panel and download |
+| `inspector` | Checking a model | Every panel, the view gizmo, the measure, UV checker, exploded-view, section-cut, and isolate tools, and keyboard navigation |
 
 `MODEL_VIEWER_PRESETS` lists exactly which props each preset sets.
 
@@ -39,8 +39,8 @@ readable:
 
 | Group | Fields, and the flat prop each one sets |
 | --- | --- |
-| `ui` | `objectPanel` (`showObjectBindingDataPanel`), `sceneObjects` (`showSceneObjectsPanel`), `download` (`showDownloadButton`; a string also sets `downloadFilename`), `reset` (`showResetButton`), `loadingOverlay` (`showLoadingOverlay`), `viewGizmo` (`showViewGizmo`), `mouseController` (`showMouseController`; `{ position, opacity }` also sets `mouseControllerPosition` and `mouseControllerOpacity`), `annotationNavigation` (`showAnnotationNavigation`), `annotationOnHover` (`showAnnotationOnHover`), `highlightOnHover` |
-| `tools` | `measure` (`showMeasureTools`; `{ unit }` also sets `measurementUnit`), `uvChecker` (`showUvCheckerButton`), `explode` (`showExplodeControls`), `texturePositioning` (`texturePositioning`) |
+| `ui` | `objectPanel` (`showObjectBindingDataPanel`), `sceneObjects` (`showSceneObjectsPanel`), `download` (`showDownloadButton`; a string also sets `downloadFilename`), `reset` (`showResetButton`), `fullscreen` (`showFullscreenButton`), `loadingOverlay` (`showLoadingOverlay`), `viewGizmo` (`showViewGizmo`), `mouseController` (`showMouseController`; `{ position, opacity }` also sets `mouseControllerPosition` and `mouseControllerOpacity`), `annotationNavigation` (`showAnnotationNavigation`), `annotationOnHover` (`showAnnotationOnHover`), `highlightOnHover`, `materialVariants` (`showMaterialVariants`) |
+| `tools` | `measure` (`showMeasureTools`; `{ unit }` also sets `measurementUnit`), `uvChecker` (`showUvCheckerButton`), `explode` (`showExplodeControls`), `section` (`showSectionTools`), `isolate` (`showIsolateControls`), `texturePositioning` (`texturePositioning`) |
 | `controls` | `enabled` (`enableCameraControls`), `keyboard` (`enableKeyboardNavigation`), `zoom` (the opposite of `disableZoom`), `zoomOnSelect` (`zoomOnSelected`), `autoRotate` (a number also sets `autoRotateSpeed`), `refitOnResize`, `limits` (`cameraLimits`), `moveSensitivity`, `zoomSensitivity` |
 | `perf` | `renderMode`, `maxDpr`, `profile` (`performanceProfile`), `preserveDrawingBuffer` |
 | `tiles` | `url` (`tilesetUrl`), `errorTarget` (`tilesErrorTarget`), `cacheSize` (`tilesCacheSize`) |
@@ -85,6 +85,8 @@ type Props = {
     controller: "orbit" | "pointerLock",
   ) => void;
   onAction?: (event: ObjectActionEvent) => void;
+  onEngagement?: (event: ViewerEngagementEvent) => void | Promise<void>;
+  debugEngagement?: boolean;
   onHiddenObjectsChange?: (next: Record<string, boolean>) => void;
   onCameraChange?: (state: ViewerCameraState) => void;
   onViewerReady?: (viewer: ViewerReadyState) => void;
@@ -109,6 +111,7 @@ type Props = {
   showDownloadButton?: boolean;
   downloadFilename?: string;
   showResetButton?: boolean;
+  showFullscreenButton?: boolean;
   showLoadingOverlay?: boolean;
   showMouseController?: boolean;
   mouseControllerPosition?:
@@ -142,6 +145,11 @@ type Props = {
   showMeasureTools?: boolean;
   showUvCheckerButton?: boolean;
   showExplodeControls?: boolean;
+  showSectionTools?: boolean;
+  isolation?: ViewerIsolation | null;
+  onIsolationChange?: (isolation: ViewerIsolation | null) => void;
+  showIsolateControls?: boolean;
+  showMaterialVariants?: boolean;
   cinematic?: boolean | CinematicConfig;
   measurementUnit?: string;
   enableXR?: boolean;
@@ -398,6 +406,7 @@ type ObjectPointerEvent = {
   clientX: number; // viewport coordinates
   clientY: number;
   pointerType: string; // "mouse" | "pen" | "touch"
+  surface?: { position: Vec3; normal: Vec3 }; // where on the object, in its own space
 };
 ```
 
@@ -494,6 +503,7 @@ onModelLoaded?: (model: ViewerModelInfo) => void
 type ViewerModelInfo = {
   bounds: { min: Vec3; max: Vec3; center: Vec3; size: Vec3 }; // world space
   objectCount: number; // meshes in the loaded scene
+  materialVariants: string[]; // glTF material variant names, if any
 };
 ```
 
@@ -545,8 +555,10 @@ type ObjectActionEvent = {
 onAction?: (event: ObjectActionEvent) => void
 ```
 
-`ModelViewer` performs `change-color`, `change-material`, `toggle-visibility`,
-`toggle-light`, `change-light-color`, and `set-brightness` itself. The light
+`ModelViewer` performs `change-color`, `change-material`, `add-text`,
+`add-image`, `toggle-visibility`, `toggle-light`, `change-light-color`, and
+`set-brightness` itself. `add-text` and `add-image` let the viewer's user put
+their own text or image on the object (see [Decals](#decals)). The light
 actions turn the object's light on and off, open a color picker, and open a
 0–200% brightness slider. If scene lights are attached to the object they
 control those, updating `sceneConfig.lighting` (through `onSceneConfigChange` if
@@ -561,6 +573,64 @@ viewer logs a console warning naming each one. `ACTION_CATALOG` and
 
 ---
 
+### `onEngagement` / `debugEngagement`
+
+Optional interaction analytics. Set `onEngagement` to receive typed
+`ViewerEngagementEvent` objects, or set `debugEngagement` to log them in the
+browser's developer console with the `[react-immersive engagement]` prefix.
+Both are disabled by default. The viewer does not send telemetry or persist
+analytics identifiers; your callback decides where events go.
+
+```tsx
+import { ModelViewer, type ViewerEngagementEvent } from "@liveroom-tech/react-immersive";
+
+function handleEngagement(event: ViewerEngagementEvent) {
+  if (event.type === "part-viewed") {
+    console.info("Part viewed:", event.objectKey, event.source);
+  }
+  if (event.type === "ar-ended") {
+    console.info("Time in AR:", event.durationMs);
+  }
+  // Connect this callback to your application's analytics integration.
+}
+
+<ModelViewer
+  modelUrl="/car.glb"
+  licenseKey={licenseKey}
+  onEngagement={handleEngagement}
+  debugEngagement
+/>
+```
+
+Every event includes `sessionId` (an ephemeral ID for this viewer/model),
+`timestamp` (ISO format), `elapsedMs`, `modelUrl`, and `tilesetUrl` (or `null`).
+Durations use a monotonic clock and are expressed in milliseconds. Session
+elapsed time includes loading and background time; it is not an attention metric.
+
+| Event `type` | Details and trigger |
+| --- | --- |
+| `part-viewed` | `objectId`, `objectKey`, optional `label`, and `source` (`"canvas"` or `"panel"`). Selecting/focusing a different part; reselecting the current part is ignored. |
+| `variant-chosen` | `variant` and `previousVariant` (names or `null` for the default). Choosing a different built-in material variant. |
+| `ar-started` | A confirmed immersive WebXR AR session begins. |
+| `ar-ended` | `durationMs` and `reason` (`"session-ended"` or `"interrupted"`). A confirmed AR session ends, or tracking stops on model change, unmount, or context loss. |
+| `ar-launch-requested` | `channel` (`"quick-look"` or `"mobile-handoff"`). Opening external AR or its QR handoff; this does not claim an AR session started. |
+| `tour-started` | `annotationCount`. Starting the guided tour. |
+| `tour-completed` | `annotationCount` and `durationMs`. Advancing past its final annotation; emitted once per completed tour. |
+| `tour-stopped` | `annotationCount`, `durationMs`, and `reason` (`"stopped"`, `"restarted"`, `"annotations-changed"`, or `"interrupted"`). Leaving a tour before completion. |
+
+Hover, camera motion, renders, and externally supplied selection/variant updates
+do not create engagement events. WebXR duration measures the session interval;
+Quick Look runs outside the page and has no reliable duration callback. Turning
+tracking on during an existing AR session measures from attachment. Callback
+changes do not restart timing. Synchronous or asynchronous callback failures
+are logged without interrupting the viewer. A new model or re-enabling tracking
+creates a new analytics session. WebGL recovery keeps the session ID; context
+loss ends active intervals as interrupted. See
+[`ViewerEngagementEvent`](/reference/types#viewerengagementevent) for
+the complete event union.
+
+---
+
 ### `onViewerReady`
 
 Called once camera controls are available and again when the viewer publishes updated ready-state data (for example after model load, camera changes, or binding changes).
@@ -572,6 +642,7 @@ type ViewerReadyState = {
   objectBindings: Record<string, ObjectBinding>;
   homeCameraState: { position: Vec3; target: Vec3 } | null;
   captureImage: (options?: CaptureImageOptions) => Promise<string>;
+  captureVideo: (options?: CaptureVideoOptions) => Promise<Blob>;
   invalidate: () => void;
   raw: {
     controls: CameraControls; // camera-controls
@@ -608,6 +679,59 @@ libraries' own, so they can change when those libraries do.
 ```
 
 For turning the current camera/visibility/selection into a shareable link, see [`useShareableViewerState`](/hooks/use-shareable-viewer-state).
+
+---
+
+### Video export
+
+`captureVideo` records one complete cinematic pass or turntable revolution and
+resolves with a video `Blob`. It is also available on `useViewerConnection` and
+`useViewer().connection`. Call it from a button handler after the model has
+finished loading and framing; ready-state callbacks run repeatedly as the camera
+moves and should not start recordings automatically.
+
+```tsx
+import { ModelViewer, useViewerConnection } from "@liveroom-tech/react-immersive";
+
+const connection = useViewerConnection();
+const abort = new AbortController();
+
+<ModelViewer
+  modelUrl="/car.glb"
+  licenseKey={licenseKey}
+  cinematic
+  onViewerReady={connection.handleViewerReady}
+/>;
+
+// Run in a button handler after loading and framing have finished.
+const clip = await connection.captureVideo({
+  mode: "turntable", // or "cinematic" to record the enabled camera path
+  format: "auto",    // prefers WebM; falls back to MP4
+  duration: 12,      // seconds; defaults to path timing or a 24-second orbit
+  fps: 30,
+  videoBitsPerSecond: 8_000_000,
+  signal: abort.signal,
+});
+// Preview/upload the Blob; abort.abort() cancels and discards an active export.
+```
+
+The download menu offers **Record turntable video** and, when cinematic is
+enabled, **Record cinematic video**, plus Auto/WebM/MP4 format selection. A
+recording shows progress and a Cancel control. The filename and Blob MIME type
+match the encoded format; an explicitly requested unsupported format rejects
+instead of silently changing formats. With `loop: true`, a cinematic export
+includes the return segment and stops after one cycle.
+
+Recording runs in real time at the canvas's current pixel resolution, includes
+post-processing, and hides editor gizmos. It pauses cinematic playback, blocks
+viewer gestures, then restores the previous camera pose and controls on success,
+cancellation, or failure. Keep the tab visible until recording completes.
+`preserveDrawingBuffer` is unnecessary for video. No audio, HTML overlays,
+GIF encoding, or format transcoding is included. The browser must support
+`canvas.captureStream` and `MediaRecorder`; exports reject before framing,
+during XR, during another recording, or for durations outside (0, 300] seconds.
+See [`CaptureVideoOptions`](/reference/types#capturevideooptions) for
+the complete options and defaults.
 
 ---
 
@@ -707,21 +831,22 @@ animations (empty `clips` array, no-op functions).
 type AnimationControls = {
   clips: string[];
   clipDetails?: { sourceName: string; duration: number }[];
-  play: (clipName: string) => void;
-  pause: () => void;
-  stop: () => void;
-  setSpeed: (speed: number) => void;
-  seek?: (time: number) => void; // scrub the current clip to an absolute time (seconds)
-  getState?: () => AnimationPlaybackState; // includes live time + duration
+  play: (clipName: string, options?: AnimationPlayOptions) => void;
+  pause: (clipName?: string) => void;
+  stop: (clipName?: string) => void;
+  setSpeed: (speed: number, clipName?: string) => void;
+  seek?: (time: number, clipName?: string) => void; // absolute time, in seconds
+  getState?: () => AnimationPlaybackState; // includes every active clip
   subscribe?: (listener: (state: AnimationPlaybackState) => void) => () => void;
 };
 
 onAnimationsReady?: (controls: AnimationControls) => void
 ```
 
-See [`AnimationControls`](/reference/types#animationcontrols) for the full
-`AnimationPlaybackState` shape (`currentClip`, `isPlaying`, `speed`, `time`,
-`duration`).
+See [`AnimationControls`](/reference/types#animationcontrols) for
+`AnimationPlayOptions` and the full `AnimationPlaybackState` shape
+(`currentClip`, `isPlaying`, `speed`, `time`, `duration`, and `active`, one entry
+per active clip). Leave out `clipName` to act on every active clip.
 
 Wire to `useViewerAnimations().handleAnimationsReady` for the simplest integration.
 
@@ -776,6 +901,81 @@ local space (the origin is often at its base, not its center). Lighting set up
 in `BindingBuilder`'s Scene tab exports as the same `sceneConfig`.
 
 ---
+
+### Style rules
+
+`sceneConfig.styleRules` restyles objects from their own data while the app
+runs: a colour for a temperature, grey for a disabled part, a pulsing glow for
+an alarm. Each rule picks objects (`target`), checks their data (`when`), and
+sets a look (`material`, `colorScale`, `pulse`):
+
+```tsx
+const viewer = useViewer({
+  bindings,
+  sceneConfig: {
+    ...DEFAULT_SCENE_CONFIG,
+    styleRules: [
+      {
+        id: "temperature",
+        target: { group: "pumps" },
+        colorScale: {
+          metric: "temperature",
+          stops: [[18, "#3b82f6"], [24, "#22c55e"], [32, "#ef4444"]],
+        },
+      },
+      {
+        id: "offline",
+        when: { status: "disabled" },
+        material: { baseColor: "#9ca3af", opacity: 0.4 },
+      },
+      {
+        id: "alarm",
+        when: [{ metric: "temperature", above: 32 }, { metadata: "alarm.acknowledged", equals: false }],
+        pulse: { color: "#ff3b30", speed: 1.5 },
+      },
+    ],
+  },
+});
+
+<ModelViewer modelUrl="/plant.glb" licenseKey="your-license-key" {...viewer.props} />;
+
+// Live data: update the bindings and the looks follow.
+viewer.bindings.updateObjectBindings("pump-3", { metrics: { temperature: 34 } });
+viewer.bindings.updateObjectBindings("valve-1", { status: "disabled" });
+```
+
+- `target` takes the same targets as the binding helpers: an id, a list of
+  ids, `{ group }`, `{ tag }`, or `{ type }`. Left out, the rule considers every
+  bound object.
+- `when` is a condition, or a list that must all match; left out, the rule
+  always applies. Conditions: `{ metric, above?, below? }` (the value must be
+  greater than `above` and less than `below`; an object without the metric
+  doesn't match), `{ status }` with one status or a list (a binding without
+  one counts as `"normal"`), and `{ metadata, equals }`, where dots in the key
+  reach into nested metadata.
+- `material` accepts any `style.material` field. `colorScale` sets
+  `baseColor` (or `emissive`, with `channel: "emissive"`) from a metric,
+  blending between hex colour stops and taking the nearest stop outside them.
+  `pulse` makes the glow fade in and out (`true`, or `{ color, speed }` in
+  pulses per second).
+- Rules apply in order over each object's own `style.material`, so a later
+  rule wins where two set the same field. Hover and selection highlighting
+  still show on top.
+- Rules only change how objects look. `objectBindings`, `onObjectBindingsChange`,
+  and every callback keep the object's own values, so nothing a rule sets is
+  saved with the bindings.
+- The pulse isn't drawn on streamed 3D Tiles models (`tilesetUrl`); the other
+  looks are.
+
+BindingBuilder's Scene tab has a **Rules** sub-tab for building these rules
+visually. It suggests your groups, tags, types, metric names, and metadata
+keys, shows how many objects each rule matches right now, and previews the
+result live. Rules export and import with the rest of `sceneConfig`.
+
+`applyStyleRules(bindings, rules)` (from the main entry or `/utils`) returns
+the styled bindings, for example to colour your own list the way the viewer
+does, and `colorScaleValue(stops, value)` the colour a scale gives a value, for
+a legend.
 
 ### `camera`
 
@@ -940,7 +1140,13 @@ type CustomSceneObjectsPanelProps = {
 ### `showDownloadButton`
 
 Enables the download split-button (export GLB, export the model's UV layout,
-and—when `preserveDrawingBuffer` is enabled—export a PNG screenshot). Default:
+and—when `preserveDrawingBuffer` is enabled—export a PNG screenshot).
+
+The menu also offers **Record turntable video** and, when cinematic is
+enabled, **Record cinematic video**, with Auto/WebM/MP4 format selection,
+progress, and cancellation. See [Video export](#video-export).
+
+Default:
 `true`.
 
 UV export downloads an editable 2048×2048 SVG UV-island outline when the model
@@ -949,7 +1155,7 @@ SVG texture template per material. Meshes without a `uv` attribute are omitted;
 when the model has no UV coordinates, the viewer reports that no layout is
 available.
 
-The bottom-right action bar renders when at least one of `showResetButton`, `showDownloadButton`, or (`showAnnotationNavigation` with annotations present) is `true`.
+The bottom-right action bar renders when at least one of `showResetButton`, `showDownloadButton`, `showFullscreenButton` (when supported), or (`showAnnotationNavigation` with annotations present) is `true`.
 
 ---
 
@@ -962,6 +1168,27 @@ Filename stem for the built-in model export button. Default: `"model"`.
 ### `showResetButton`
 
 Shows the "reset camera view" button in the bottom-right action bar. Default: `true`.
+
+---
+
+### `showFullscreenButton`
+
+Optional boolean that adds an enter/exit fullscreen toggle to the bottom-right
+action bar. Its grouped form is `ui.fullscreen`. Default: `false`.
+
+```tsx
+<ModelViewer
+  modelUrl="/model.glb"
+  licenseKey={licenseKey}
+  ui={{ fullscreen: true }}
+/>
+```
+
+Fullscreen expands the whole viewer, including its panels and overlays. The
+button reflects browser exits such as Escape, and is hidden when fullscreen is
+unavailable. It is temporarily disabled during video recording. Embedded viewers
+need an iframe with `allow="fullscreen"` (or `allowFullScreen` in React). A rejected
+request displays an error beside the button.
 
 ---
 
@@ -1375,6 +1602,22 @@ Default: `"auto"`.
 
 ---
 
+### WebGL context recovery
+
+If the WebGL context is lost, rendering pauses and the viewer displays a
+**Reload viewer** button. This message appears even with
+`ui={{ loadingOverlay: false }}`. When the browser fires `webglcontextrestored`,
+the viewer automatically rebuilds its canvas and scene; the reload button starts
+the same rebuild without waiting for browser restoration.
+
+Recovery uses the current props and cached model assets, cancels video recording,
+and resets transient viewer state (camera, selection, measurements, and playback).
+Keep configuration edits in controlled props to retain them across a rebuild.
+`onModelLoaded`, `onAnimationsReady`, and `onViewerReady` run again
+for the rebuilt scene, so integrations receive fresh controls and object refs.
+
+---
+
 ### `dracoDecoderPath` / `ktx2TranscoderPath` / `meshopt`
 
 Control the compressed-asset decoders used when loading the GLB/GLTF asset.
@@ -1440,17 +1683,52 @@ coordinates appear magenta. Default: `false`.
 
 ### `showMeasureTools`
 
-Shows a click-to-measure toolbar over the canvas: click two points on the model to get a distance readout, plus a toggleable bounding-box dimensions overlay (width/height/depth). Default: `false`.
+Optional boolean that shows measurement tools and a toggleable bounding-box
+dimensions overlay. Start measuring, then choose a tool:
+
+- **Distance:** pick points for distances between consecutive picks.
+- **Angle:** pick an arm, the angle's vertex, and the other arm. The readout is
+  in degrees, with an arc around the middle pick.
+- **Area:** pick polygon corners in boundary order, then **Finish area**. The
+  closed polygon is shaded and labeled in square units. Concave polygons are
+  supported; nonplanar, crossing, touching, duplicate, or collinear boundaries
+  show an error. Use Undo to correct a pick.
+- **Point to plane:** pick a reference face, then a point. The tool highlights
+  the picked triangle and shows the shortest distance to its infinite plane,
+  with a perpendicular segment to the projected point.
+
+**No snapping** keeps picks on the surface. **Snap: vertex**, **Snap: edge**,
+and **Snap: auto** snap within 12 CSS pixels to vertices or triangle edges on
+the picked face. Auto prioritizes nearby vertices. Hover markers identify the
+snap target; snapped picks are yellow. Snapping respects world transforms,
+instances, and the current pose of skinned/morph geometry. Mesh triangulation
+edges can also be snap targets.
+
+Undo removes the last pick; Clear removes the current measurement. Switching
+tools clears picks. A new pick after a completed angle, area, or point-to-plane
+measurement starts another measurement. Picks are snapshots in world space;
+model changes, display rotation, and binding transforms clear them. Pause
+animated models before measuring a pose. Hidden objects, decals, and editor
+helpers are excluded from picking.
+
+Default: `false`.
 
 ```tsx
-<ModelViewer showMeasureTools measurementUnit="m" ... />
+<ModelViewer
+  modelUrl="/assembly.glb"
+  licenseKey={licenseKey}
+  tools={{ measure: { unit: "m" } }}
+/>
 ```
 
 ---
 
 ### `measurementUnit`
 
-Unit suffix appended to measurement readouts. glTF models are authored in meters by spec, so values are not converted, this only changes the displayed label. Default: `"m"`.
+Unit suffix for distance and dimension readouts; area uses its squared form
+(for example `m²`). Angles always use degrees. This only changes the label:
+values are not converted. glTF models use meters by specification.
+Default: `"m"`.
 
 ---
 
@@ -1469,6 +1747,235 @@ animation. Default: `false`.
 See the [`Exploded View`](https://react-immersive.liveroom.dev/examples/exploded-view) example.
 
 ---
+
+### `showMaterialVariants`
+
+Shows a row of buttons, centered at the bottom of the viewer, for switching
+between the model's glTF material variants (the `KHR_materials_variants`
+extension): the colorways, finishes, or trims a product file ships with. It
+appears only for a glTF/GLB with more than one variant. Default `true`.
+
+Picking a variant sets `sceneConfig.model.materialVariant`, which is also how
+you choose one yourself:
+
+```tsx
+const viewer = useViewer();
+
+<ModelViewer modelUrl="/shoe.glb" licenseKey="your-license-key" {...viewer.props} />;
+
+// The model's variant names, once it has loaded
+viewer.model.materialVariants; // ["midnight", "beach", "street"]
+
+viewer.scene.updateSceneConfig({ model: { materialVariant: "beach" } });
+viewer.scene.updateSceneConfig({ model: { materialVariant: null } }); // the defaults
+```
+
+- A variant sets each object's starting material. `objectBindings` material
+  overrides (`style.material`) still apply on top of it, and clearing an
+  override returns to the variant's material rather than the file's default.
+- Objects the variant doesn't map keep their default material, bound or not.
+- A variant's materials and textures load the first time it's chosen; the
+  current look stays until they're ready.
+- With `onSceneConfigChange`, a pick goes to your scene config (`useViewer`
+  wires this up). Without it, `ModelViewer` keeps the pick itself until
+  `sceneConfig.model.materialVariant` or `modelUrl` changes.
+- A name the model doesn't have shows the defaults and logs a console warning
+  listing the model's variants.
+- An action can switch variants with a scene-config effect:
+  `{ sceneConfig: { model: { materialVariant: "beach" } } }`.
+- `onModelLoaded` reports the names as `materialVariants`, and BindingBuilder's
+  Scene tab (**General → Material variant**) picks the one the exported scene
+  config starts with. OBJ, FBX, USDZ, and streamed 3D Tiles models have no
+  variants.
+
+### Decals
+
+`binding.decals` prints images and text onto an object's surface: a logo on a
+shirt, a name on a mug, a label on a machine. Each decal is projected onto the
+object and follows it as it moves, and it's saved with the binding like any
+other edit.
+
+```tsx
+const viewer = useViewer();
+
+<ModelViewer
+  modelUrl="/mug.glb"
+  licenseKey="your-license-key"
+  {...viewer.props}
+  // Put the customer's text where they double-click.
+  onObjectDoubleClick={({ binding, surface }) => {
+    if (!surface) return;
+    viewer.bindings.addDecal(binding.id, {
+      text: customerName,
+      color: "#1e293b",
+      ...surface, // position and normal, in the object's own space
+      size: 0.06, // width in model units
+    });
+    return true; // skip the viewer's own double-click behavior
+  }}
+/>;
+
+const id = viewer.bindings.addDecal("mug", { image: "/logos/acme.png", position, normal, size: 0.05 });
+viewer.bindings.updateDecal("mug", id, { size: 0.08, rotation: Math.PI / 12 });
+viewer.bindings.removeDecal("mug", id);
+```
+
+```ts
+type ObjectBindingDecal = {
+  id: string;
+  image?: string; // a URL or public path
+  text?: string; // shown when there's no image
+  color?: string; // text colour, default "#ffffff"
+  fontFamily?: string; // CSS font family, default "sans-serif"
+  fontWeight?: "normal" | "bold"; // default "bold"
+  position: [number, number, number]; // on the object, in its own space
+  normal: [number, number, number]; // the way the surface faces there
+  size: number; // width in model units; the height follows the image or text
+  rotation?: number; // radians around the normal, default 0
+  opacity?: number; // 0–1, default 1
+};
+```
+
+- `onObjectDoubleClick` and `onObjectContextMenu` report `surface`: the point
+  under the pointer and the way the surface faces, in the object's own space,
+  which is exactly what a decal's `position` and `normal` take.
+- `addDecal` returns the decal's id (pass your own `id` to choose it), and
+  takes the same targets as the other binding helpers, so
+  `addDecal({ group: "panels" }, …)` prints on each. Decals are plain binding
+  data: you can also set `decals` directly.
+- A decal wraps onto the surface around its position, reaching about half
+  its size in depth, so it follows gentle curves without printing on the far
+  side of a thin part.
+- A decal fades with its object when that object is ghosted by isolation or
+  made see-through by a style rule, and is cut by a section cut.
+- To let the people using your viewer add their own, give a binding the
+  built-in `add-text` and `add-image` actions:
+
+  ```ts
+  actions: [
+    { id: "add-text", label: "Add Text", type: "command" },
+    { id: "add-image", label: "Add Image", type: "command" },
+  ]
+  ```
+
+  Each opens a control under its button in the object panel. **Add Text**
+  takes the text and a colour; **Add Image** takes an image file (sent through
+  `onTextureUpload` when you pass it, so the saved URL lasts; otherwise a
+  blob URL for this session). The decal appears automatically at the centre
+  of the camera-facing surface, ready to drag, resize, turn, or remove. **Move** enables dragging across
+  the object's surface; release to save, or press Escape to cancel. The
+  **Position** arrows move a decal in small steps relative to the current
+  view, without needing to grab it. Click for a fine adjustment or hold an
+  arrow for continuous movement. Each step stays on the nearby visible surface.
+  Every change is saved to the
+  binding's `decals` and reported through `onObjectBindingsChange`. While a
+  decal is in Move mode, a hint shows over the viewer and Escape cancels
+  the current drag without removing the centred decal.
+- On a rigged (skinned) mesh a decal bends with the animation: it takes on
+  the bone weights of the surface under it and is driven by the same skeleton.
+  A click on a posed mesh is stored at the matching point of its rest shape, so
+  a decal lands where you clicked whatever pose the model is in. Over a joint
+  that bends sharply across few polygons, the decal's outer edge can sit a
+  hair off the surface. Decals don't follow morph targets (blend shapes).
+- Decals need the binding's object to be a mesh, and aren't drawn on streamed
+  3D Tiles models.
+
+### Isolating objects
+
+`isolation` focuses the view on some objects: everything else is ghosted
+(drawn faintly) or hidden, and clicks and hovers pass through to what's
+isolated. Nothing about the bindings changes, and clearing the isolation puts
+everything back. It's view state, like the selection, so it isn't part of
+`sceneConfig`.
+
+```tsx
+const viewer = useViewer();
+
+<ModelViewer
+  modelUrl="/engine.glb"
+  licenseKey="your-license-key"
+  {...viewer.props}
+  tools={{ isolate: true }}
+/>;
+
+viewer.isolation.isolate({ group: "gearbox" }); // ghost everything else
+viewer.isolation.isolate(["piston-1", "piston-2"], { mode: "hide" });
+viewer.isolation.clearIsolation();
+```
+
+```ts
+type ViewerIsolation = {
+  target: ObjectBindingTarget; // an id, a list of ids, { group }, { tag }, or { type }
+  mode?: "ghost" | "hide"; // default "ghost"
+  ghostOpacity?: number; // 0–1, default 0.12
+};
+
+isolation?: ViewerIsolation | null;
+onIsolationChange?: (isolation: ViewerIsolation | null) => void;
+showIsolateControls?: boolean; // tools.isolate
+```
+
+- Pass `isolation` (including `null`) to control it, and update it from
+  `onIsolationChange`; `useViewer` wires both, as `viewer.isolation`. Leave
+  `isolation` out and `ModelViewer` keeps it itself, clearing it when
+  `modelUrl` changes. `useViewerIsolation` is the same state on its own.
+- `showIsolateControls` (`tools.isolate`, default `false`) adds an isolate
+  button to each row of the scene objects panel (click again to show all) and
+  a "Show all" pill at the bottom of the viewer while anything is isolated.
+- An action can isolate with an `isolation` effect:
+  `{ isolation: { target: { group: "engine" } } }`, or `{ isolation: null }`
+  to show everything again. Pass `isolation` to `useViewerActions` for it
+  (`useViewer` does).
+- A target that matches no object isolates nothing, rather than fading out
+  the whole model. Ghosting never raises an object's own lower opacity, and
+  style rules still apply underneath.
+- `applyIsolation` (main entry and `/utils`) applies an isolation to bindings
+  the same way, for rendering your own lists.
+
+### `showSectionTools`
+
+Shows a section-cut button over the canvas (`tools.section`). It cuts the model
+open along an axis, hiding everything on one side of a plane, to look inside
+assemblies, equipment, and buildings. Default `false`.
+
+With the cut on, the toolbar picks the axis (X, Y, or Z), the position along
+it, and which side stays, and a plane appears across the model that you can
+drag. The cut is stored in `sceneConfig.section`, so you can also set it
+yourself, author it in BindingBuilder, or switch it from an action:
+
+```tsx
+viewer.scene.updateSceneConfig({
+  section: { enabled: true, axis: "y", position: 0.4, flip: false }, // a floor-plan cut
+});
+```
+
+```ts
+type SceneSectionConfig = {
+  enabled: boolean;
+  axis: "x" | "y" | "z"; // world axis the cut runs across
+  position: number; // 0 at the model's minimum along the axis, 1 at its maximum
+  flip: boolean; // keep the higher side instead of the lower one
+};
+```
+
+- The cut applies to the model only; lights, helpers, and gizmos stay whole.
+  It also shows without the toolbar whenever `sceneConfig.section.enabled` is
+  set; the draggable plane appears only with `showSectionTools`.
+- While the cut is on, the model's materials render both sides of each
+  surface, so a cut part shows its inside surfaces instead of disappearing.
+  There are no solid caps over the cut.
+- Clicking and hovering ignore whatever is cut away, so the parts you can see
+  behind the cut are the ones you select.
+- Toolbar changes go to `onSceneConfigChange` when you pass it (`useViewer`
+  does); otherwise `ModelViewer` keeps them until `sceneConfig.section` or
+  `modelUrl` changes.
+- The measuring tool can still pick points on the hidden side of a cut.
+
+Default:
+
+```ts
+false;
+```
 
 ### `cinematic`
 

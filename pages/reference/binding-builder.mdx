@@ -46,6 +46,14 @@ See the
 - Upload a `.glb`, standalone/data-URI `.gltf`, `.obj`, `.fbx`, `.usdz`, or `.zip` bundle. ZIP bundles may contain GLTF dependencies, OBJ + MTL/textures, or FBX external textures; USDZ is uploaded directly
 - Traverse renderable mesh nodes and generate starter bindings automatically
 - Edit binding fields: identity, label, type, status, booleans, style, actions, metrics, metadata, and saved camera state
+- Add decals from the **Decals** panel: upload an image or add text to place it
+  automatically at the centre of the camera-facing surface. Set its size,
+  rotation, and opacity; **Move** lets you drag it across the object's surface.
+  Release to save, or press Escape to cancel. The **Position** arrows move
+  the decal in small steps on the visible surface relative to the camera;
+  click for a fine adjustment or hold an arrow to keep moving. Each step
+  can be undone. Uploaded images are exported
+  under `materials/` with the bindings
 - Move and rotate the selected object with a geometry-centered pivot, World or
   Local axes, numeric position/rotation fields, and restore-to-authored-transform
   support
@@ -81,6 +89,23 @@ See the
   `ModelViewer`'s `sceneConfig` prop
 - Configure scene auto-rotation and speed. These values are exported as
   `sceneConfig.model.autoRotate` and `sceneConfig.model.autoRotateSpeed`
+- Isolate a node from the Scene Nodes list (the button at the end of its row)
+  to see it on its own in the preview while you edit it. This is only for
+  editing and isn't exported
+- Set up a section cut under **General → Section Cut** (axis, position, and
+  which side stays), exported as `sceneConfig.section`. The preview has the
+  section toolbar and a plane you can drag
+- Build style rules in the **Rules** sub-tab: pick the objects (all, a group,
+  tag, type, or one object), the conditions (metric ranges, status, metadata
+  values), and the look (colour, opacity, glow, a colour scale from a metric,
+  or a pulse). The form suggests the model's own groups, tags, metric names,
+  and metadata keys, shows how many objects each rule matches, and the preview
+  updates as you edit. Exported as `sceneConfig.styleRules`; see
+  [Style rules](/reference/model-viewer#style-rules)
+- Pick which of the model's glTF material variants (`KHR_materials_variants`)
+  the scene starts with (**General → Material variant**), exported as
+  `sceneConfig.model.materialVariant`. The preview's variant buttons change the
+  same setting
 - Position and rotate directional, point, and spot lights with transform
   gizmos; spot lights also expose angle and penumbra controls
 - Switch the model renderer between **PBR**, **Matcap**, and **UV Checker**.
@@ -238,7 +263,7 @@ overwriting the other. If nothing was uploaded, Export downloads a plain
 | Tier      | Unlocks                                                                                                                                                                             |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `free`    | Base color, metalness/roughness sliders, basic scene settings                                                                                                                       |
-| `starter` | + Texture maps, the specular workflow, reflectivity, environment lighting, environment backgrounds, wireframe preview, animation configuration, annotations, cinematic camera paths |
+| `starter` | + Texture maps, the specular workflow, reflectivity, environment lighting, environment backgrounds, wireframe preview, animation configuration, annotations, cinematic camera paths, style rules, decals |
 | `growth`  | + Post-processing effects                                                                                                                                                           |
 
 A locked feature is shown in place (not hidden) with a message naming the required plan, so the feature stays discoverable while editing. Get a license key at the [React Immersive Console](https://react-immersive.liveroom.dev/console).

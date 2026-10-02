@@ -67,8 +67,9 @@ its edits when the model reloads; objects with new names get fresh bindings.
 | `animations` | [`useViewerAnimations`](/hooks/use-viewer-animations) | Playing the model's animation clips |
 | `actions` | [`useViewerActions`](/hooks/use-viewer-actions) | Running binding actions from code |
 | `scene` | [`useSceneConfig`](/hooks/use-scene-config) | Lighting, environment, background, post-processing |
+| `isolation` | [`useViewerIsolation`](/hooks/use-viewer-isolation) | Focusing on some objects, ghosting or hiding the rest |
 | `effects` | [`useViewerEffects`](/hooks/use-viewer-effects) | Transitions, pulses, flicker, runtime lights |
-| `connection` | [`useViewerConnection`](/hooks/use-viewer-connection) | The live viewer and `captureImage` |
+| `connection` | [`useViewerConnection`](/hooks/use-viewer-connection) | The live viewer, `captureImage`, and `captureVideo` |
 
 Each part is that hook's full result, so everything the hook offers is
 available: `viewer.camera.focusObject("door")`, `viewer.model.objects`,
