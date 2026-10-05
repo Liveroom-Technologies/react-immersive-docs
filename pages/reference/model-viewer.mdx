@@ -6,7 +6,7 @@ import { Callout } from "nextra/components";
 
 # `ModelViewer`
 
-The primary exported component. Renders a GLB, GLTF, OBJ, FBX, or USDZ model with orbit/pan/zoom controls, built-in side panels, and a full callback API.
+The primary exported component. Renders a GLB, GLTF, OBJ, FBX, USDZ, STL, or PLY model with orbit/pan/zoom controls, built-in side panels, and a full callback API.
 
 ## Presets and grouped props
 
@@ -39,10 +39,10 @@ readable:
 
 | Group | Fields, and the flat prop each one sets |
 | --- | --- |
-| `ui` | `objectPanel` (`showObjectBindingDataPanel`), `sceneObjects` (`showSceneObjectsPanel`), `download` (`showDownloadButton`; a string also sets `downloadFilename`), `reset` (`showResetButton`), `fullscreen` (`showFullscreenButton`), `loadingOverlay` (`showLoadingOverlay`), `viewGizmo` (`showViewGizmo`), `mouseController` (`showMouseController`; `{ position, opacity }` also sets `mouseControllerPosition` and `mouseControllerOpacity`), `annotationNavigation` (`showAnnotationNavigation`), `annotationOnHover` (`showAnnotationOnHover`), `highlightOnHover`, `materialVariants` (`showMaterialVariants`) |
+| `ui` | `objectPanel` (`showObjectBindingDataPanel`), `sceneObjects` (`showSceneObjectsPanel`), `download` (`showDownloadButton`; a string also sets `downloadFilename`), `reset` (`showResetButton`), `fullscreen` (`showFullscreenButton`), `loadingOverlay` (`showLoadingOverlay`), `viewGizmo` (`showViewGizmo`), `mouseController` (`showMouseController`; `{ position, opacity }` also sets `mouseControllerPosition` and `mouseControllerOpacity`), `annotationNavigation` (`showAnnotationNavigation`), `annotationOnHover` (`showAnnotationOnHover`), `annotationFilters` (`showAnnotationFilters`), `highlightOnHover`, `materialVariants` (`showMaterialVariants`), `objectNavigator` (`showObjectNavigator`) |
 | `tools` | `measure` (`showMeasureTools`; `{ unit }` also sets `measurementUnit`), `uvChecker` (`showUvCheckerButton`), `explode` (`showExplodeControls`), `section` (`showSectionTools`), `isolate` (`showIsolateControls`), `texturePositioning` (`texturePositioning`) |
-| `controls` | `enabled` (`enableCameraControls`), `keyboard` (`enableKeyboardNavigation`), `zoom` (the opposite of `disableZoom`), `zoomOnSelect` (`zoomOnSelected`), `autoRotate` (a number also sets `autoRotateSpeed`), `refitOnResize`, `limits` (`cameraLimits`), `moveSensitivity`, `zoomSensitivity` |
-| `perf` | `renderMode`, `maxDpr`, `profile` (`performanceProfile`), `preserveDrawingBuffer` |
+| `controls` | `enabled` (`enableCameraControls`), `keyboard` (`enableKeyboardNavigation`), `zoom` (the opposite of `disableZoom`), `zoomOnSelect` (`zoomOnSelected`), `autoRotate` (a number also sets `autoRotateSpeed`), `refitOnResize`, `limits` (`cameraLimits`), `moveSensitivity`, `zoomSensitivity`, `reducedMotion` |
+| `perf` | `renderMode`, `maxDpr`, `profile` (`performanceProfile`), `preserveDrawingBuffer`, `webgpu` |
 | `tiles` | `url` (`tilesetUrl`), `errorTarget` (`tilesErrorTarget`), `cacheSize` (`tilesCacheSize`) |
 | `xr` | `enabled` (`enableXR`), `usdzUrl`, `scaleMode` (`arScaleMode`), `mobileHandoffUrl` |
 | `decoders` | `draco` (`dracoDecoderPath`), `ktx2` (`ktx2TranscoderPath`), `meshopt` |
@@ -63,11 +63,15 @@ type Props = {
   xr?: ModelViewerXrOptions;
   decoders?: ModelViewerDecoderOptions;
   modelUrl: string;
+  poster?: string;
+  loading?: "lazy" | "eager"; // default "lazy"
+  reveal?: "auto" | "interaction"; // default "auto"
+  labels?: ModelViewerLabels;
   tilesetUrl?: string | null;
   tilesErrorTarget?: number;
   tilesCacheSize?: number;
   onObjectCatalog?: (objects: ViewerObjectInfo[]) => void;
-  modelFormat?: "glb" | "gltf" | "obj" | "fbx" | "usdz";
+  modelFormat?: "glb" | "gltf" | "obj" | "fbx" | "usdz" | "stl" | "ply";
   licenseKey: string;
   objectBindings?: Record<string, ObjectBinding> | "auto"; // default "auto"
   selectedObject?: ObjectBinding | null;
@@ -96,6 +100,9 @@ type Props = {
   onAnnotationsChange?: (annotations: AnnotationMarker[]) => void;
   activeAnnotation?: AnnotationMarker | null;
   onActiveAnnotationChange?: (annotation: AnnotationMarker | null) => void;
+  annotationCategories?: string[] | null;
+  onAnnotationCategoriesChange?: (categories: string[] | null) => void;
+  showAnnotationFilters?: boolean;
   camera?: ViewerCameraConfig;
   cameraLimits?: CameraLimits;
   backgroundColor?: string;
@@ -133,11 +140,14 @@ type Props = {
   moveModeEnabled?: boolean;
   objectTransformSpace?: "local" | "world";
   enableKeyboardNavigation?: boolean;
+  showObjectNavigator?: boolean;
+  reducedMotion?: "user" | "always" | "never";
   onAutoFit?: () => Promise<boolean>;
   refitOnResize?: boolean;
   renderMode?: "always" | "demand";
   maxDpr?: number;
   preserveDrawingBuffer?: boolean;
+  webgpu?: boolean;
   performanceProfile?: "auto" | "high" | "low";
   dracoDecoderPath?: string | false;
   ktx2TranscoderPath?: string | false;
@@ -169,9 +179,32 @@ type Props = {
 
 ---
 
+### `labels`
+
+Optional plain-text overrides for built-in viewer text, including button titles, accessible labels, loading messages, tool hints, and AR placement controls. Missing keys retain their English defaults.
+
+`ModelViewer` and `SimpleModelViewer` share the same dictionary. Each viewer has its own labels, and changing the prop updates text without reloading its model. See the [full label catalog](/reference/labels) for every key, default, and named placeholder.
+
+`labels` does not translate annotation content, object metadata, custom panels, or raw server/loader diagnostics. Supply translations for those in your application.
+
+```tsx
+<ModelViewer
+  licenseKey="your-license-key"
+  modelUrl="/car.glb"
+  labels={{
+    guidedTour: "Visite guidée",
+    tapToPlace: "Touchez pour placer",
+    sceneSettings: "Réglages",
+    objectCount: "Objets : {count}",
+  }}
+/>
+```
+
+---
+
 ### `modelUrl`
 
-**Required.** URL or public path to a `.glb`, `.gltf`, `.obj`, `.fbx`, or `.usdz` model. Hosted assets must serve external buffers, MTL files, and textures at their declared relative paths; USDZ dependencies are packaged internally.
+**Required.** URL or public path to a `.glb`, `.gltf`, `.obj`, `.fbx`, `.usdz`, `.stl`, or `.ply` model. Hosted assets must serve external buffers, MTL files, and textures at their declared relative paths; USDZ dependencies are packaged internally.
 
 ```tsx
 <ModelViewer modelUrl="/model.glb" ... />
@@ -190,6 +223,34 @@ Optional explicit format for extensionless or signed URLs. Supported file extens
 This is separate from `usdzUrl`: `modelUrl` renders USDZ inside the viewer,
 while `usdzUrl` launches the native Apple Quick Look experience when XR is
 enabled.
+
+---
+
+### STL and PLY
+
+STL and PLY files hold geometry only: no object names, materials or
+animations.
+
+- **One object per file**, named after the file: `bracket.stl` loads as one
+  object keyed `bracket`, which its bindings use. A text STL with several named
+  solids loads one object per solid. A `.zip` holding one STL or PLY file also
+  works.
+- **Colour:** objects start a matte grey. A PLY file's vertex colours show as
+  they are, and picking a colour (or texture) replaces them.
+- **No texture coordinates:** STL files have none and PLY files rarely do, so an
+  image can't be mapped onto them. The viewer's **Change Material** says so
+  instead of offering an upload, BindingBuilder turns off its image map fields
+  for that object, and new bindings leave Change Material out. [Decals](#decals)
+  work without texture coordinates. This applies to any object without them, in
+  any format.
+- **Units and orientation:** STL files are usually in millimetres with Z up, so a
+  part can load lying on its back. Turn it upright with
+  [`sceneConfig.model.rotation`](#sceneconfig) (BindingBuilder: **Scene** →
+  model rotation, −90° on X), and set [`measurementUnit`](#measurementunit) to
+  `"mm"`. In AR, the default `"normalized"` [`arScaleMode`](#arscalemode) fits the
+  model to a metre; `"real-world"` would read millimetres as metres.
+- **PLY point clouds** (points with no faces) can't be shown; the viewer
+  explains why instead of loading them.
 
 ---
 
@@ -504,6 +565,7 @@ type ViewerModelInfo = {
   bounds: { min: Vec3; max: Vec3; center: Vec3; size: Vec3 }; // world space
   objectCount: number; // meshes in the loaded scene
   materialVariants: string[]; // glTF material variant names, if any
+  materialVariantGroups: MaterialVariantGroup[]; // the same, as option groups
 };
 ```
 
@@ -609,8 +671,8 @@ elapsed time includes loading and background time; it is not an attention metric
 
 | Event `type` | Details and trigger |
 | --- | --- |
-| `part-viewed` | `objectId`, `objectKey`, optional `label`, and `source` (`"canvas"` or `"panel"`). Selecting/focusing a different part; reselecting the current part is ignored. |
-| `variant-chosen` | `variant` and `previousVariant` (names or `null` for the default). Choosing a different built-in material variant. |
+| `part-viewed` | `objectId`, `objectKey`, optional `label`, and `source` (`"canvas"`, `"panel"`, or `"keyboard"`). Selecting/focusing a different part; reselecting the current part is ignored. |
+| `variant-chosen` | `variant`, `previousVariant` (names, or `null` for the default), and `group` (the option group's name, or `null`). Choosing or clearing a built-in material variant; `previousVariant` is the earlier choice in the same group. |
 | `ar-started` | A confirmed immersive WebXR AR session begins. |
 | `ar-ended` | `durationMs` and `reason` (`"session-ended"` or `"interrupted"`). A confirmed AR session ends, or tracking stops on model change, unmount, or context loss. |
 | `ar-launch-requested` | `channel` (`"quick-look"` or `"mobile-handoff"`). Opening external AR or its QR handoff; this does not claim an AR session started. |
@@ -644,6 +706,7 @@ type ViewerReadyState = {
   captureImage: (options?: CaptureImageOptions) => Promise<string>;
   captureVideo: (options?: CaptureVideoOptions) => Promise<Blob>;
   invalidate: () => void;
+  rendererBackend: "webgl" | "webgpu"; // which renderer draws; see `webgpu`
   raw: {
     controls: CameraControls; // camera-controls
     scene: Object3D | null; // three.js
@@ -663,7 +726,7 @@ model's nodes, for integrations the rest of the API doesn't cover. You don't
 need it for anything the hooks and props already do, and its shapes are those
 libraries' own, so they can change when those libraries do.
 
-`captureImage` requires the opt-in `preserveDrawingBuffer` prop, forces a render, and resolves with a `data:image/png` URL of the canvas. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG has an alpha channel. It rejects if called before the viewer is ready or when framebuffer preservation is disabled.
+`captureImage` requires the opt-in `preserveDrawingBuffer` prop (not needed with [`webgpu`](#webgpu)), forces a render, and resolves with a `data:image/png` URL of the canvas. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG has an alpha channel. It rejects if called before the viewer is ready or when framebuffer preservation is disabled.
 
 ```tsx
 <ModelViewer
@@ -706,7 +769,7 @@ const abort = new AbortController();
 // Run in a button handler after loading and framing have finished.
 const clip = await connection.captureVideo({
   mode: "turntable", // or "cinematic" to record the enabled camera path
-  format: "auto",    // prefers WebM; falls back to MP4
+  format: "auto",    // prefers WebM; falls back to MP4. "gif" for an animated GIF
   duration: 12,      // seconds; defaults to path timing or a 24-second orbit
   fps: 30,
   videoBitsPerSecond: 8_000_000,
@@ -716,7 +779,7 @@ const clip = await connection.captureVideo({
 ```
 
 The download menu offers **Record turntable video** and, when cinematic is
-enabled, **Record cinematic video**, plus Auto/WebM/MP4 format selection. A
+enabled, **Record cinematic video**, plus Auto/WebM/MP4/GIF format selection. A
 recording shows progress and a Cancel control. The filename and Blob MIME type
 match the encoded format; an explicitly requested unsupported format rejects
 instead of silently changing formats. With `loop: true`, a cinematic export
@@ -726,12 +789,33 @@ Recording runs in real time at the canvas's current pixel resolution, includes
 post-processing, and hides editor gizmos. It pauses cinematic playback, blocks
 viewer gestures, then restores the previous camera pose and controls on success,
 cancellation, or failure. Keep the tab visible until recording completes.
-`preserveDrawingBuffer` is unnecessary for video. No audio, HTML overlays,
-GIF encoding, or format transcoding is included. The browser must support
-`canvas.captureStream` and `MediaRecorder`; exports reject before framing,
+`preserveDrawingBuffer` is unnecessary for video. No audio, HTML overlays, or
+format transcoding is included. The browser must support
+`canvas.captureStream`, and `MediaRecorder` for WebM/MP4; exports reject before framing,
 during XR, during another recording, or for durations outside (0, 300] seconds.
 See [`CaptureVideoOptions`](/reference/types#capturevideooptions) for
 the complete options and defaults.
+
+**Animated GIF.** Pass `format: "gif"` (or pick **GIF** in the menu's format
+select) for a GIF that loops forever, for places that don't play video, such as
+email, chat, and some marketplaces:
+
+```ts
+const gif = await connection.captureVideo({
+  mode: "turntable",
+  format: "gif",
+  gifWidth: 480, // pixels; the height follows the canvas. Default 480
+  // fps defaults to 15, and a turntable to an 8-second turn
+});
+```
+
+A GIF holds 256 colours per frame and stores every frame whole, so it is much
+larger than a video of the same length and shows some banding on smooth
+gradients. Frames are taken from the same stream as a video and encoded as
+they're captured, so a long recording doesn't build up memory. Each frame lasts
+as long as it really showed, so a busy device drops frames rather than playing
+the GIF fast. `videoBitsPerSecond` doesn't apply to GIFs. The encoder
+([gifenc](https://github.com/mattdesl/gifenc)) loads only when a GIF is made.
 
 ---
 
@@ -1143,7 +1227,7 @@ Enables the download split-button (export GLB, export the model's UV layout,
 and—when `preserveDrawingBuffer` is enabled—export a PNG screenshot).
 
 The menu also offers **Record turntable video** and, when cinematic is
-enabled, **Record cinematic video**, with Auto/WebM/MP4 format selection,
+enabled, **Record cinematic video**, with Auto/WebM/MP4/GIF format selection,
 progress, and cancellation. See [Video export](#video-export).
 
 Default:
@@ -1305,8 +1389,8 @@ authored by `BindingBuilder`'s **Scene** tab. If omitted, the viewer uses its
 built-in default scene config.
 
 Use it to define the experience around the model, rather than individual model
-objects. For example, a guided tour can use `annotations` and saved world
-positions to direct the camera through a scene without requiring
+objects. For example, a guided tour can use `annotations` and saved camera
+views to direct the camera through a scene without requiring
 `objectBindings` for every tour stop. See the [`Guided Tour`](https://react-immersive.liveroom.dev/examples/guided-tour)
 example.
 
@@ -1472,6 +1556,9 @@ Enables automatic orbiting and controls its speed. Defaults are `false` and
 <ModelViewer {...props} autoRotate autoRotateSpeed={0.75} />
 ```
 
+Auto-rotate doesn't start for visitors who ask their device to reduce motion.
+See [`reducedMotion`](#reducedmotion).
+
 ---
 
 ### `enableKeyboardNavigation`
@@ -1480,7 +1567,79 @@ Optional boolean enabling canvas-focused camera shortcuts. Default: `false`.
 Click or focus the canvas first, then use `W`/`S` to move forward/back,
 `A`/`D` to truck left/right, Space/`C` to move up/down, and the arrow keys to
 orbit. `Shift` + Up/Down moves forward/back. The shortcuts are inactive while
-object editing or camera controls are disabled.
+object editing or camera controls are disabled. While the canvas has focus, a
+screen reader reads out what its keys do (the `cameraKeyboardHelp`
+[label](/reference/labels)).
+
+---
+
+### Accessibility
+
+The viewer can be used without a mouse, and reads out what is happening:
+
+- **Moving through objects with the keyboard.** Tabbing into the viewer reaches
+  a small object list at the top of the canvas, shown only while it has focus.
+  The arrow keys (or `Home` and `End`) move through the objects and highlight
+  each one in the scene. Typing a letter jumps to an object whose name starts
+  with it. `Enter` or Space selects the object, exactly as clicking it would,
+  and `Escape` clears the selection. Screen readers hear each object's name and
+  its position ("Wheel, 3 of 12"). The list follows the scene objects panel's
+  order. It skips hidden objects, and objects an [isolation](#isolating-objects)
+  has set aside.
+- **Announcing the selection.** Every change of selection is announced, whether
+  it came from a click, the keyboard, the objects panel, or your app ("Wheel
+  selected", "Selection cleared").
+- **The scene objects panel.** Each row is a button, so the panel can be used
+  from the keyboard too. Focusing a row highlights its object, and the
+  visibility buttons name the object they hide or show.
+- **Reduced motion.** See [`reducedMotion`](#reducedmotion) below.
+
+All of this text can be translated with [`labels`](#labels).
+
+### `showObjectNavigator`
+
+Optional boolean for the keyboard object list described above. Default: `true`.
+It takes no space until a keyboard user reaches it, so it's on by default. Set it
+to `false` when your app provides its own way to choose objects from the
+keyboard. It is hidden while measuring, since clicks then place points instead
+of selecting.
+
+```tsx
+<ModelViewer {...props} ui={{ objectNavigator: false }} />
+```
+
+Keyboard selections reach [`onEngagement`](#onengagement--debugengagement) as
+`part-viewed` events with `source: "keyboard"`.
+
+### `reducedMotion`
+
+Cuts motion the viewer starts on its own, for visitors who find it hard to
+watch. Default: `"user"`, which follows the visitor's device setting
+(`prefers-reduced-motion`). `"always"` and `"never"` override it.
+
+```ts
+reducedMotion?: "user" | "always" | "never"; // also controls.reducedMotion
+```
+
+When motion is reduced:
+
+- [Auto-rotate](#autorotate--autorotatespeed) doesn't start.
+- A [cinematic](#cinematic) path with `autoPlay` waits for its play button.
+- Camera moves jump straight to where they're going instead of gliding: the
+  first framing, focusing a selected object, resetting the view, saved views,
+  guided-tour stops, and moves made through
+  [`useViewerCamera`](/hooks/use-viewer-camera).
+- Panels, menus and popups appear in place instead of sliding or fading in.
+  Loading spinners keep turning, since they show that something is still
+  happening.
+
+Motion the visitor asks for still plays: the cinematic play button, video
+export, and dragging the camera. The viewer doesn't change animations your app
+starts, such as model clips, [effects](/hooks/use-viewer-effects), or
+[style rule](#style-rules) pulses. To respect the setting there too, check
+`matchMedia("(prefers-reduced-motion: reduce)")` in your app.
+
+`SimpleModelViewer` takes the same prop.
 
 ---
 
@@ -1518,6 +1677,12 @@ aspect stays correct either way, so the model never distorts, it just isn't
 re-centered. Only affects re-fits _after_ the initial mount-time auto-fit.
 Default: `true`.
 
+While a selected object is framed (see [`zoomOnSelected`](#zoomonselected)), a
+resize frames that object again rather than the whole model, so the object
+panel opening doesn't undo the zoom. An object with an authored `cameraState`
+keeps that view. Once the selection is cleared, or something else moves the
+camera away from the object, resizes frame the whole model again.
+
 ---
 
 ### `onAnnotationsChange`
@@ -1532,14 +1697,111 @@ edited, or removed through the viewer UI).
 `AnnotationMarker` is the `SceneAnnotationMarker` shape:
 
 ```ts
-type AnnotationMarker = {
+type SceneAnnotationCameraView = {
+  position: [number, number, number];
+  target: [number, number, number];
+  azimuthAngle?: number; // radians
+  polarAngle?: number; // radians
+  fov?: number | null;
+  zoom?: number;
+};
+
+type SceneAnnotationImage = { src: string; alt?: string };
+type SceneAnnotationLink = { href: string; label: string };
+
+type SceneAnnotationMarker = {
   id: number;
   worldPosition: [number, number, number];
   localPosition: [number, number, number];
+  worldNormal?: [number, number, number];
+  anchorNodeName?: string;
+  anchorLocalPosition?: [number, number, number];
   title: string;
   description: string;
+  cameraView?: SceneAnnotationCameraView;
+  images?: SceneAnnotationImage[];
+  links?: SceneAnnotationLink[];
+  category?: string;
+  minDistance?: number;
+  maxDistance?: number;
 };
+
+type AnnotationMarker = SceneAnnotationMarker;
 ```
+
+---
+
+
+### Rich annotations
+
+Annotations can include a saved camera view, images, links, a category, and
+camera-distance limits. New annotations use automatic close-up tour framing
+toward the marker, including following animated anchors. A custom `cameraView`
+is optional: explicitly capture one in BindingBuilder or provide it in code.
+
+Selecting a marker with a saved view or visiting it in the guided tour restores
+its world-space position, target, orbit angles, field of view, and zoom. Saved
+views stay fixed while the model animates. Clearing the saved view in
+BindingBuilder restores automatic framing.
+
+```tsx
+import { ModelViewer, DEFAULT_SCENE_CONFIG, type SceneConfig } from "@liveroom-tech/react-immersive";
+
+const sceneConfig: SceneConfig = {
+  ...DEFAULT_SCENE_CONFIG,
+  annotations: [{
+    id: 1,
+    title: "Replaceable filter",
+    description: "Open this panel to access the filter.",
+    worldPosition: [0, 1, 0],
+    localPosition: [0, 1, 0],
+    cameraView: { position: [2, 2, 4], target: [0, 1, 0], fov: 45, zoom: 1 },
+    images: [{ src: "/images/filter.jpg", alt: "Filter compartment" }],
+    links: [{ href: "https://example.com/manual", label: "Read the manual" }],
+    category: "Maintenance",
+    minDistance: 0.5,
+    maxDistance: 12,
+  }],
+};
+
+<ModelViewer {...props} sceneConfig={sceneConfig} />
+```
+
+Images and links accept HTTP(S) URLs and relative paths. Executable URL schemes
+are ignored. Descriptions and labels render as plain text. Supply image `alt`
+text for accessible descriptions. Image files stay at their URLs; they are not
+uploaded or bundled into scene exports automatically.
+
+`minDistance` and `maxDistance` are inclusive distances from the camera to the
+marker's live world position, in scene units. Omit either bound for no limit in
+that direction. These settings hide markers, including hover interaction, but
+leave explicit popups and tour steps available. Distance is unrelated to the
+measurement unit label. Occlusion behavior still applies.
+
+### `annotationCategories` / `onAnnotationCategoriesChange` / `showAnnotationFilters`
+
+Category chips appear when any annotation has a category. Toggle chips to select
+one or more categories, or choose **All**. Filtering applies to markers, open
+popups, and tour steps. Changing the filter ends the current tour. Annotations
+keep their IDs and are visited in ID order.
+
+```tsx
+const [categories, setCategories] = useState<string[] | null>(null);
+
+<ModelViewer
+  {...props}
+  annotationCategories={categories}
+  onAnnotationCategoriesChange={setCategories}
+  ui={{ annotationFilters: true }}
+/>
+```
+
+- `null` shows all categories. An empty array hides all annotations.
+- `""` selects annotations without a category. Category names are trimmed and
+  matched case-sensitively.
+- Omitting `annotationCategories` lets the viewer manage the filter internally.
+- `showAnnotationFilters` (or `ui.annotationFilters`) defaults to `true`.
+  Set it to `false` to supply your own filter UI; the filter props still apply.
 
 ---
 
@@ -1581,6 +1843,99 @@ cost to every rendered frame.
 
 ---
 
+### `webgpu`
+
+Optional boolean. Draws with three.js's WebGPU renderer when the browser has
+WebGPU, and with WebGL otherwise. Default: `false`. Also `perf.webgpu`.
+
+```tsx
+<ModelViewer {...props} perf={{ webgpu: true }} />
+```
+
+The viewer asks the browser for a WebGPU adapter once per page before
+creating its canvas. Without one, it uses WebGL and says so once in the
+console. `onViewerReady` reports which renderer is drawing as
+`rendererBackend` (`"webgl"` or `"webgpu"`). The WebGPU renderer is loaded only
+by viewers that use it.
+
+With WebGPU, the model, materials, bindings, hover highlight, picking,
+animations, decals, annotations, measurement, video and GIF export, and tone
+mapping and exposure work as they do with WebGL. Some features are built on
+WebGL and are left out:
+
+- The post-processing effects (outline, bloom, depth of field, and the rest)
+  don't draw. Tone mapping and exposure from `sceneConfig.postProcessing` still
+  apply, through the renderer.
+- Contact shadows (`sceneConfig.groundShadows` in shadow-catcher mode) don't
+  draw.
+- The section cut and the move gizmo (`moveModeEnabled`) aren't available, and
+  the console says so if they're asked for.
+- AR and VR sessions in the browser (WebXR) aren't offered. Quick Look on iOS
+  and the phone hand-off still work.
+- Measurement lines are one pixel wide.
+
+`captureImage` and the Download PNG action work with WebGPU without
+`preserveDrawingBuffer`. A lost WebGPU device shows the same **Reload viewer**
+message as a lost WebGL context.
+
+---
+
+### Lazy loading and posters
+
+`loading`, `poster` and `reveal` decide when a viewer creates its 3D view, and
+what shows in its place until then. They matter most on pages with many
+viewers, such as a product grid: browsers allow a page about 16 WebGL contexts
+and take the oldest away past that.
+
+```tsx
+<ModelViewer {...props} poster="/chair.webp" />
+<ModelViewer {...props} poster="/chair.webp" reveal="interaction" />
+```
+
+```ts
+poster?: string;
+loading?: "lazy" | "eager"; // default "lazy"
+reveal?: "auto" | "interaction"; // default "auto"
+```
+
+`loading` is `"lazy"` by default. A lazy viewer:
+
+- starts its 3D view when it comes within about 200px of the screen. One that's
+  on the screen when the page loads starts at once.
+- shares the page's live 3D views with the other lazy viewers: at most 12, or 6
+  on phones and tablets. Viewers on the screen come first. One scrolled away
+  from keeps its view while there's room, so coming back is instant. When the
+  room is needed, it's put away, leaving a picture of its last frame, and is
+  built again when it comes back near the screen.
+- comes back as it was: the camera, picked variants, light and section-cut
+  changes, isolation, the exploded view, the camera controller, the UV checker,
+  the annotation filter, and, when the viewer keeps `objectBindings` itself,
+  the changes made to them. The selection and open panels don't come back.
+  `onModelLoaded` and `onViewerReady` run again, with a new viewer.
+- stops drawing while it's off the screen, and starts again when it's back.
+  Browsers already stop drawing in hidden tabs.
+
+`loading="eager"` starts the 3D view at once and keeps it. Eager viewers don't
+count towards the 12. [`BindingBuilder`](/reference/binding-builder)'s
+preview is eager.
+
+`poster` is an image shown in the viewer's place until its 3D view is drawn,
+then fades out; the loading message shows over it. It's fitted inside the
+viewer. To fill the viewer instead, set the CSS variable
+`--ri-poster-fit: cover` on a parent. A render of the model framed as the
+viewer frames it works best: [`captureImage`](#onviewerready) can make one.
+
+`reveal="interaction"` keeps the poster, with a **View in 3D** button, until the
+visitor presses it, so only the products someone picks use a 3D view. The
+button's text is the [`labels`](/reference/labels) key `viewIn3D`.
+`reveal` is `"auto"` by default: the view starts on its own.
+
+The same three props work on
+[`SimpleModelViewer`](/reference/simple-model-viewer#poster--loading--reveal)
+and [`CompareViewer`](/reference/compare-viewer#props).
+
+---
+
 ### `performanceProfile`
 
 Optional control over how aggressively the viewer trades visual fidelity for a
@@ -1610,9 +1965,11 @@ If the WebGL context is lost, rendering pauses and the viewer displays a
 the viewer automatically rebuilds its canvas and scene; the reload button starts
 the same rebuild without waiting for browser restoration.
 
-Recovery uses the current props and cached model assets, cancels video recording,
-and resets transient viewer state (camera, selection, measurements, and playback).
-Keep configuration edits in controlled props to retain them across a rebuild.
+Recovery uses the current props and cached model assets, and cancels video
+recording. The rebuilt viewer keeps its camera and the visitor's changes, as a
+lazy viewer does when it comes back (see
+[Lazy loading and posters](#lazy-loading-and-posters)); the selection,
+measurements and playback start over.
 `onModelLoaded`, `onAnimationsReady`, and `onViewerReady` run again
 for the rebuilt scene, so integrations receive fresh controls and object refs.
 
@@ -1750,43 +2107,79 @@ See the [`Exploded View`](https://react-immersive.liveroom.dev/examples/exploded
 
 ### `showMaterialVariants`
 
-Shows a row of buttons, centered at the bottom of the viewer, for switching
+Shows swatch buttons, centered at the bottom of the viewer, for switching
 between the model's glTF material variants (the `KHR_materials_variants`
-extension): the colorways, finishes, or trims a product file ships with. It
-appears only for a glTF/GLB with more than one variant. Default `true`.
+extension): the colorways, finishes, or trims a product file ships with. Each
+button shows the variant's colour when its material is a plain colour. It
+appears for a glTF/GLB with any variants. Default `true`.
 
-Picking a variant sets `sceneConfig.model.materialVariant`, which is also how
-you choose one yourself:
+Variants come in **option groups**, one row each. Choosing a variant replaces
+the other choice in its row and keeps the other rows, so a paint colour and a
+wheel style combine. Clicking the chosen variant again returns that row to the
+file's default materials. The viewer works out the groups from the file:
+
+- A name like `"Paint: Red"` or `"Paint / Red"` puts the variant in a row
+  labelled **Paint**, with a button labelled **Red**.
+- Otherwise, variants that restyle the same parts share a row, and variants
+  that restyle different parts get separate rows. A shoe's `"midnight"`,
+  `"beach"` and `"street"` colorways, which all restyle the same parts, are one
+  row.
+
+The variants shown are `sceneConfig.model.activeVariants`, at most one from
+each group, which is also how you choose them yourself:
 
 ```tsx
+import { chooseMaterialVariant, useViewer } from "@liveroom-tech/react-immersive";
+
 const viewer = useViewer();
 
-<ModelViewer modelUrl="/shoe.glb" licenseKey="your-license-key" {...viewer.props} />;
+<ModelViewer modelUrl="/car.glb" licenseKey="your-license-key" {...viewer.props} />;
 
-// The model's variant names, once it has loaded
-viewer.model.materialVariants; // ["midnight", "beach", "street"]
+// Once the model has loaded
+viewer.model.materialVariants; // ["Paint: Red", "Paint: Blue", "Wheels: Sport", "Wheels: Classic"]
+viewer.model.materialVariantGroups;
+// [
+//   { name: "Paint", variants: [{ name: "Paint: Red", label: "Red", swatch: "#ff0000" }, ...] },
+//   { name: "Wheels", variants: [{ name: "Wheels: Sport", label: "Sport" }, ...] },
+// ]
 
-viewer.scene.updateSceneConfig({ model: { materialVariant: "beach" } });
-viewer.scene.updateSceneConfig({ model: { materialVariant: null } }); // the defaults
+viewer.scene.updateSceneConfig({ model: { activeVariants: ["Paint: Red", "Wheels: Sport"] } });
+viewer.scene.updateSceneConfig({ model: { activeVariants: [] } }); // the defaults
+
+// Your own swatches: swap a choice within its group, keeping the others.
+const active = viewer.scene.sceneConfig.model.activeVariants ?? [];
+viewer.scene.updateSceneConfig({
+  model: {
+    activeVariants: chooseMaterialVariant(active, "Paint: Blue", viewer.model.materialVariantGroups),
+  },
+});
 ```
 
 - A variant sets each object's starting material. `objectBindings` material
   overrides (`style.material`) still apply on top of it, and clearing an
   override returns to the variant's material rather than the file's default.
-- Objects the variant doesn't map keep their default material, bound or not.
+- Objects no active variant maps keep their default material, bound or not.
+  If two active variants map the same object, the later one in the list wins.
 - A variant's materials and textures load the first time it's chosen; the
   current look stays until they're ready.
 - With `onSceneConfigChange`, a pick goes to your scene config (`useViewer`
-  wires this up). Without it, `ModelViewer` keeps the pick itself until
-  `sceneConfig.model.materialVariant` or `modelUrl` changes.
-- A name the model doesn't have shows the defaults and logs a console warning
-  listing the model's variants.
+  wires this up). Without it, `ModelViewer` keeps the picks itself until
+  `sceneConfig.model.activeVariants` or `modelUrl` changes.
+- A name the model doesn't have is skipped with a console warning listing the
+  model's variants.
 - An action can switch variants with a scene-config effect:
-  `{ sceneConfig: { model: { materialVariant: "beach" } } }`.
-- `onModelLoaded` reports the names as `materialVariants`, and BindingBuilder's
-  Scene tab (**General → Material variant**) picks the one the exported scene
-  config starts with. OBJ, FBX, USDZ, and streamed 3D Tiles models have no
-  variants.
+  `{ sceneConfig: { model: { activeVariants: ["Paint: Red"] } } }`.
+- Swatches use the colour of the material a variant puts on the most vertices.
+  A textured material gets no swatch, just its label, so showing the buttons
+  never loads textures.
+- Each pick reaches [`onEngagement`](#onengagement--debugengagement) as a
+  `variant-chosen` event with its `group`.
+- `onModelLoaded` reports `materialVariants` and `materialVariantGroups`, and
+  BindingBuilder's Scene tab (**General**, one select per group) picks the
+  variants the exported scene config starts with. OBJ, FBX, USDZ, STL, PLY, and
+  streamed 3D Tiles models have no variants.
+- Scene configs saved before option groups, with a single
+  `model.materialVariant`, still show that variant.
 
 ### Decals
 
@@ -1936,7 +2329,8 @@ showIsolateControls?: boolean; // tools.isolate
 
 Shows a section-cut button over the canvas (`tools.section`). It cuts the model
 open along an axis, hiding everything on one side of a plane, to look inside
-assemblies, equipment, and buildings. Default `false`.
+assemblies, equipment, and buildings. Default `false`. Not available with
+[`webgpu`](#webgpu).
 
 With the cut on, the toolbar picks the axis (X, Y, or Z), the position along
 it, and which side stays, and a plane appears across the model that you can
@@ -1991,7 +2385,7 @@ type CinematicConfig = {
   waypoints?: CinematicWaypoint[]; // camera keyframes to glide through
   duration?: number; // seconds for one full pass (auto-scales when omitted)
   loop?: boolean; // default true
-  autoPlay?: boolean; // start once the model has loaded and framed (default false)
+  autoPlay?: boolean; // start once the model has loaded and framed (default false); waits for the play button under reduced motion
 };
 
 type CinematicWaypoint = {
@@ -2115,7 +2509,7 @@ mobileHandoffUrl?: string;
 
 ### `showAnnotationNavigation`
 
-Shows the "Guided Tour" control cluster (left side of the bottom action bar) when the model has at least one annotation: a single "Guided Tour" button that, once started, becomes Previous/Stop/Next controls for stepping through annotations in order. Default: `true`.
+Shows the "Guided Tour" control cluster (left side of the bottom action bar) when the selected categories contain at least one annotation: a single "Guided Tour" button that, once started, becomes Previous/Stop/Next controls for stepping through annotations in order. Default: `true`.
 
 ---
 

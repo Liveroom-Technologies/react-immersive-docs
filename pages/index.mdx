@@ -10,7 +10,7 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
 
 ## Features
 
-- **GLB/GLTF, OBJ/MTL, FBX, and USDZ rendering** via React Three Fiber
+- **GLB/GLTF, OBJ/MTL, FBX, USDZ, STL, and PLY rendering** via React Three Fiber
 - **3D Tiles streaming** for large processed scenes, with object catalogs and configurable client caching
 - **Mesh selection** by object name with built-in side panels
 - **Object bindings**, drive transforms, color, texture, visibility, and actions from a plain data record
@@ -104,7 +104,7 @@ the bindings by hand, or generate starter bindings in [`BindingBuilder`](/refere
 
 ## Quick Inspection With `SimpleModelViewer`
 
-If you don't need `objectBindings`-driven styling and actions, [`SimpleModelViewer`](/reference/simple-model-viewer) gives you a lightweight viewer for inspecting GLB, GLTF, OBJ, FBX, or USDZ assets. It can also run in an upload-first mode for ad-hoc local model inspection:
+If you don't need `objectBindings`-driven styling and actions, [`SimpleModelViewer`](/reference/simple-model-viewer) gives you a lightweight viewer for inspecting GLB, GLTF, OBJ, FBX, USDZ, STL, or PLY assets. It can also run in an upload-first mode for ad-hoc local model inspection:
 
 ```tsx
 import "@liveroom-tech/react-immersive/simple-model-viewer.css";

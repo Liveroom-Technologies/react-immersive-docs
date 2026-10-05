@@ -18,6 +18,7 @@ const {
   bounds,
   objectCount,
   materialVariants,
+  materialVariantGroups,
   objects,
   handleModelLoaded,
   handleObjectCatalog,
@@ -42,6 +43,7 @@ const {
 | `bounds` | `SceneBounds \| null` | Scene bounds: `min`, `max`, `center`, `size` |
 | `objectCount` | `number` | Number of mesh objects in the loaded scene |
 | `materialVariants` | `string[]` | Names of the model's glTF material variants; empty when it has none. See [`showMaterialVariants`](/reference/model-viewer#showmaterialvariants) |
+| `materialVariantGroups` | `MaterialVariantGroup[]` | The same variants as option groups, each with a `name` (or `null`) and its `variants` (`name`, display `label`, and a `swatch` colour when the material is a plain colour) |
 | `objects` | `ViewerObjectInfo[]` | Every bindable object in the model; filled once `handleObjectCatalog` is passed to `onObjectCatalog` |
 | `handleModelLoaded` | `(model: ViewerModelInfo) => void` | Callback to pass to `onModelLoaded` |
 | `handleObjectCatalog` | `(objects: ViewerObjectInfo[]) => void` | Callback to pass to `onObjectCatalog` |

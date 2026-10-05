@@ -6,7 +6,7 @@ import { Callout } from "nextra/components";
 
 # `SimpleModelViewer`
 
-A lightweight viewer for cases where you want to load a GLB, GLTF, OBJ, FBX, or USDZ asset, inspect meshes, and toggle visibility **without** building `objectBindings`. It can either load a fixed `modelUrl` or, when `enableModelUpload` is enabled, let the user drag-and-drop or choose a local model at runtime.
+A lightweight viewer for cases where you want to load a GLB, GLTF, OBJ, FBX, USDZ, STL, or PLY asset, inspect meshes, and toggle visibility **without** building `objectBindings`. It can either load a fixed `modelUrl` or, when `enableModelUpload` is enabled, let the user drag-and-drop or choose a local model at runtime.
 
 ## Usage
 
@@ -29,7 +29,7 @@ export default function App() {
 - Renders a right-side scene objects panel with search and visibility toggles
 - Renders a left-side environment/scene settings panel (background color, environment preset, auto-rotate, exposure, ambient + directional light color/intensity), each seedable via props
 - Can swap `modelUrl` for a built-in drag-and-drop / file-picker upload flow
-- Lets users click a mesh or panel row to select and focus it
+- Lets users click a mesh or panel row to select and focus it. Panel rows are buttons, so the keyboard can select from the panel too
 - Fits the full scene on initial load, and re-fits when the canvas is resized (window resize, device rotation, or a panel opening/closing), set `refitOnResize={false}` to instead preserve the user's orbit/zoom
 - Uses built-in ambient, directional, and environment lighting
 - Renders on demand: frames are only drawn when something changes (camera movement, hover, auto-rotate, panel edits), so an idle viewer costs no GPU time or battery
@@ -46,7 +46,11 @@ export default function App() {
 ```ts
 type SimpleModelViewerProps = {
   modelUrl: string;
-  modelFormat?: "glb" | "gltf" | "obj" | "fbx" | "usdz";
+  poster?: string;
+  loading?: "lazy" | "eager"; // default "lazy"
+  reveal?: "auto" | "interaction"; // default "auto"
+  labels?: ModelViewerLabels;
+  modelFormat?: "glb" | "gltf" | "obj" | "fbx" | "usdz" | "stl" | "ply";
   dracoDecoderPath?: string | false;
   ktx2TranscoderPath?: string | false;
   meshopt?: boolean;
@@ -58,6 +62,7 @@ type SimpleModelViewerProps = {
   highlightOnHover?: boolean;
   showLoadingOverlay?: boolean;
   refitOnResize?: boolean;
+  reducedMotion?: "user" | "always" | "never";
   // Initial values for the scene settings (environment) panel
   backgroundEnabled?: boolean;
   autoRotate?: boolean;
@@ -80,15 +85,47 @@ type SimpleModelViewerProps = {
 
 ---
 
+### `labels`
+
+Optional plain-text overrides for built-in viewer text, including button titles, accessible labels, loading messages, tool hints, and AR placement controls. Missing keys retain their English defaults.
+
+`ModelViewer` and `SimpleModelViewer` share the same dictionary. Each viewer has its own labels, and changing the prop updates text without reloading its model. See the [full label catalog](/reference/labels) for every key, default, and named placeholder.
+
+`labels` does not translate annotation content, object metadata, custom panels, or raw server/loader diagnostics. Supply translations for those in your application.
+
+```tsx
+<SimpleModelViewer
+  modelUrl="/car.glb"
+  labels={{
+    guidedTour: "Visite guidée",
+    tapToPlace: "Touchez pour placer",
+    sceneSettings: "Réglages",
+    objectCount: "Objets : {count}",
+  }}
+/>
+```
+
+---
+
 ### `modelUrl`
 
-**Required.** URL or public path to a `.glb`, `.gltf`, `.obj`, `.fbx`, or `.usdz` model. Hosted assets must serve external dependencies at their declared relative paths; USDZ dependencies are packaged internally.
+**Required.** URL or public path to a `.glb`, `.gltf`, `.obj`, `.fbx`, `.usdz`, `.stl`, or `.ply` model. Hosted assets must serve external dependencies at their declared relative paths; USDZ dependencies are packaged internally.
 
 ---
 
 ### `modelFormat`
 
 Optional explicit format for extensionless or signed URLs. Supported extensions are detected automatically in normal URLs.
+
+---
+
+### `poster` / `loading` / `reveal`
+
+Work as on [`ModelViewer`](/reference/model-viewer#lazy-loading-and-posters),
+sharing the same page-wide count of live 3D views. When a `SimpleModelViewer`
+is put away, only its canvas goes: the panels and their settings stay, and the
+canvas comes back with its camera, hidden objects and selection.
+`onModelLoaded` runs again when it does.
 
 ---
 
@@ -218,9 +255,21 @@ true;
 
 ---
 
+### `reducedMotion`
+
+Cuts motion the viewer starts on its own. `"user"` follows the visitor's device setting (`prefers-reduced-motion`); `"always"` and `"never"` override it. When motion is reduced, the `autoRotate` prop doesn't start auto-rotate (the visitor can still turn it on in the scene settings panel), camera moves jump instead of gliding, and panels appear in place. See [`ModelViewer`'s `reducedMotion`](/reference/model-viewer#reducedmotion).
+
+Default:
+
+```ts
+"user";
+```
+
+---
+
 ### `enableModelUpload`
 
-Optional boolean that swaps the fixed `modelUrl` workflow for a built-in upload UI. It accepts `.glb`, standalone/data-URI `.gltf`, `.obj`, `.fbx`, `.usdz`, or `.zip`. A ZIP may bundle GLTF dependencies, OBJ + MTL/textures, or FBX external textures; USDZ is already self-contained.
+Optional boolean that swaps the fixed `modelUrl` workflow for a built-in upload UI. It accepts `.glb`, standalone/data-URI `.gltf`, `.obj`, `.fbx`, `.usdz`, `.stl`, `.ply`, or `.zip`. A ZIP may bundle GLTF dependencies, OBJ + MTL/textures, or FBX external textures; USDZ is already self-contained.
 
 ZIP uploads are limited to 128 MiB compressed, 1,024 entries, 128 MiB per
 expanded entry, 256 MiB expanded in total, and a 200:1 per-entry compression
@@ -240,7 +289,7 @@ false;
 Optional callback fired after the model scene has loaded.
 
 ```ts
-onModelLoaded?: (model: ViewerModelInfo) => void // { bounds, objectCount, materialVariants }
+onModelLoaded?: (model: ViewerModelInfo) => void // { bounds, objectCount, materialVariants, materialVariantGroups }
 ```
 
 ---

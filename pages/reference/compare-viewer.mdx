@@ -1,0 +1,96 @@
+---
+title: CompareViewer
+---
+
+import { Callout } from "nextra/components";
+
+# `CompareViewer`
+
+Shows two configurations next to each other with one camera: a before and
+after of a renovation, two paint options, the current part against its
+replacement. Each side is a full [`ModelViewer`](/reference/model-viewer),
+so a side can differ in anything a viewer takes: `objectBindings`,
+`sceneConfig`, material variants, even a different `modelUrl`.
+
+```tsx
+import "@liveroom-tech/react-immersive/styles.css";
+import { CompareViewer } from "@liveroom-tech/react-immersive";
+
+<div style={{ height: 600 }}>
+  <CompareViewer
+    modelUrl="/kitchen.glb"
+    licenseKey="your-license-key"
+    before={{ label: "Current", objectBindings: currentBindings }}
+    after={{ label: "Proposed", objectBindings: proposedBindings }}
+  />
+</div>;
+```
+
+## Layouts
+
+- **`layout="slider"`** (default) lays the two views over each other. A divider
+  splits them: the left of it shows `before`, the right shows `after`. Drag the
+  divider, or focus it and use the arrow keys, Page Up/Down, Home, and End. It
+  is a slider to screen readers, with each side's label and share.
+- **`layout="side-by-side"`** shows the two views next to each other, each half
+  the width.
+
+```tsx
+<CompareViewer
+  modelUrl="/car.glb"
+  licenseKey="your-license-key"
+  layout="side-by-side"
+  before={{ sceneConfig: { ...config, model: { ...config.model, activeVariants: ["Paint: Red"] } } }}
+  after={{ sceneConfig: { ...config, model: { ...config.model, activeVariants: ["Paint: Blue"] } } }}
+/>
+```
+
+## One camera
+
+Orbiting, panning, or zooming either side moves both. The side you last
+grabbed leads and the other copies it every frame, so a fly-in, a zoom to a
+selected object, or a refit on one side shows on both. With two different
+models, the views line up on the same point in space, so the models should
+share a coordinate system.
+
+## Props
+
+```ts
+type CompareViewerProps = Partial<ModelViewerProps> & {
+  licenseKey: string;
+  before: CompareViewerSide; // the left side
+  after: CompareViewerSide; // the right side
+  layout?: "slider" | "side-by-side"; // default "slider"
+  split?: number; // the divider, 0 (left edge) to 1; default 0.5
+  onSplitChange?: (split: number) => void;
+};
+
+type CompareViewerSide = Partial<ModelViewerProps> & {
+  label?: string; // shown over the side; default "Before" / "After"
+};
+```
+
+Every other prop is shared by both sides, and a side's own props win.
+Callbacks run per side: give `before.onObjectSelect` and
+`after.onObjectSelect` to tell the sides apart. Both sides start from the
+`minimal` [preset](/reference/model-viewer#presets-and-grouped-props),
+with no panels or buttons, so their interfaces don't overlap; pass `preset`
+or `ui` to change that. Pass `split` to control the divider yourself;
+without it, `CompareViewer` keeps the position.
+
+<Callout type="info">
+  Each side has its own WebGL (or [WebGPU](/reference/model-viewer#webgpu))
+  canvas. The two share one download and parse of the model file, but the GPU
+  holds two copies of its geometry and textures.
+</Callout>
+
+`poster`, `loading` and `reveal` work as on
+[`ModelViewer`](/reference/model-viewer#lazy-loading-and-posters). With
+`reveal="interaction"`, one **View in 3D** button starts both sides.
+
+BindingBuilder has the same slider over its preview (**Compare**), to check
+edits against the project as it was opened.
+
+The divider and the default side labels use the
+[`labels`](/reference/labels) keys `compareBefore`, `compareAfter`,
+`compareDivider`, and `compareDividerValue`.

@@ -6,7 +6,7 @@ import { Callout } from "nextra/components";
 
 # `BindingBuilder`
 
-A design-time helper component for authoring `objectBindings` and `sceneConfig` in the browser. Load a GLB, GLTF, OBJ, FBX, or USDZ asset, inspect its mesh nodes, edit binding fields, configure the scene, preview the result live, and export as JSON or TypeScript.
+A design-time helper component for authoring `objectBindings` and `sceneConfig` in the browser. Load a GLB, GLTF, OBJ, FBX, USDZ, STL, or PLY asset, inspect its mesh nodes, edit binding fields, configure the scene, preview the result live, and export as JSON or TypeScript.
 
 Try the public editor at [react-immersive.liveroom.dev/editor](https://react-immersive.liveroom.dev/editor).
 
@@ -43,8 +43,11 @@ See the
 
 ### Object tab
 
-- Upload a `.glb`, standalone/data-URI `.gltf`, `.obj`, `.fbx`, `.usdz`, or `.zip` bundle. ZIP bundles may contain GLTF dependencies, OBJ + MTL/textures, or FBX external textures; USDZ is uploaded directly
+- Upload a `.glb`, standalone/data-URI `.gltf`, `.obj`, `.fbx`, `.usdz`, `.stl`, `.ply`, or `.zip` bundle. ZIP bundles may contain GLTF dependencies, OBJ + MTL/textures, or FBX external textures; USDZ is uploaded directly
 - Traverse renderable mesh nodes and generate starter bindings automatically
+- For an object without texture coordinates (STL, most PLY), the **Material**
+  image map fields are turned off with a note, and the starter actions leave out
+  **Change Material** (see [STL and PLY](/reference/model-viewer#stl-and-ply))
 - Edit binding fields: identity, label, type, status, booleans, style, actions, metrics, metadata, and saved camera state
 - Add decals from the **Decals** panel: upload an image or add text to place it
   automatically at the centre of the camera-facing surface. Set its size,
@@ -83,6 +86,14 @@ See the
 
 ### Scene tab
 
+In **Annotations**, edit a marker's title, description, category, image URLs and
+alt text, and link URLs and labels. **Capture current view** saves the preview
+camera, **Preview** recalls it, and **Clear view** uses automatic tour framing.
+New markers use automatic close-up zoom until you explicitly capture a custom
+view. Optional minimum and maximum distances hide markers outside the chosen
+range (scene units); blank fields mean no limit. These fields persist in exported
+`sceneConfig.annotations`.
+
 - Configure scene-wide settings (lighting, environment, background, ground
   shadows, wireframe, post-processing, annotations, per-clip animation options,
   and a cinematic camera path), the same `SceneConfig` shape consumed by
@@ -102,10 +113,17 @@ See the
   and metadata keys, shows how many objects each rule matches, and the preview
   updates as you edit. Exported as `sceneConfig.styleRules`; see
   [Style rules](/reference/model-viewer#style-rules)
+- Check your changes with **Compare** above the preview: a divider across the
+  preview shows the project as it was opened on its left and as it is now on
+  its right. Drag it (or focus it and use the arrow keys) to sweep between
+  them; orbiting either side moves both. **Pin**, on the "Before" label, makes
+  the current state the "before", to compare the next round of changes with it. The
+  preview stays live while comparing, and the "before" side is view only. It
+  is the same slider as [`CompareViewer`](/reference/compare-viewer)
 - Pick which of the model's glTF material variants (`KHR_materials_variants`)
-  the scene starts with (**General → Material variant**), exported as
-  `sceneConfig.model.materialVariant`. The preview's variant buttons change the
-  same setting
+  the scene starts with (**General**, one select per option group, such as
+  **Paint** and **Wheels**), exported as `sceneConfig.model.activeVariants`.
+  The preview's swatch rows change the same setting
 - Position and rotate directional, point, and spot lights with transform
   gizmos; spot lights also expose angle and penumbra controls
 - Switch the model renderer between **PBR**, **Matcap**, and **UV Checker**.
@@ -138,8 +156,8 @@ doesn't lose it:
   again when the tab is hidden or closed. A session is the model, its object
   bindings, and the scene settings. An uploaded model file is saved with it, so
   it doesn't need uploading again.
-- **Restore last session** (the history button in the preview toolbar) reopens
-  the saved session. One session is kept per browser, and each save replaces
+- **Restore last session** (in the "⋯" menu above the preview) reopens the
+  saved session. One session is kept per browser, and each save replaces
   the last.
 - While there are edits on screen, leaving or reloading the page asks for
   confirmation first. Loading or restoring a model without changing it doesn't.
@@ -260,18 +278,18 @@ overwriting the other. If nothing was uploaded, Export downloads a plain
 
 `BindingBuilder` validates `licenseKey` the same way `ModelViewer` does, and additionally gates some editor features by the license's plan tier:
 
-| Tier      | Unlocks                                                                                                                                                                             |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `free`    | Base color, metalness/roughness sliders, basic scene settings                                                                                                                       |
+| Tier      | Unlocks                                                                                                                                                                                                  |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `free`    | Base color, metalness/roughness sliders, basic scene settings                                                                                                                                            |
 | `starter` | + Texture maps, the specular workflow, reflectivity, environment lighting, environment backgrounds, wireframe preview, animation configuration, annotations, cinematic camera paths, style rules, decals |
-| `growth`  | + Post-processing effects                                                                                                                                                           |
+| `growth`  | + Post-processing effects                                                                                                                                                                                |
 
 A locked feature is shown in place (not hidden) with a message naming the required plan, so the feature stays discoverable while editing. Get a license key at the [React Immersive Console](https://react-immersive.liveroom.dev/console).
 
 ## Typical Workflow
 
 1. Mount `<BindingBuilder />` in a dev-only route (e.g. `/dev/bindings`)
-2. Upload your `.glb`, `.gltf`, `.obj`, `.fbx`, `.usdz`, or `.zip`
+2. Upload your `.glb`, `.gltf`, `.obj`, `.fbx`, `.usdz`, `.stl`, `.ply`, or `.zip`
 3. Select mesh nodes in the sidebar, edit their binding fields, move or rotate
    them as needed, or apply a material preset
 4. Configure scene-wide settings in the **Scene** tab

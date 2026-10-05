@@ -91,7 +91,7 @@ const { getShareUrl, restoreFromUrl } = useShareableViewerState({
 | ---------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `getShareUrl`    | `() => string`           | Builds the full share URL for the current state, without touching the address bar                                                     |
 | `syncUrl`        | `() => void`             | Writes the current state into the URL hash via `history.replaceState` (no navigation, no history entry)                               |
-| `restoreFromUrl` | `() => Promise<boolean>` | Reads state from the current URL hash, if any, and applies it. Safe to call from `onViewerReady`; only a new hash snapshot re-applies |
+| `restoreFromUrl` | `() => Promise<boolean>` | Reads state from the current URL hash, if any, and applies it; resolves `true` once all of it is applied. Safe to call from `onViewerReady`; only a new hash snapshot re-applies |
 
 ## Notes
 
@@ -110,6 +110,12 @@ const { getShareUrl, restoreFromUrl } = useShareableViewerState({
   otherwise auto-sync never activates.
 - `restoreFromUrl` depends on `viewer.raw.controls` being available, so call it
   from inside (or after) `onViewerReady`, not before the viewer has mounted.
+- When the bindings come from the model, as with `useViewer` or
+  `objectBindings="auto"`, they exist only once it has loaded, after the first
+  `onViewerReady`. A link that hides or selects objects then restores its
+  camera at once and waits for them: `onViewerReady` runs again when the
+  bindings arrive, and that call hides and selects them. The hash isn't
+  updated while it waits.
   It's also safe to call from there even though `onViewerReady` fires
   repeatedly (camera changes, model load, binding changes): only the first
   call for a given hash snapshot does anything, so a newer permalink can

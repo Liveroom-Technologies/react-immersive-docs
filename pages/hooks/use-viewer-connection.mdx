@@ -82,11 +82,12 @@ const clip = await connection.captureVideo({
 ```
 
 Video recording does not require `preserveDrawingBuffer`. The browser must
-support `canvas.captureStream` and `MediaRecorder`; Auto prefers WebM, then MP4.
-Explicit unsupported formats reject. Recording uses the canvas's current pixel
-resolution and runs in real time, so keep the tab visible. It restores the
-previous camera and controls when it ends. Audio, HTML overlays, and GIF encoding
-are not included. Calls before framing, during XR, or during another recording
+support `canvas.captureStream`, and `MediaRecorder` for WebM/MP4; Auto prefers
+WebM, then MP4. `format: "gif"` makes an animated GIF instead, `gifWidth` pixels
+wide (default 480) at 15 fps by default. Explicit unsupported formats reject.
+Video uses the canvas's current pixel resolution. Recording runs in real time,
+so keep the tab visible. It restores the previous camera and controls when it
+ends. Audio and HTML overlays are not included. Calls before framing, during XR, or during another recording
 reject. See [Video export](/reference/model-viewer#video-export) and
 [`CaptureVideoOptions`](/reference/types#capturevideooptions) for all options.
 

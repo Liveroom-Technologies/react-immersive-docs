@@ -7,7 +7,7 @@ import { Callout } from "nextra/components";
 # Introduction
 
 `@liveroom-tech/react-immersive` is a React-based 3D model viewer for
-interactive GLB, GLTF, OBJ, FBX, and USDZ assets. It renders a model with React
+interactive GLB, GLTF, OBJ, FBX, USDZ, STL, and PLY assets. It renders a model with React
 Three Fiber, lets users click named meshes, shows a built-in side panel for the
 selected object, and supports per-object actions such as color changes, texture
 uploads, and visibility toggles.
@@ -15,7 +15,7 @@ uploads, and visibility toggles.
 ## Why This Library Exists
 
 Rendering a model in Three.js/React Three Fiber is the easy part. The hard part
-is everything layered on top once a GLB, GLTF, OBJ, FBX, or USDZ asset needs to
+is everything layered on top once a GLB, GLTF, OBJ, FBX, USDZ, STL, or PLY asset needs to
 be **interactive and configurable**:
 
 - Click a part of the model to show details about it
@@ -105,7 +105,8 @@ both depending on what the experience needs.
 ## Viewer tools and engagement
 
 - [Video export](/reference/model-viewer#video-export) records a cinematic
-  pass or turntable revolution as browser-supported WebM/MP4 for product media.
+  pass or turntable revolution as browser-supported WebM/MP4, or as an animated
+  GIF, for product media.
 - [Measurement tools](/reference/model-viewer#showmeasuretools) include
   distance, angle, polygon area, point-to-plane distance, vertex/edge snapping,
   and bounding-box dimensions.
@@ -117,6 +118,14 @@ both depending on what the experience needs.
   exposes part views, variant choices, AR session duration, and tour outcomes
   through `onEngagement`; `debugEngagement` logs events in the developer console.
   Both are opt-in, and the viewer sends no telemetry automatically.
+- [Accessibility](/reference/model-viewer#accessibility): keyboard users can
+  move through and select objects, screen readers hear each selection, and
+  motion the viewer starts on its own stops for visitors who ask their device to
+  reduce motion.
+- [`CompareViewer`](/reference/compare-viewer) shows two configurations,
+  or two models, with one camera: a before/after slider or side by side.
+- [WebGPU](/reference/model-viewer#webgpu) rendering is opt-in through
+  `perf={{ webgpu: true }}`, with WebGL wherever the browser lacks it.
 
 ## When This Package Fits
 

@@ -540,7 +540,7 @@ type SceneConfig = {
     shading: "lit" | "unlit" | "normals";
     autoRotate?: boolean;
     autoRotateSpeed?: number;
-    materialVariant?: string | null; // glTF material variant name; null for the defaults
+    activeVariants?: string[]; // glTF material variants shown, one per option group
   };
   camera: SceneCameraConfig;
   lighting: SceneLightingConfig;
@@ -559,8 +559,9 @@ type SceneConfig = {
 ```
 
 `model.autoRotate` and `model.autoRotateSpeed` apply when the equivalent
-`ModelViewer` props aren't passed; passed props win. `model.materialVariant`
-selects one of the model's glTF material variants by name (see
+`ModelViewer` props aren't passed; passed props win. `model.activeVariants`
+selects the model's glTF material variants by name, at most one from each
+option group (see
 [`showMaterialVariants`](/reference/model-viewer#showmaterialvariants)). Import
 `DEFAULT_SCENE_CONFIG` when creating a scene from code so new sections and
 defaults remain populated, then update it with `useSceneConfig` or
@@ -682,14 +683,16 @@ for readiness requirements and recording behavior.
 type CaptureVideoOptions = {
   /** Defaults to cinematic when a path is enabled, otherwise turntable. */
   mode?: "cinematic" | "turntable";
-  /** Auto prefers WebM, then MP4. Explicit formats reject if unsupported. */
-  format?: "auto" | "webm" | "mp4";
-  /** Seconds per pass, in (0, 300]. Defaults to path timing or a 24s orbit. */
+  /** Auto prefers WebM, then MP4. "gif" makes a looping GIF. Explicit formats reject if unsupported. */
+  format?: "auto" | "webm" | "mp4" | "gif";
+  /** Seconds per pass, in (0, 300]. Defaults to path timing, or a 24s orbit (8s for a GIF). */
   duration?: number;
-  /** Capture frame rate, from 1 to 60. Default 30. */
+  /** Capture frame rate, from 1 to 60. Default 30 (15 for a GIF). */
   fps?: number;
-  /** Encoder target bitrate in bits per second. Default 8,000,000. */
+  /** Encoder target bitrate in bits per second. Default 8,000,000. Not used for GIFs. */
   videoBitsPerSecond?: number;
+  /** GIF width in pixels, 16 to 4096, never wider than the canvas; the height follows. Default 480. */
+  gifWidth?: number;
   /** Aborting discards the recording and restores the viewer. */
   signal?: AbortSignal;
 };
@@ -719,12 +722,13 @@ type ViewerEngagementEvent = {
       objectId: string;
       objectKey: string;
       label?: string;
-      source: "canvas" | "panel";
+      source: "canvas" | "panel" | "keyboard";
     }
   | {
       type: "variant-chosen";
-      variant: string | null;
-      previousVariant: string | null;
+      variant: string | null; // null when a group's choice was cleared
+      previousVariant: string | null; // the group's previous choice
+      group: string | null; // the option group's name; null for an unnamed group
     }
   | { type: "ar-started" }
   | {
@@ -748,6 +752,44 @@ type ViewerEngagementEvent = {
 
 ```
 
+## SceneAnnotationMarker
+
+```ts
+type SceneAnnotationCameraView = {
+  position: [number, number, number];
+  target: [number, number, number];
+  azimuthAngle?: number; // radians
+  polarAngle?: number; // radians
+  fov?: number | null;
+  zoom?: number;
+};
+
+type SceneAnnotationImage = { src: string; alt?: string };
+type SceneAnnotationLink = { href: string; label: string };
+
+type SceneAnnotationMarker = {
+  id: number;
+  worldPosition: [number, number, number];
+  localPosition: [number, number, number];
+  worldNormal?: [number, number, number];
+  anchorNodeName?: string;
+  anchorLocalPosition?: [number, number, number];
+  title: string;
+  description: string;
+  cameraView?: SceneAnnotationCameraView;
+  images?: SceneAnnotationImage[];
+  links?: SceneAnnotationLink[];
+  category?: string;
+  minDistance?: number;
+  maxDistance?: number;
+};
+```
+
+All rich fields are optional. See [Rich annotations](/reference/model-viewer#rich-annotations) for saved-view playback,
+category filtering, and marker-distance behavior. These annotation types are
+exported from the main entry and the server-safe `/utils` entry.
+
+
 ## Other exported types
 
 Every type below is exported from `@liveroom-tech/react-immersive` and is
@@ -760,8 +802,14 @@ described with the API it belongs to.
 | `BindingBuilderProps` (from `/binding-builder`) | [`BindingBuilder`](/reference/binding-builder) |
 | `ObjectBindingMaterialBlendingMode`, `ObjectBindingMaterialSide`, `ObjectBindingTextureSlot`, `ObjectBindingTextureChannel` | [`ObjectBindingMaterial`](#objectbindingmaterial) |
 | `AnimationActionEffect`, `CameraActionEffect`, `ObjectBindingsActionEffect`, `SceneConfigActionEffect`, `VisibilityActionEffect` | [`ObjectBindingAction`](#objectbindingaction) |
-| `AnimationLoopMode`, `SceneAnimationClipConfig`, `SceneLightType`, `SceneModelConfig`, `SceneCameraConfig`, `SceneLightingConfig`, `SceneShadowConfig`, `SceneEnvironmentConfig`, `SceneWireframeConfig`, `SceneBackgroundConfig`, `SceneGroundShadowConfig`, `ScenePostProcessingConfig`, `SceneAnnotationMarker`, `EnvironmentPreset`, `GlitchModeName`, `KernelSizeName`, `RampTypeName` | [`SceneConfig`](#sceneconfig) and [`SceneLight`](#scenelight) |
+| `AnimationLoopMode`, `SceneAnimationClipConfig`, `SceneLightType`, `SceneModelConfig`, `SceneCameraConfig`, `SceneLightingConfig`, `SceneShadowConfig`, `SceneEnvironmentConfig`, `SceneWireframeConfig`, `SceneBackgroundConfig`, `SceneGroundShadowConfig`, `ScenePostProcessingConfig`, `EnvironmentPreset`, `GlitchModeName`, `KernelSizeName`, `RampTypeName` | [`SceneConfig`](#sceneconfig) and [`SceneLight`](#scenelight) |
+| `SceneAnnotationMarker`, `SceneAnnotationCameraView`, `SceneAnnotationImage`, `SceneAnnotationLink` | [`SceneAnnotationMarker`](#sceneannotationmarker) |
 | `ObjectBindingDecal`, `ObjectSurfacePoint` | [Decals](/reference/model-viewer#decals) |
+| `MaterialVariantGroup`, `MaterialVariantOption` (also from `/simple-model-viewer` and `/utils`) | [`showMaterialVariants`](/reference/model-viewer#showmaterialvariants) |
+| `ReducedMotionSetting` (also from `/simple-model-viewer` and `/utils`) | [`reducedMotion`](/reference/model-viewer#reducedmotion) |
+| `RendererBackend` (also from `/utils`) | [`webgpu`](/reference/model-viewer#webgpu) |
+| `ViewerLoading`, `ViewerReveal` (also from `/simple-model-viewer`) | [Lazy loading and posters](/reference/model-viewer#lazy-loading-and-posters) |
+| `CompareViewerProps`, `CompareViewerSide` | [`CompareViewer`](/reference/compare-viewer) |
 | `ViewerIsolation`, `IsolatedObjectBindings` | [`ViewerIsolation`](#viewerisolation) |
 | `ViewerIsolationProps` | [`useViewerIsolation`](/hooks/use-viewer-isolation) |
 | `SceneSectionConfig`, `SceneSectionAxis` | [`SceneSectionConfig`](#scenesectionconfig) |
@@ -777,3 +825,10 @@ described with the API it belongs to.
 | `ViewerConnectionController`, `ViewerReadyConsumer`, `ViewerReadyHandler` | [`useViewerConnection`](/hooks/use-viewer-connection) |
 | `AnimationClipInfo`, `AnimationClipState`, `AnimationClipStatus`, `AnimationPlayOptions`, `ViewerAnimationsProps` | [`useViewerAnimations`](/hooks/use-viewer-animations) |
 | `RuntimeMaterialPatch`, `RuntimeMaterialRanges`, `RuntimePointLightOptions`, `RuntimePointLightPatch`, `RuntimeTransformPatch`, `RuntimeTransformRanges`, `UseViewerEffectsOptions`, `ViewerEffectEasing`, `ViewerEffectsController`, `ViewerEffectRange`, `ViewerEffectTarget`, `ViewerFlickerOptions`, `ViewerLightEffectChannel`, `ViewerMaterialEffectChannel`, `ViewerTimelineOptions`, `ViewerTimelineStep`, `ViewerPulseOptions`, `ViewerTransformEffectChannel`, `ViewerTransitionOptions`, `ViewerVector3` | [`useViewerEffects`](/hooks/use-viewer-effects) |
+
+## `ModelViewerLabels` / `ModelViewerLabelKey`
+
+`ModelViewerLabelKey` is the union of keys in `DEFAULT_MODEL_VIEWER_LABELS`.
+`ModelViewerLabels` is `Partial<Record<ModelViewerLabelKey, string>>`, accepted by both viewers' `labels` prop. The default dictionary and both types are exported from the main package, `/simple-model-viewer`, and `/utils` (which can be imported without React).
+
+See the [labels reference](/reference/labels) for examples and the complete catalog.

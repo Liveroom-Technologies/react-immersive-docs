@@ -1,0 +1,323 @@
+---
+title: UI Labels
+---
+
+# UI Labels
+
+`ModelViewer`, `SimpleModelViewer`, and `CompareViewer` accept a `labels` prop to override built-in text. Buttons, tooltips, accessible names, tool hints, loading/error messages, and AR placement controls all use this dictionary.
+
+## Usage
+
+```tsx
+import { ModelViewer, type ModelViewerLabels } from "@liveroom-tech/react-immersive";
+
+const french: ModelViewerLabels = {
+  guidedTour: "Visite guidée",
+  startGuidedTour: "Commencer la visite",
+  stopGuidedTour: "Terminer la visite",
+  previous: "Précédent",
+  next: "Suivant",
+  tapToPlace: "Touchez pour placer",
+  download: "Télécharger",
+  recordingVideo: "Enregistrement : {progress}%",
+  visibleEntries: "Éléments visibles : {count}",
+};
+
+<ModelViewer modelUrl="/car.glb" licenseKey="your-license-key" labels={french} />;
+```
+
+Unspecified keys fall back to English. Empty strings are accepted. Labels are local to each viewer instance; switching dictionaries updates the UI without reloading the model. Values are plain text, not HTML or React nodes.
+
+## Placeholders and application translations
+
+Dynamic text uses named placeholders such as `{count}`, `{progress}`, `{name}`, or `{status}`. Keep the placeholders you need in the translated string; you can reorder or repeat them. For example, `objectCount: "Objets : {count}"` displays `Objets : 3`. Placeholder values are substituted literally, and unsupported placeholders remain unchanged.
+
+This dictionary does not format numbers or choose plural forms automatically. Your application can supply a dictionary from its own localization system. Annotation titles/descriptions, image alt text, link labels, category names, model/object metadata, custom panel content, and raw server/loader diagnostics remain application data. Automatically generated object action buttons also use the dictionary; labels on caller-supplied actions remain application data. API values such as `"angle"`, `"vertex"`, and environment preset IDs stay the same when their displayed labels change.
+
+## Default dictionary and types
+
+```ts
+import {
+  DEFAULT_MODEL_VIEWER_LABELS,
+  type ModelViewerLabels,
+  type ModelViewerLabelKey,
+} from "@liveroom-tech/react-immersive/utils";
+
+// Also exported from the main package and /simple-model-viewer.
+type Labels = Partial<Record<ModelViewerLabelKey, string>>;
+const englishTour = DEFAULT_MODEL_VIEWER_LABELS.guidedTour;
+```
+
+## Complete catalog
+
+Only labels for enabled controls appear in a viewer. The following list is shared by both components. Placeholder names in defaults show the values supplied by the viewer.
+
+| Key | English default |
+| --- | --- |
+| `actionChangeColor` | `Change Color` |
+| `actionChangeLightColor` | `Change Light Color` |
+| `actionChangeMaterial` | `Change Material` |
+| `actions` | `Actions` |
+| `actionSetBrightness` | `Set Brightness` |
+| `actionToggleLight` | `Toggle Light` |
+| `actionToggleVisibility` | `Toggle Visibility` |
+| `added` | `Added` |
+| `addText` | `Add text` |
+| `all` | `All` |
+| `ambientLightColor` | `Ambient Light Color` |
+| `ambientLightIntensity` | `Ambient Light Intensity` |
+| `angle` | `Angle` |
+| `angleFirstArmHint` | `Pick the first arm` |
+| `angleNewHint` | `Pick a point to start a new angle` |
+| `angleSecondArmHint` | `Pick the second arm` |
+| `angleVertexHint` | `Pick the angle's vertex` |
+| `annotationCategories` | `Annotation categories` |
+| `annotationMarker` | `Annotation {id}: {title}` |
+| `annotations` | `Annotations` |
+| `annotationTitlePlaceholder` | `Title *` |
+| `area` | `Area` |
+| `areaCornersHint` | `Pick polygon corners in order, then Finish area` |
+| `areaDistinctPoints` | `Area points must be distinct.` |
+| `areaEdgesCross` | `Area edges must not cross or touch each other.` |
+| `areaMinimumPoints` | `Pick at least three points to finish the area.` |
+| `areaNewHint` | `Pick a point to start a new area` |
+| `areaNotPlanar` | `Area points must lie on one plane.` |
+| `areaStraightLine` | `Area points must not lie on one straight line.` |
+| `areaZero` | `The polygon has no measurable area.` |
+| `arFindSurface` | `Move your device over a flat surface` |
+| `arGestureHint` | `Pinch to resize · Twist to rotate` |
+| `arReleaseToPlace` | `Release to place` |
+| `arRelocate` | `Relocate` |
+| `arScanCode` | `Scan the code and choose AR.` |
+| `auto` | `Auto` |
+| `autoRotate` | `Auto Rotate` |
+| `background` | `Background` |
+| `backgroundColor` | `Background Color` |
+| `bindingMismatchMany` | `{count} object bindings don't match this model` |
+| `bindingMismatchOne` | `1 object binding doesn't match this model` |
+| `cameraController` | `Camera controller` |
+| `cameraControllerSettings` | `Camera controller settings` |
+| `cameraKeyboardHelp` | `3D view. Arrow keys orbit, Shift with Up or Down zooms, and W, A, S, D, Space and C move the camera.` |
+| `cancel` | `Cancel` |
+| `checkingYourLicenseKey` | `Checking your license key...` |
+| `chooseImage` | `Choose image` |
+| `chooseModel` | `Choose model` |
+| `clear` | `Clear` |
+| `clearMeasurements` | `Clear measurements` |
+| `close` | `Close` |
+| `closeAnnotation` | `Close annotation` |
+| `closePanel` | `Close panel` |
+| `closePhoneHandoff` | `Close phone handoff` |
+| `closeSceneObjectsPanel` | `Close scene objects panel` |
+| `color` | `Color` |
+| `colour` | `Colour` |
+| `compareAfter` | `After` |
+| `compareBefore` | `Before` |
+| `compareDivider` | `Comparison divider` |
+| `compareDividerValue` | `{before} {percent}%, {after} {rest}%` |
+| `confirmTexturePosition` | `Confirm this texture position and exit positioning mode` |
+| `contextLostMessage` | `The graphics connection was interrupted. The viewer will rebuild when it returns, or you can reload it now.` |
+| `contextLostTitle` | `3D view interrupted` |
+| `contextRestoringMessage` | `Rebuilding the 3D view. Please wait…` |
+| `contextRestoringTitle` | `Reloading viewer…` |
+| `decalAdded` | `{count} added` |
+| `decalDirectionMissing` | `No visible surface in that direction. Try another arrow or rotate the view.` |
+| `decalDragHint` | `Drag the decal on the object. Release to save; Escape to cancel.` |
+| `decalImage` | `Image {index}` |
+| `decalNudgeControls` | `Move decal in small steps` |
+| `decalNudgeHint` | `Click to fine-tune · Hold to move` |
+| `decalSurfaceMissing` | `Could not find a surface on this object for the decal.` |
+| `decalText` | `Text {index}` |
+| `description` | `Description` |
+| `directLightColor` | `Direct Light Color` |
+| `directLightIntensity` | `Direct Light Intensity` |
+| `disableUVChecker` | `Disable UV checker` |
+| `dismiss` | `Dismiss` |
+| `distance` | `Distance` |
+| `distanceHint` | `Pick points on the model to measure distances` |
+| `done` | `Done` |
+| `donePositioning` | `Done positioning` |
+| `down` | `down` |
+| `download` | `Download` |
+| `downloadGLB` | `Download GLB` |
+| `downloadOptions` | `Download options` |
+| `downloadPNG` | `Download PNG` |
+| `downloadUVLayout` | `Download UV Layout` |
+| `dragTheDecalAcrossTheObjectsSurface` | `Drag the decal across the object's surface` |
+| `dropModelHint` | `Drag and drop {formats} here` |
+| `enableUVChecker` | `Enable UV checker` |
+| `enterAR` | `Enter AR` |
+| `enterFullscreen` | `Enter fullscreen` |
+| `enterVR` | `Enter VR` |
+| `environment` | `Environment` |
+| `environmentApartment` | `apartment` |
+| `environmentCity` | `city` |
+| `environmentDawn` | `dawn` |
+| `environmentForest` | `forest` |
+| `environmentLobby` | `lobby` |
+| `environmentNight` | `night` |
+| `environmentPark` | `park` |
+| `environmentStudio` | `studio` |
+| `environmentSunset` | `sunset` |
+| `environmentWarehouse` | `warehouse` |
+| `exitFullscreen` | `Exit fullscreen` |
+| `explodeAmount` | `Explode amount` |
+| `explodedView` | `Exploded view` |
+| `exporting` | `Exporting…` |
+| `exposure` | `Exposure` |
+| `failedToLoadPleaseContactTheSiteAdministrator` | `Failed to load. Please contact the site administrator.` |
+| `finishArea` | `Finish area` |
+| `fullscreenEnterFailed` | `Could not enter fullscreen. Check your browser or iframe fullscreen permissions and try again.` |
+| `fullscreenExitFailed` | `Could not exit fullscreen. Press Escape to exit.` |
+| `guidedTour` | `Guided Tour` |
+| `hide` | `Hide` |
+| `hideObject` | `Hide {name}` |
+| `image` | `Image` |
+| `imageToAdd` | `Image to add` |
+| `invalidLicense` | `Invalid License` |
+| `isolate` | `Isolate` |
+| `isolatedObject` | `Isolated: {name}` |
+| `isolatedObjects` | `Isolated: {count} objects` |
+| `isolateObject` | `Isolate {name}` |
+| `keepTheOtherSide` | `Keep the other side` |
+| `largeModelWarning` | `Very large model ({millions}M triangles) — it may render and move slowly on this device, and click/hover selection on the model is disabled. Use the objects panel to select parts.` |
+| `learnMore` | `Learn more` |
+| `left` | `left` |
+| `licenseHasBeenRevokedOrHasExpired` | `License has been revoked or has expired` |
+| `lighting` | `Lighting` |
+| `loadErrorDenied` | `The server refused access to the file ({status}). Check that the file is public, or that a signed URL hasn't expired.` |
+| `loadErrorHtml` | `The server sent back a web page instead of a model. There's probably no file at this path: many servers answer a missing file with their index.html.` |
+| `loadErrorInvalidExplicitFormat` | `The file couldn't be read as {format}. Check that it's a valid {format} file and that modelFormat matches it.` |
+| `loadErrorInvalidFile` | `The file couldn't be read as {format}. Check that it's a valid {format} file.` |
+| `loadErrorMissingFormat` | `The file couldn't be read as {format}. The URL has no file extension, so set modelFormat to the file's format.` |
+| `loadErrorNetwork` | `The download was blocked or failed. Check that the URL is correct and, if the file is on another domain, that its server allows cross-origin requests (CORS) from this site.` |
+| `loadErrorNotFound` | `Nothing was found at this address ({status}). Check that modelUrl points to the file.` |
+| `loadErrorPointCloud` | `This PLY file is a point cloud: it has points but no faces, and the viewer shows meshes. Turn it into a mesh first, for example with MeshLab or Blender.` |
+| `loadErrorStatus` | `The server responded with {status} when the file was requested.` |
+| `loadErrorTitle` | `This model couldn't be loaded` |
+| `loadingModel` | `Loading model...` |
+| `material` | `Material` |
+| `materialVariants` | `Material variants` |
+| `measurementAngleDistinct` | `Pick a point away from the angle's vertex.` |
+| `measurementReferenceFaceRequired` | `Pick a triangle face to define the reference plane.` |
+| `measurementSnapping` | `Measurement snapping` |
+| `measurementTool` | `Measurement tool` |
+| `measurementTooManyPoints` | `Finish or clear this measurement before adding more points.` |
+| `missingUVsAreShownInMagenta` | `Missing UVs are shown in magenta.` |
+| `move` | `Move` |
+| `moveBackward` | `Move backward` |
+| `moveDecal` | `Move decal {direction}` |
+| `moveDecalOnSurface` | `Move {direction} on the visible surface` |
+| `moveForward` | `Move forward` |
+| `moveLeft` | `Move left` |
+| `moveRight` | `Move right` |
+| `next` | `Next` |
+| `nextAnnotation` | `Next annotation` |
+| `noneAddedYet` | `None added yet` |
+| `noSnapping` | `No snapping` |
+| `noTextureApplied` | `No texture applied` |
+| `noTextureCoordinates` | `This part has no texture coordinates, so an image can't be placed on it.` |
+| `objectCount` | `{count} objects` |
+| `objectNavigator` | `Objects in the 3D view` |
+| `objectNavigatorHint` | `Arrow keys browse · Enter selects · Esc clears` |
+| `objectNavigatorPosition` | `{position} of {count}` |
+| `objectSelected` | `{name} selected` |
+| `offsetX` | `Offset X` |
+| `offsetY` | `Offset Y` |
+| `ok` | `OK` |
+| `openOnPhone` | `Open on phone` |
+| `openPanel` | `Open panel` |
+| `openSceneObjectsPanel` | `Open scene objects panel` |
+| `openThisExperienceOnAPhoneForAR` | `Open this experience on a phone for AR` |
+| `orbitControl` | `Orbit Control` |
+| `pauseCinematic` | `Pause cinematic` |
+| `playCinematic` | `Play cinematic` |
+| `pointLock` | `Point Lock` |
+| `pointToPlane` | `Point to plane` |
+| `pointToPlaneFaceHint` | `Pick the reference face` |
+| `pointToPlaneNewHint` | `Pick a face to start a new measurement` |
+| `pointToPlanePointHint` | `Pick a point to measure its perpendicular distance` |
+| `position` | `Position` |
+| `preparingLargeModel` | `Preparing large model ({millions}M triangles) — the first display can take a while on this device...` |
+| `previous` | `Prev` |
+| `previousAnnotation` | `Previous annotation` |
+| `qrCodeToOpenThisModelOnAPhone` | `QR code to open this model on a phone` |
+| `recordCinematicVideo` | `Record cinematic video` |
+| `recordingVideo` | `Recording video · {progress}%` |
+| `recordTurntableVideo` | `Record turntable video` |
+| `releaseToLoadYourModel` | `Release to load your model` |
+| `reloadViewer` | `Reload viewer` |
+| `remove` | `Remove` |
+| `removeSectionCut` | `Remove section cut` |
+| `removeTexture` | `Remove texture` |
+| `replaceImage` | `Replace image` |
+| `resetCameraView` | `Reset camera view` |
+| `right` | `right` |
+| `rotation` | `Rotation` |
+| `sceneObjects` | `SCENE OBJECTS` |
+| `sceneSettings` | `Scene Settings` |
+| `searchNodesLabels` | `Search nodes, labels` |
+| `searchObjects` | `Search objects` |
+| `sectionAxis` | `Section axis` |
+| `sectionCut` | `Section cut` |
+| `sectionPosition` | `Section position` |
+| `selectionCleared` | `Selection cleared` |
+| `show` | `Show` |
+| `showAll` | `Show all` |
+| `showAllObject` | `Show all {name}` |
+| `showObject` | `Show {name}` |
+| `simpleLargeModelWarning` | `Very large model detected ({millions}M triangles) — it may render and move slowly on this device, and click/hover selection on the model is disabled. Use the scene objects panel to select parts.` |
+| `size` | `Size` |
+| `snapAuto` | `Snap: auto` |
+| `snapEdge` | `Snap: edge` |
+| `snapVertex` | `Snap: vertex` |
+| `startGuidedTour` | `Start guided tour` |
+| `startMeasuring` | `Start measuring` |
+| `stopCinematicAndResetCamera` | `Stop cinematic and reset camera` |
+| `stopGuidedTour` | `Stop guided tour` |
+| `stopMeasuring` | `Stop measuring` |
+| `tapToPlace` | `Tap to place` |
+| `text` | `Text` |
+| `textColour` | `Text colour` |
+| `textToAdd` | `Text to add` |
+| `textureOffsetHint` | `Double-click the object in the preview to drag its texture directly (scroll to zoom), or edit its offset numerically.` |
+| `texturePosition` | `Texture position` |
+| `texturePositioningHint` | `Drag to move · Scroll to zoom · Click elsewhere to finish` |
+| `texturePositioningStartHint` | `Double-click to move or zoom` |
+| `texturePreview` | `texture preview` |
+| `toggleBoundingDimensions` | `Toggle bounding dimensions` |
+| `turn` | `Turn` |
+| `uncategorized` | `Uncategorized` |
+| `undoMeasurementPoint` | `Undo measurement point` |
+| `up` | `up` |
+| `uploadedModel` | `Uploaded model` |
+| `uploadImage` | `Upload image` |
+| `uvCoordinatesMissing` | `This model does not contain UV coordinates.` |
+| `uvExportFailed` | `Could not create the UV layout archive.` |
+| `verifyingLicense` | `Verifying License` |
+| `videoAlreadyRecording` | `A video export is already in progress.` |
+| `videoBitrateInvalid` | `Video bitrate must be a positive number.` |
+| `videoContextLost` | `Video export stopped because the WebGL context was lost.` |
+| `videoDidNotStart` | `Video recording did not start.` |
+| `videoDurationInvalid` | `Video duration must be greater than 0 and at most 300 seconds.` |
+| `videoEmpty` | `The browser produced an empty video.` |
+| `videoEncodingFailed` | `The browser could not encode the video.` |
+| `videoExitXR` | `Exit the XR session before recording a video.` |
+| `videoExportFailed` | `Could not export the video.` |
+| `videoFormat` | `Video format` |
+| `videoFrameRateInvalid` | `Video frame rate must be between 1 and 60.` |
+| `videoGIFUnsupported` | `Video recording as GIF is not supported in this browser.` |
+| `videoGifWidthInvalid` | `GIF width must be a whole number of pixels from 16 to 4096.` |
+| `videoMP4Unsupported` | `Video recording as MP4 is not supported in this browser.` |
+| `videoNotReady` | `Viewer not ready for video export.` |
+| `videoPathRequired` | `Enable a cinematic camera path before recording it.` |
+| `videoTimedOut` | `Video export timed out. Keep the viewer tab visible while recording.` |
+| `videoUnsupported` | `Video recording is not supported in this browser.` |
+| `videoWebMUnsupported` | `Video recording as WEBM is not supported in this browser.` |
+| `viewIn3D` | `View in 3D` |
+| `viewInAR` | `View in AR` |
+| `viewThisModelInARWithAppleQuickLook` | `View this model in AR with Apple Quick Look` |
+| `viewThisModelInVR` | `View this model in VR` |
+| `viewThisModelInYourSpace` | `View this model in your space` |
+| `visibleEntries` | `{count} visible entries` |
+| `yourText` | `Your text` |
