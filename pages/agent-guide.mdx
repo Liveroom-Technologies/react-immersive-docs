@@ -1,0 +1,82 @@
+---
+title: AI Agent Guide
+---
+
+# Build with React Immersive
+
+This guide targets `@liveroom-tech/react-immersive` **5.2.0**. Use React and
+React DOM **19**, Three.js **0.184**, and React Three Fiber **9.6.1 or a compatible
+9.x release**.
+
+## Read only what the task needs
+
+- [Compact agent index](https://react-immersive.liveroom.dev/llms.txt)
+- [This guide as Markdown](https://react-immersive.liveroom.dev/docs/agent-guide.md)
+- [Version, peers, page and section URLs](https://react-immersive.liveroom.dev/docs/manifest.json)
+- [Full documentation bundle](https://react-immersive.liveroom.dev/llms-full.txt), optional and large
+- [Public source and runnable starters](https://github.com/Liveroom-Technologies/react-immersive-docs)
+
+Every documentation page has a `.md` alternative. The manifest also lists small
+Markdown sections of the ModelViewer reference so you can fetch one topic
+without loading the entire API reference. HTML is the default response;
+`Accept: text/markdown` requests the Markdown alternative at the same docs URL.
+
+## Choose a component
+
+| Goal                                                           | Import                                                                        | Stylesheet                                               | Runtime key prop |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------- | ---------------- |
+| Display a model, inspect meshes, toggle visibility             | `SimpleModelViewer` from `@liveroom-tech/react-immersive/simple-model-viewer` | `@liveroom-tech/react-immersive/simple-model-viewer.css` | None             |
+| Configure materials, actions, annotations, camera or app state | `ModelViewer` from `@liveroom-tech/react-immersive`                           | `@liveroom-tech/react-immersive/styles.css`              | Required         |
+| Author bindings and scene settings visually                    | `BindingBuilder` from `@liveroom-tech/react-immersive/binding-builder`        | `@liveroom-tech/react-immersive/binding-builder.css`     | Required         |
+
+The package is proprietary. SimpleModelViewer needs no key or paid plan,
+including in production. For ModelViewer and BindingBuilder, follow the [licensing guide](https://react-immersive.liveroom.dev/docs/licensing)
+before deployment. Account sign-in, plan selection and key creation are manual
+steps in the [console](https://react-immersive.liveroom.dev/console).
+
+## Get a first render
+
+Use the complete [Vite setup](https://react-immersive.liveroom.dev/docs/frameworks/vite)
+or [Next.js App Router setup](https://react-immersive.liveroom.dev/docs/frameworks/nextjs).
+Both start with SimpleModelViewer and an explicitly sized container. The
+public sample is [red_room.glb](https://react-immersive.liveroom.dev/red_room.glb);
+place it at `public/red_room.glb` in the consuming application.
+
+Success means the model is visible, the scene objects panel lists objects,
+and `onModelLoaded` fires. A successful TypeScript build alone does not verify
+that a model URL works in the browser.
+
+## Add interaction
+
+Start with `ModelViewer` without `objectBindings` to generate bindings for all
+meshes. Use `useViewer` and spread `viewer.props` onto the component to connect
+its controllers. Use `onObjectCatalog` to discover actual object identifiers;
+do not invent node names. Duplicate authored names receive suffixed IDs.
+
+When using `defineObjectBindings`, preserve literal IDs for authoring but widen
+mutable React state to `Record<string, ObjectBinding>`. Bindings are indexed by
+model node identifiers; `binding.id` is application metadata and can differ.
+
+| Task                                          | Read                                                                                            |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Wire app state and controllers                | [useViewer](https://react-immersive.liveroom.dev/docs/hooks/use-viewer.md)                      |
+| Materials, visibility, grouped edits          | [useObjectBindings](https://react-immersive.liveroom.dev/docs/hooks/use-object-bindings.md)     |
+| Camera focus and saved views                  | [useViewerCamera](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera.md)         |
+| Lighting, environment and scene configuration | [useSceneConfig](https://react-immersive.liveroom.dev/docs/hooks/use-scene-config.md)           |
+| Animations                                    | [useViewerAnimations](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-animations.md) |
+| Annotation tours, exports, XR or performance  | [ModelViewer section index](https://react-immersive.liveroom.dev/docs/manifest.json)            |
+| Export/import scene files                     | [BindingBuilder](https://react-immersive.liveroom.dev/docs/reference/binding-builder.md)        |
+| API shapes                                    | [Types](https://react-immersive.liveroom.dev/docs/reference/types.md)                           |
+| A complete feature implementation             | [Examples](https://react-immersive.liveroom.dev/docs/examples.md)                               |
+
+## Verify the result
+
+1. Run the application's typecheck and production build.
+2. Open the page in a browser with WebGL support.
+3. Confirm the model URL returns model data rather than an HTML error page.
+4. Confirm the viewer has height and its own stylesheet is imported.
+5. Confirm model-loaded/error callbacks and one intended interaction.
+6. For licensed components, check the key and the deployed domain against the plan.
+
+If any step fails, use [Troubleshooting](https://react-immersive.liveroom.dev/docs/troubleshooting.md).
+For existing projects, read the [version and migration notes](https://react-immersive.liveroom.dev/docs/releases.md).

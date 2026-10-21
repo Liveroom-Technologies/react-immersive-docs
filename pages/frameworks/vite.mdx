@@ -1,0 +1,86 @@
+---
+title: Vite + React
+---
+
+# Vite + React
+
+This complete first-render setup targets React Immersive **5.2.0** and React 19.
+Use Node **20.19+ in the 20.x line, or 22.12+** for the Vite starter.
+
+## Create the application
+
+```bash
+npm create vite@8 viewer-app -- --template react-ts
+cd viewer-app
+npm install react@19.2.4 react-dom@19.2.4 @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
+npm install -D @types/react@~19.2.0 @types/react-dom@~19.2.0 @types/three@^0.184.0
+```
+
+Download [red_room.glb](https://react-immersive.liveroom.dev/red_room.glb) into
+`public/red_room.glb`. Keep the filename unchanged. This sample is
+[Red Room by LaisLH](https://skfb.ly/6VBJR), licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); retain attribution
+when sharing a page that uses it.
+
+## Replace these files
+
+```tsx filename="src/main.tsx"
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "@liveroom-tech/react-immersive/simple-model-viewer.css";
+import App from "./App";
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
+```
+
+```tsx filename="src/App.tsx"
+import { useState } from "react";
+import { SimpleModelViewer } from "@liveroom-tech/react-immersive/simple-model-viewer";
+
+export default function App() {
+  const [status, setStatus] = useState("Loading model…");
+
+  return (
+    <main>
+      <p role="status">{status}</p>
+      <div style={{ height: "80vh" }}>
+        <SimpleModelViewer
+          modelUrl="/red_room.glb"
+          onModelLoaded={(model) => setStatus(`Loaded ${model.objectCount} objects`)}
+          onLoadError={() => setStatus("Model failed to load. Check the URL and browser console.")}
+        />
+      </div>
+      <p>Red Room by LaisLH, CC BY 4.0 — https://skfb.ly/6VBJR</p>
+    </main>
+  );
+}
+```
+
+The generated `index.html` and TypeScript configuration can remain as scaffolded.
+The files above intentionally do not import the Vite template's `App.css` or
+`index.css`, whose layout rules can constrain the viewer.
+
+```bash
+npm run dev
+npm run build
+```
+
+Open the local URL printed by Vite. Expect a visible room, a scene objects
+panel, and a loaded-object count. No `licenseKey` prop is needed for this
+SimpleModelViewer smoke test. It also needs no key in production. See [Licensing](https://react-immersive.liveroom.dev/docs/licensing) for the requirements of the other components.
+
+## Use ModelViewer
+
+Follow [Getting Started](https://react-immersive.liveroom.dev/docs/getting-started)
+for the component, bindings and hook wiring. Import `styles.css` in `src/main.tsx`
+and use `import.meta.env.VITE_LICENSE_KEY` for the runtime key. Create an
+uncommitted `.env.local` containing `VITE_LICENSE_KEY=your-license-key`, then
+restart Vite. `VITE_` variables are included in browser code; they are not
+server secrets. Keep account credentials and billing tokens out of client code.
+
+The public [Vite starters](https://github.com/Liveroom-Technologies/react-immersive-docs/tree/main/examples)
+include complete feature implementations, sample assets, lockfiles and build scripts.

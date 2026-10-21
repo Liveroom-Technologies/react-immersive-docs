@@ -1,0 +1,68 @@
+---
+title: Licensing
+---
+
+# Licensing and runtime keys
+
+React Immersive is proprietary software. The
+[package license](https://react-immersive.liveroom.dev/LICENSE.txt) and your
+plan terms govern use. **SimpleModelViewer needs no license key in local or
+production applications.** ModelViewer and BindingBuilder require a key and
+the appropriate plan. The remaining proprietary package terms still apply.
+
+## Component and environment requirements
+
+| Component         | Runtime `licenseKey` prop | Local evaluation                                                          | Production or other non-local use                                                       |
+| ----------------- | ------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| SimpleModelViewer | None                      | No key required                                                           | No key or paid plan required                                                            |
+| ModelViewer       | Required                  | Create a Free or paid key in the console; Free supports local development | A production-enabled plan and a registered domain are required                          |
+| BindingBuilder    | Required                  | Create a Free or paid key; some authoring features depend on tier         | A production-enabled plan and a registered domain are required; features depend on tier |
+
+SimpleModelViewer can be deployed to production without creating an account,
+generating a key, or choosing a paid plan.
+
+For ModelViewer and BindingBuilder, the Free plan is for local development.
+Starter supports one production domain; Growth supports up to five. Scale
+terms are arranged with Liveroom.
+Consult [current pricing](https://react-immersive.liveroom.dev/pricing) for
+the available plans and feature entitlements for those licensed components.
+
+## Create and configure a key for ModelViewer or BindingBuilder
+
+1. Sign in to the [console](https://react-immersive.liveroom.dev/console).
+2. Select the plan appropriate for the environment and features.
+3. Generate a license key. For production, register the application's domain.
+4. Pass that key to ModelViewer or BindingBuilder. SimpleModelViewer does not
+   accept this prop and does not need this account/key setup.
+
+An agent can prepare the integration without signing into your account.
+Account access, plan purchases and key issuance require the account holder.
+Do not reuse the hosted demo's key in a consuming application.
+
+## Local and production domains for licensed components
+
+Local validation recognizes `localhost`, `127.0.0.1`, `0.0.0.0`, and hostnames
+ending in `.localhost` or `.local`. A hosted preview URL or LAN IP is not
+automatically a local-development domain. Production validation checks the
+request's browser origin against the registered domains and plan.
+
+## Browser-visible configuration
+
+Viewer keys are passed to client components and can be inspected in browser
+requests or bundles. `VITE_LICENSE_KEY` and `NEXT_PUBLIC_LICENSE_KEY` are
+client-exposed environment variables, not mechanisms for hiding secrets.
+Use a domain-bound key for the intended application, avoid committing it to a
+public repository, and keep account credentials, billing tokens and server API
+secrets out of client code. Revoke or rotate keys through the console as needed.
+
+## Package and documentation licenses
+
+The package LICENSE is included in the npm tarball, published as
+[LICENSE.txt](https://react-immersive.liveroom.dev/LICENSE.txt), and mirrored as
+[PACKAGE-LICENSE.txt](https://github.com/Liveroom-Technologies/react-immersive-docs/blob/main/PACKAGE-LICENSE.txt)
+in the public repository. That mirror describes the npm product's terms; it
+does not relicense third-party example models or apply a new blanket license
+to this documentation repository.
+
+For account-specific or contractual questions, contact
+[developers@liveroom.xyz](mailto:developers@liveroom.xyz).

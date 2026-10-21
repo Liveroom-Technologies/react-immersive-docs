@@ -1,0 +1,13 @@
+{
+  "package": "@liveroom-tech/react-immersive",
+  "version": "5.2.0",
+  "site": "https://react-immersive.liveroom.dev",
+  "repository": "https://github.com/Liveroom-Technologies/react-immersive-docs",
+  "peerDependencies": {
+    "@react-three/fiber": "^9.6.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.184.0"
+  },
+  "starterNode": "^20.19.0 || >=22.12.0"
+}

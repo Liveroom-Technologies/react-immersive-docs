@@ -6,27 +6,31 @@ import { Callout, Steps, Tabs } from "nextra/components";
 
 # Getting Started
 
+This guide targets **5.2.0** and **React 19**. For a complete first-render app,
+start with [Vite + React](https://react-immersive.liveroom.dev/docs/frameworks/vite) or [Next.js App Router](https://react-immersive.liveroom.dev/docs/frameworks/nextjs).
+For a compact API/task map, see the [AI Agent Guide](https://react-immersive.liveroom.dev/docs/agent-guide).
+
 ## Installation
 
 <Tabs items={["npm", "pnpm", "yarn"]}>
   <Tabs.Tab>
 
     ```bash
-    npm install @liveroom-tech/react-immersive three @react-three/fiber
+    npm install @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    pnpm add @liveroom-tech/react-immersive three @react-three/fiber
+    pnpm add @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    yarn add @liveroom-tech/react-immersive three @react-three/fiber
+    yarn add @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
     ```
 
   </Tabs.Tab>
@@ -57,23 +61,33 @@ development it logs a console warning naming the import to add.
 
 ## Get a License Key
 
-`ModelViewer` and `BindingBuilder` require a `licenseKey`. (`SimpleModelViewer` does not, it's unlicensed.) To get one:
+`ModelViewer` and `BindingBuilder` require a `licenseKey`. (`SimpleModelViewer` needs no key, including in production; see [Licensing](https://react-immersive.liveroom.dev/docs/licensing).) To get one:
 
 1. Sign in (or sign up) at the [React Immersive Console](https://react-immersive.liveroom.dev/console)
 2. Choose a plan
 3. Generate a license key from your dashboard
 
 <Callout type="info">
-  Keep your license key out of public repositories. Load it from an environment
-  variable in your app.
+  Keep keys out of public repositories. `NEXT_PUBLIC_LICENSE_KEY` (Next.js)
+  and `VITE_LICENSE_KEY` (Vite) are browser-visible values, not server secrets.
+  Use a key for the registered domain and follow the [licensing guide](https://react-immersive.liveroom.dev/docs/licensing).
 </Callout>
 
 ## Quick Start
+
+This example is a Next.js client component. Import `styles.css` in your root
+layout, put the asset at `public/model.glb`, and set `NEXT_PUBLIC_LICENSE_KEY`
+in an uncommitted `.env.local`. In Vite, import CSS in `src/main.tsx` and use
+`import.meta.env.VITE_LICENSE_KEY` instead. Restart the dev server after setting
+the variable. For a first render without a runtime key prop, use the
+[SimpleModelViewer starter](https://react-immersive.liveroom.dev/docs/frameworks/vite).
 
 To see your model working before you write any bindings, let the viewer
 generate them:
 
 ```tsx
+"use client";
+
 import { ModelViewer } from "@liveroom-tech/react-immersive";
 
 export default function App() {
@@ -91,7 +105,7 @@ export default function App() {
 Every mesh can then be hovered and selected, with Change Color, Change
 Material, and Toggle Visibility in the side panel (or light controls for meshes
 whose names contain "light"). See
-[generating bindings automatically](/reference/model-viewer#generating-bindings-automatically)
+[generating bindings automatically](https://react-immersive.liveroom.dev/docs/reference/model-viewer#generating-bindings-automatically)
 to keep and refine them. The steps below write the bindings yourself, which
 gives you control over labels, actions, metadata, and camera views.
 
@@ -99,20 +113,24 @@ gives you control over labels, actions, metadata, and camera views.
 
 ### Define your object bindings
 
+Create `objectBindings.ts` with the named export below. This sample targets the
+wall node in `red_room.glb`. For another asset, discover its identifiers with
+`onObjectCatalog` or BindingBuilder instead of copying the sample node name.
+
 Each key in `objectBindings` must match a model node identifier. Unique nodes
 use their authored name; duplicate names receive identifiers such as `Cube [1]`
 and `Cube [2]`. BindingBuilder generates the correct identifiers automatically.
 You can write the bindings by hand, or generate starter bindings in
-[`BindingBuilder`](/reference/binding-builder) and export them as
+[`BindingBuilder`](https://react-immersive.liveroom.dev/docs/reference/binding-builder) and export them as
 `objectBindings.json` or a TypeScript file to import into your app.
 For a configured scene, export `sceneConfig.ts` from BindingBuilder's **Scene**
 tab and pass its named `sceneConfig` export to `ModelViewer` as well. The
-[`BindingBuilder export and import guide`](/reference/binding-builder#exporting-and-reusing-files)
+[`BindingBuilder export and import guide`](https://react-immersive.liveroom.dev/docs/reference/binding-builder#exporting-and-reusing-files)
 explains where each toolbar action lives and when to choose JSON versus
 TypeScript.
 If you want a ready-to-run starter, download the sample
-[`red_room.glb`](/red_room.glb) model and
-[`objectBindings.ts`](/objectBindings.ts) bindings file from these docs. Put
+[`red_room.glb`](https://react-immersive.liveroom.dev/red_room.glb) model and
+[`objectBindings.ts`](https://react-immersive.liveroom.dev/objectBindings.ts) bindings file from these docs. Put
 `red_room.glb` in your app's `public/` folder, and place `objectBindings.ts`
 in your source tree so you can import it into your viewer page.
 
@@ -124,13 +142,13 @@ in your source tree so you can import it into your viewer page.
   </span>
 </Callout>
 
-```ts
+```ts filename="objectBindings.ts"
 import { defineObjectBindings } from "@liveroom-tech/react-immersive/utils";
 
-const objectBindings = defineObjectBindings({
-  BrickWall: {
+export const objectBindings = defineObjectBindings({
+  Quarto_Wall_0: {
     id: "brick-wall",
-    modelObjectId: "BrickWall",
+    modelObjectId: "Quarto_Wall_0",
     type: "wall",
     label: "Room Walls",
     selectable: true,
@@ -156,14 +174,19 @@ const objectBindings = defineObjectBindings({
 ### Mount the viewer
 
 Wrap `ModelViewer` in a full-height container. The component owns its own layout.
+`defineObjectBindings` preserves literal IDs; widen mutable state to
+`Record<string, ObjectBinding>` so the viewer can return an updated record.
+Replace the placeholder key below with the framework-specific environment value.
 
-```tsx
+```tsx filename="Viewer.tsx"
+"use client";
+
 import { useState } from "react";
-import { ModelViewer } from "@liveroom-tech/react-immersive";
-import { objectBindings as initialBindings } from "./objectBindings.ts";
+import { ModelViewer, type ObjectBinding } from "@liveroom-tech/react-immersive";
+import { objectBindings as initialBindings } from "./objectBindings";
 
 export default function App() {
-  const [objectBindings, setObjectBindings] = useState(initialBindings);
+  const [objectBindings, setObjectBindings] = useState<Record<string, ObjectBinding>>(initialBindings);
 
   return (
     <div style={{ height: "100vh", overflow: "hidden" }}>
@@ -184,7 +207,9 @@ export default function App() {
 `props` onto the viewer, then drive bindings, camera, selection, animations,
 and scene settings from your own UI.
 
-```tsx
+```tsx filename="ControlledViewer.tsx"
+"use client";
+
 import { ModelViewer, useViewer } from "@liveroom-tech/react-immersive";
 import { objectBindings } from "./objectBindings";
 
@@ -205,11 +230,11 @@ export default function Example() {
         {...viewer.props}
       />
 
-      <button onClick={() => toggleObjectVisibility("some-object-id")}>
+      <button onClick={() => toggleObjectVisibility("Quarto_Wall_0")}>
         Toggle Visibility
       </button>
       <button onClick={() => resetView()}>Reset Camera</button>
-      <button onClick={() => focusObject("some-object-id")}>
+      <button onClick={() => focusObject("Quarto_Wall_0")}>
         Focus Object
       </button>
       {clips.map((name) => (
@@ -223,8 +248,8 @@ export default function Example() {
 ```
 
 Leave out `bindings` and `useViewer` generates them from the model, like
-`objectBindings="auto"`. See [`useViewer`](/hooks/use-viewer) for
-everything it returns, and the other [hooks](/hooks/use-viewer-selection)
+`objectBindings="auto"`. See [`useViewer`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer) for
+everything it returns, and the other [hooks](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-selection)
 for wiring individual pieces yourself.
 
 </Steps>

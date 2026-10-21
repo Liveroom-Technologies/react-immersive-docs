@@ -1,0 +1,48 @@
+---
+title: Troubleshooting
+---
+
+# Troubleshooting
+
+These checks apply to React Immersive **5.2.0**.
+
+| Symptom | Check | Fix |
+| --- | --- | --- |
+| Peer dependency conflict | React/React DOM version and duplicate installations | Use React 19, Three.js `^0.184.0`, and React Three Fiber `^9.6.1`; inspect `npm ls react react-dom three @react-three/fiber` |
+| Component import is missing | Import entry point | Import SimpleModelViewer from `/simple-model-viewer`, BindingBuilder from `/binding-builder`, and ModelViewer from the main package |
+| Unstyled or cramped viewer | CSS and parent dimensions | Import the component's own stylesheet and give its container an explicit height |
+| Empty model or loader failure | Browser Network panel and `onLoadError` | Open `modelUrl` directly; it must return the asset rather than an HTML 404/sign-in page |
+| Model works locally but fails remotely | CORS and external files | Allow requests from the app origin and host GLTF/OBJ/FBX dependencies at their declared relative paths |
+| Signed or extensionless URL fails | Format detection | Set the supported `modelFormat` explicitly |
+| ModelViewer/BindingBuilder shows a license error | Key, plan, origin, registered domain | Follow the licensing guide; hosted previews are not automatically local domains |
+| `process is not defined` in Vite | Environment variable syntax | Use `import.meta.env.VITE_LICENSE_KEY`; Next.js uses `process.env.NEXT_PUBLIC_LICENSE_KEY` |
+| Next.js rejects hooks or event handlers | Client boundary | Put hooks/callbacks in a `"use client"` file; see the complete Next.js guide |
+| Binding changes do not affect the intended mesh | Actual node IDs | Read `onObjectCatalog`, generate automatic bindings, or export from BindingBuilder; do not guess IDs |
+| Binding import or state setter fails TypeScript | Export and inferred state type | Export the bindings; use `useState<Record<string, ObjectBinding>>(initialBindings)` for mutable state |
+| Compressed model fails | Decoder requests and CSP | Follow the ModelViewer decoder setup; self-host version-matched files when necessary |
+
+## Observe load success and failure
+
+Use `onModelLoaded` to confirm the asset loaded, and `onLoadError` to present a
+failure state. For ModelViewer, `onObjectCatalog` reveals bindable identifiers;
+`onViewerReady` connects runtime controls. Do not treat a successful build as
+proof that the asset and browser rendering succeeded.
+
+The public [sample GLB](https://react-immersive.liveroom.dev/red_room.glb) is
+useful for separating integration problems from problems in your own asset.
+It must retain its [CC BY 4.0 attribution](https://skfb.ly/6VBJR).
+
+## Large or blank scenes
+
+Use a browser/device with WebGL support. Inspect the console for renderer or
+context-loss errors. Very large assets can exceed device memory; optimize the
+asset and consult the performance and large-model sections in the
+[ModelViewer reference](https://react-immersive.liveroom.dev/docs/reference/model-viewer).
+
+## Report an issue
+
+Include the package version, framework, browser/device, sanitized error text,
+reproduction steps, and a small redistributable model or public sample. Use the
+[public issue tracker](https://github.com/Liveroom-Technologies/react-immersive-docs/issues).
+Send license keys, private models, account information and security reports
+through private support rather than a public issue.

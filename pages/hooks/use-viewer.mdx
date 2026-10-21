@@ -59,17 +59,17 @@ its edits when the model reloads; objects with new names get fresh bindings.
 | Name | Same as | Use it for |
 |------|---------|------------|
 | `props` | | Spread onto `ModelViewer` |
-| `bindings` | [`useObjectBindings`](/hooks/use-object-bindings) | Colors, textures, materials, visibility, transforms, metadata |
-| `selection` | [`useViewerSelection`](/hooks/use-viewer-selection) | The selected object, and selecting from your own UI |
-| `hover` | [`useViewerHover`](/hooks/use-viewer-hover) | The hovered object |
-| `camera` | [`useViewerCamera`](/hooks/use-viewer-camera) | Focusing objects, resetting, saved views |
-| `model` | [`useViewerModel`](/hooks/use-viewer-model) | Loading state, errors, bounds, and the model's `objects` |
-| `animations` | [`useViewerAnimations`](/hooks/use-viewer-animations) | Playing the model's animation clips |
-| `actions` | [`useViewerActions`](/hooks/use-viewer-actions) | Running binding actions from code |
-| `scene` | [`useSceneConfig`](/hooks/use-scene-config) | Lighting, environment, background, post-processing |
-| `isolation` | [`useViewerIsolation`](/hooks/use-viewer-isolation) | Focusing on some objects, ghosting or hiding the rest |
-| `effects` | [`useViewerEffects`](/hooks/use-viewer-effects) | Transitions, pulses, flicker, runtime lights |
-| `connection` | [`useViewerConnection`](/hooks/use-viewer-connection) | The live viewer, `captureImage`, and `captureVideo` |
+| `bindings` | [`useObjectBindings`](https://react-immersive.liveroom.dev/docs/hooks/use-object-bindings) | Colors, textures, materials, visibility, transforms, metadata |
+| `selection` | [`useViewerSelection`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-selection) | The selected object, and selecting from your own UI |
+| `hover` | [`useViewerHover`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-hover) | The hovered object |
+| `camera` | [`useViewerCamera`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera) | Focusing objects, resetting, saved views |
+| `model` | [`useViewerModel`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model) | Loading state, errors, bounds, and the model's `objects` |
+| `animations` | [`useViewerAnimations`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-animations) | Playing the model's animation clips |
+| `actions` | [`useViewerActions`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-actions) | Running binding actions from code |
+| `scene` | [`useSceneConfig`](https://react-immersive.liveroom.dev/docs/hooks/use-scene-config) | Lighting, environment, background, post-processing |
+| `isolation` | [`useViewerIsolation`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-isolation) | Focusing on some objects, ghosting or hiding the rest |
+| `effects` | [`useViewerEffects`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-effects) | Transitions, pulses, flicker, runtime lights |
+| `connection` | [`useViewerConnection`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-connection) | The live viewer, `captureImage`, and `captureVideo` |
 
 Each part is that hook's full result, so everything the hook offers is
 available: `viewer.camera.focusObject("door")`, `viewer.model.objects`,

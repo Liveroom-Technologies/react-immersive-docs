@@ -37,7 +37,7 @@ export default function App() {
 
 <Callout type="info">
   Use `SimpleModelViewer` when you want a quick inspection viewer. Use
-  [`ModelViewer`](/reference/model-viewer) when you need binding-driven
+  [`ModelViewer`](https://react-immersive.liveroom.dev/docs/reference/model-viewer) when you need binding-driven
   styling, actions, metadata, custom panels, exports, or animation integrations.
 </Callout>
 
@@ -78,9 +78,9 @@ type SimpleModelViewerProps = {
 ```
 
 <Callout type="info">
-  `SimpleModelViewer` does not take a `licenseKey`, licensing is enforced by
-  [`ModelViewer`](/reference/model-viewer) and
-  [`BindingBuilder`](/reference/binding-builder).
+  `SimpleModelViewer` does not take a `licenseKey` or perform runtime key
+  validation. It needs no key or paid plan, including for production use.
+  See [Licensing](https://react-immersive.liveroom.dev/docs/licensing) for the component/environment matrix.
 </Callout>
 
 ---
@@ -89,7 +89,7 @@ type SimpleModelViewerProps = {
 
 Optional plain-text overrides for built-in viewer text, including button titles, accessible labels, loading messages, tool hints, and AR placement controls. Missing keys retain their English defaults.
 
-`ModelViewer` and `SimpleModelViewer` share the same dictionary. Each viewer has its own labels, and changing the prop updates text without reloading its model. See the [full label catalog](/reference/labels) for every key, default, and named placeholder.
+`ModelViewer` and `SimpleModelViewer` share the same dictionary. Each viewer has its own labels, and changing the prop updates text without reloading its model. See the [full label catalog](https://react-immersive.liveroom.dev/docs/reference/labels) for every key, default, and named placeholder.
 
 `labels` does not translate annotation content, object metadata, custom panels, or raw server/loader diagnostics. Supply translations for those in your application.
 
@@ -121,7 +121,7 @@ Optional explicit format for extensionless or signed URLs. Supported extensions 
 
 ### `poster` / `loading` / `reveal`
 
-Work as on [`ModelViewer`](/reference/model-viewer#lazy-loading-and-posters),
+Work as on [`ModelViewer`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#lazy-loading-and-posters),
 sharing the same page-wide count of live 3D views. When a `SimpleModelViewer`
 is put away, only its canvas goes: the panels and their settings stay, and the
 canvas comes back with its camera, hidden objects and selection.
@@ -134,7 +134,7 @@ canvas comes back with its camera, hidden objects and selection.
 Compressed-asset decoder configuration. Meshopt is bundled; DRACO and KTX2
 default to immutable, versioned files on the first-party React Immersive domain.
 Override with self-hosted directories or pass `false` to disable either format.
-See the [`ModelViewer` decoder setup](/reference/model-viewer#dracodecoderpath--ktx2transcoderpath--meshopt).
+See the [`ModelViewer` decoder setup](https://react-immersive.liveroom.dev/docs/reference/model-viewer#dracodecoderpath--ktx2transcoderpath--meshopt).
 
 ---
 
@@ -257,7 +257,7 @@ true;
 
 ### `reducedMotion`
 
-Cuts motion the viewer starts on its own. `"user"` follows the visitor's device setting (`prefers-reduced-motion`); `"always"` and `"never"` override it. When motion is reduced, the `autoRotate` prop doesn't start auto-rotate (the visitor can still turn it on in the scene settings panel), camera moves jump instead of gliding, and panels appear in place. See [`ModelViewer`'s `reducedMotion`](/reference/model-viewer#reducedmotion).
+Cuts motion the viewer starts on its own. `"user"` follows the visitor's device setting (`prefers-reduced-motion`); `"always"` and `"never"` override it. When motion is reduced, the `autoRotate` prop doesn't start auto-rotate (the visitor can still turn it on in the scene settings panel), camera moves jump instead of gliding, and panels appear in place. See [`ModelViewer`'s `reducedMotion`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#reducedmotion).
 
 Default:
 

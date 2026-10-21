@@ -40,7 +40,7 @@ traversal-order identifiers such as `Cube [1]` and `Cube [2]`. The record:
 - **Stores domain data** (`metrics`, `metadata`) for display alongside the 3D view
 - **Saves camera framing** (`cameraState`) so clicking an object can snap to a curated view instead of a generic "fit to box"
 
-Because it's just a serializable record, it can be authored by hand, generated automatically (via [`BindingBuilder`](/reference/binding-builder), which traverses a model and produces starter bindings), stored in a database, and round-tripped through `onObjectBindingsChange` to keep your app state and the 3D scene in sync. `objectBindings` is the single source of truth, so React's normal data flow ("state in, callbacks out") works for a 3D scene the same way it would for any other component.
+Because it's just a serializable record, it can be authored by hand, generated automatically (via [`BindingBuilder`](https://react-immersive.liveroom.dev/docs/reference/binding-builder), which traverses a model and produces starter bindings), stored in a database, and round-tripped through `onObjectBindingsChange` to keep your app state and the 3D scene in sync. `objectBindings` is the single source of truth, so React's normal data flow ("state in, callbacks out") works for a 3D scene the same way it would for any other component.
 
 ## Why It Is Worth The Setup
 
@@ -104,34 +104,34 @@ both depending on what the experience needs.
 
 ## Viewer tools and engagement
 
-- [Video export](/reference/model-viewer#video-export) records a cinematic
+- [Video export](https://react-immersive.liveroom.dev/docs/reference/model-viewer#video-export) records a cinematic
   pass or turntable revolution as browser-supported WebM/MP4, or as an animated
   GIF, for product media.
-- [Measurement tools](/reference/model-viewer#showmeasuretools) include
+- [Measurement tools](https://react-immersive.liveroom.dev/docs/reference/model-viewer#showmeasuretools) include
   distance, angle, polygon area, point-to-plane distance, vertex/edge snapping,
   and bounding-box dimensions.
-- [Fullscreen](/reference/model-viewer#showfullscreenbutton) expands the
+- [Fullscreen](https://react-immersive.liveroom.dev/docs/reference/model-viewer#showfullscreenbutton) expands the
   viewer, including its panels and overlays, through `ui={{ fullscreen: true }}`.
-- [WebGL recovery](/reference/model-viewer#webgl-context-recovery) shows a
+- [WebGL recovery](https://react-immersive.liveroom.dev/docs/reference/model-viewer#webgl-context-recovery) shows a
   **Reload viewer** button after context loss and rebuilds when the context returns.
-- [Engagement analytics](/reference/model-viewer#onengagement--debugengagement)
+- [Engagement analytics](https://react-immersive.liveroom.dev/docs/reference/model-viewer#onengagement--debugengagement)
   exposes part views, variant choices, AR session duration, and tour outcomes
   through `onEngagement`; `debugEngagement` logs events in the developer console.
   Both are opt-in, and the viewer sends no telemetry automatically.
-- [Accessibility](/reference/model-viewer#accessibility): keyboard users can
+- [Accessibility](https://react-immersive.liveroom.dev/docs/reference/model-viewer#accessibility): keyboard users can
   move through and select objects, screen readers hear each selection, and
   motion the viewer starts on its own stops for visitors who ask their device to
   reduce motion.
-- [`CompareViewer`](/reference/compare-viewer) shows two configurations,
+- [`CompareViewer`](https://react-immersive.liveroom.dev/docs/reference/compare-viewer) shows two configurations,
   or two models, with one camera: a before/after slider or side by side.
-- [WebGPU](/reference/model-viewer#webgpu) rendering is opt-in through
+- [WebGPU](https://react-immersive.liveroom.dev/docs/reference/model-viewer#webgpu) rendering is opt-in through
   `perf={{ webgpu: true }}`, with WebGL wherever the browser lacks it.
 
 ## When This Package Fits
 
 - **Product configurators** - let users recolor or retexture parts of a car, piece of furniture, or apparel
 - **Interactive room/scene tours** - click walls, furniture, or fixtures to see info or toggle visibility
-- **Asset inspection tools** - [`SimpleModelViewer`](/reference/simple-model-viewer) for quickly browsing a model hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
+- **Asset inspection tools** - [`SimpleModelViewer`](https://react-immersive.liveroom.dev/docs/reference/simple-model-viewer) for quickly browsing a model hierarchy without any binding setup, including an optional local upload mode for ad-hoc inspection
 - **Anything needing "click a 3D part to show a panel with data and actions"** without hand-rolling raycasting, highlighting, and UI panels
 
 ## Example Applications Where Bindings Shine
@@ -152,7 +152,7 @@ model does something special," bindings usually make sense.
 ## When It Probably Doesn't Fit
 
 - Pure visual/cinematic scenes with no interactivity, a plain `<Canvas><primitive object={scene} /></Canvas>` is simpler
-- Highly custom 3D UIs where the built-in panels/popovers would just be ripped out anyway, though [`customObjectBindingDataPanel`](/reference/model-viewer#customobjectbindingdatapanel) and [`customSceneObjectsPanel`](/reference/model-viewer#customsceneobjectspanel) cover a lot of that middle ground
+- Highly custom 3D UIs where the built-in panels/popovers would just be ripped out anyway, though [`customObjectBindingDataPanel`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#customobjectbindingdatapanel) and [`customSceneObjectsPanel`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#customsceneobjectspanel) cover a lot of that middle ground
 
 ## How It Works
 
@@ -206,5 +206,10 @@ If a node name or material does not match, that object will not render through t
 
 | Package     | Version |
 | ----------- | ------- |
-| `react`     | >= 17   |
-| `react-dom` | >= 17   |
+| `react` | `^19.0.0` |
+| `react-dom` | `^19.0.0` |
+| `three` | `^0.184.0` |
+| `@react-three/fiber` | `^9.6.1` |
+
+These peers match **5.2.0**. See [Versions and Migration](https://react-immersive.liveroom.dev/docs/releases) for
+starter tooling requirements and upgrade guidance.

@@ -183,7 +183,7 @@ type Props = {
 
 Optional plain-text overrides for built-in viewer text, including button titles, accessible labels, loading messages, tool hints, and AR placement controls. Missing keys retain their English defaults.
 
-`ModelViewer` and `SimpleModelViewer` share the same dictionary. Each viewer has its own labels, and changing the prop updates text without reloading its model. See the [full label catalog](/reference/labels) for every key, default, and named placeholder.
+`ModelViewer` and `SimpleModelViewer` share the same dictionary. Each viewer has its own labels, and changing the prop updates text without reloading its model. See the [full label catalog](https://react-immersive.liveroom.dev/docs/reference/labels) for every key, default, and named placeholder.
 
 `labels` does not translate annotation content, object metadata, custom panels, or raw server/loader diagnostics. Supply translations for those in your application.
 
@@ -331,7 +331,7 @@ All visual overrides live under `style.material` (an `ObjectBindingMaterial`).
 It covers base color/PBR, emission, opacity & blending, normal/bump,
 displacement, ambient occlusion, clearcoat, sheen, anisotropy,
 transmission/volume, and face sidedness, plus a texture-map slot for each.
-See [`ObjectBindingMaterial`](/reference/types#objectbindingmaterial) for the
+See [`ObjectBindingMaterial`](https://react-immersive.liveroom.dev/docs/reference/types#objectbindingmaterial) for the
 full field list and the per-slot color-space handling (color maps are decoded
 as sRGB, data maps stay linear).
 
@@ -550,8 +550,8 @@ are called:
 It fires each time a model loads. For a streamed model (`tilesetUrl`), the list
 comes from `objects.json`, before the tiles containing those objects have
 necessarily loaded. Each entry is a
-[`ViewerObjectInfo`](/reference/types#viewerobjectinfo). To keep the list in
-state, pass [`useViewerModel`](/hooks/use-viewer-model)'s
+[`ViewerObjectInfo`](https://react-immersive.liveroom.dev/docs/reference/types#viewerobjectinfo). To keep the list in
+state, pass [`useViewerModel`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model)'s
 `handleObjectCatalog`.
 
 ### `onModelLoaded`
@@ -688,7 +688,7 @@ changes do not restart timing. Synchronous or asynchronous callback failures
 are logged without interrupting the viewer. A new model or re-enabling tracking
 creates a new analytics session. WebGL recovery keeps the session ID; context
 loss ends active intervals as interrupted. See
-[`ViewerEngagementEvent`](/reference/types#viewerengagementevent) for
+[`ViewerEngagementEvent`](https://react-immersive.liveroom.dev/docs/reference/types#viewerengagementevent) for
 the complete event union.
 
 ---
@@ -741,7 +741,7 @@ libraries' own, so they can change when those libraries do.
 />;
 ```
 
-For turning the current camera/visibility/selection into a shareable link, see [`useShareableViewerState`](/hooks/use-shareable-viewer-state).
+For turning the current camera/visibility/selection into a shareable link, see [`useShareableViewerState`](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state).
 
 ---
 
@@ -793,7 +793,7 @@ cancellation, or failure. Keep the tab visible until recording completes.
 format transcoding is included. The browser must support
 `canvas.captureStream`, and `MediaRecorder` for WebM/MP4; exports reject before framing,
 during XR, during another recording, or for durations outside (0, 300] seconds.
-See [`CaptureVideoOptions`](/reference/types#capturevideooptions) for
+See [`CaptureVideoOptions`](https://react-immersive.liveroom.dev/docs/reference/types#capturevideooptions) for
 the complete options and defaults.
 
 **Animated GIF.** Pass `format: "gif"` (or pick **GIF** in the menu's format
@@ -837,7 +837,7 @@ type ViewerCameraState = {
 };
 ```
 
-It's the same state [`useViewerCamera`](/hooks/use-viewer-camera) exposes
+It's the same state [`useViewerCamera`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera) exposes
 as `cameraState`, and `setCameraState` restores it.
 
 ---
@@ -927,7 +927,7 @@ type AnimationControls = {
 onAnimationsReady?: (controls: AnimationControls) => void
 ```
 
-See [`AnimationControls`](/reference/types#animationcontrols) for
+See [`AnimationControls`](https://react-immersive.liveroom.dev/docs/reference/types#animationcontrols) for
 `AnimationPlayOptions` and the full `AnimationPlaybackState` shape
 (`currentClip`, `isPlaying`, `speed`, `time`, `duration`, and `active`, one entry
 per active clip). Leave out `clipName` to act on every active clip.
@@ -1414,7 +1414,7 @@ const enableUvChecker = () =>
 <button onClick={enableUvChecker}>Show UV checker</button>
 ```
 
-See [`useSceneConfig`](/hooks/use-scene-config) for nested scene updates and the
+See [`useSceneConfig`](https://react-immersive.liveroom.dev/docs/hooks/use-scene-config) for nested scene updates and the
 pure `patchSceneConfig` alternative.
 
 ---
@@ -1569,7 +1569,7 @@ Click or focus the canvas first, then use `W`/`S` to move forward/back,
 orbit. `Shift` + Up/Down moves forward/back. The shortcuts are inactive while
 object editing or camera controls are disabled. While the canvas has focus, a
 screen reader reads out what its keys do (the `cameraKeyboardHelp`
-[label](/reference/labels)).
+[label](https://react-immersive.liveroom.dev/docs/reference/labels)).
 
 ---
 
@@ -1628,14 +1628,14 @@ When motion is reduced:
 - Camera moves jump straight to where they're going instead of gliding: the
   first framing, focusing a selected object, resetting the view, saved views,
   guided-tour stops, and moves made through
-  [`useViewerCamera`](/hooks/use-viewer-camera).
+  [`useViewerCamera`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera).
 - Panels, menus and popups appear in place instead of sliding or fading in.
   Loading spinners keep turning, since they show that something is still
   happening.
 
 Motion the visitor asks for still plays: the cinematic play button, video
 export, and dragging the camera. The viewer doesn't change animations your app
-starts, such as model clips, [effects](/hooks/use-viewer-effects), or
+starts, such as model clips, [effects](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-effects), or
 [style rule](#style-rules) pulses. To respect the setting there too, check
 `matchMedia("(prefers-reduced-motion: reduce)")` in your app.
 
@@ -1916,7 +1916,7 @@ reveal?: "auto" | "interaction"; // default "auto"
   Browsers already stop drawing in hidden tabs.
 
 `loading="eager"` starts the 3D view at once and keeps it. Eager viewers don't
-count towards the 12. [`BindingBuilder`](/reference/binding-builder)'s
+count towards the 12. [`BindingBuilder`](https://react-immersive.liveroom.dev/docs/reference/binding-builder)'s
 preview is eager.
 
 `poster` is an image shown in the viewer's place until its 3D view is drawn,
@@ -1927,12 +1927,12 @@ viewer frames it works best: [`captureImage`](#onviewerready) can make one.
 
 `reveal="interaction"` keeps the poster, with a **View in 3D** button, until the
 visitor presses it, so only the products someone picks use a 3D view. The
-button's text is the [`labels`](/reference/labels) key `viewIn3D`.
+button's text is the [`labels`](https://react-immersive.liveroom.dev/docs/reference/labels) key `viewIn3D`.
 `reveal` is `"auto"` by default: the view starts on its own.
 
 The same three props work on
-[`SimpleModelViewer`](/reference/simple-model-viewer#poster--loading--reveal)
-and [`CompareViewer`](/reference/compare-viewer#props).
+[`SimpleModelViewer`](https://react-immersive.liveroom.dev/docs/reference/simple-model-viewer#poster--loading--reveal)
+and [`CompareViewer`](https://react-immersive.liveroom.dev/docs/reference/compare-viewer#props).
 
 ---
 
@@ -2444,7 +2444,7 @@ Default: disabled.
 Optional boolean that enables XR entry points. On WebXR-capable browsers, the
 viewer shows an AR and/or VR button once the relevant immersive session support
 is confirmed. On iPhone/iPad, WebXR AR is not available, but if you also pass
-[`usdzUrl`](#usdzUrl), the viewer shows a **"View in AR"**
+[`usdzUrl`](#usdzurl), the viewer shows a **"View in AR"**
 button that launches Apple Quick Look instead.
 
 Default: `false`.
@@ -2496,7 +2496,7 @@ mobileHandoffUrl?: string;
 ```
 
 - Omit it to encode the current page URL, including its hash. This works with
-  [`useShareableViewerState`](/hooks/use-shareable-viewer-state) so the phone
+  [`useShareableViewerState`](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state) so the phone
   opens the same camera/visibility/selection state.
 - Pass a dedicated HTTPS mobile-viewer URL when desktop and mobile use
   different routes.

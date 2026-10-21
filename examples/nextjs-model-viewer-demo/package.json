@@ -1,0 +1,31 @@
+{
+  "name": "nextjs-model-viewer-demo",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "prepare:model": "node scripts/prepare-model.mjs",
+    "predev": "npm run prepare:model",
+    "dev": "next dev",
+    "typecheck": "tsc --noEmit",
+    "prebuild": "npm run prepare:model",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@liveroom-tech/react-immersive": "5.2.0",
+    "@react-three/fiber": "^9.6.1",
+    "next": "16.2.7",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "three": "^0.184.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "~19.2.0",
+    "@types/react-dom": "~19.2.0",
+    "@types/three": "^0.184.0",
+    "typescript": "^5.9.0"
+  }
+}

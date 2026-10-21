@@ -1,0 +1,54 @@
+# React Immersive
+
+> @liveroom-tech/react-immersive@5.2.0: interactive 3D viewers and scene authoring for React 19.
+
+Official package: https://www.npmjs.com/package/@liveroom-tech/react-immersive
+Public source: https://github.com/Liveroom-Technologies/react-immersive-docs
+Compatibility: React/React DOM ^19.0.0; Three.js ^0.184.0; React Three Fiber ^9.6.1.
+
+Start with SimpleModelViewer from /simple-model-viewer, its simple-model-viewer.css stylesheet, a public model URL and a container with explicit height. ModelViewer is imported from the main entry; BindingBuilder from /binding-builder. Both need a runtime licenseKey. SimpleModelViewer has no key prop and needs no key or paid plan, including in production.
+
+## Start here
+
+- [Agent guide](https://react-immersive.liveroom.dev/docs/agent-guide.md): component choice, first render, APIs and validation.
+- [Vite setup](https://react-immersive.liveroom.dev/docs/frameworks/vite.md): complete React 19 files.
+- [Next.js setup](https://react-immersive.liveroom.dev/docs/frameworks/nextjs.md): App Router, CSS and client boundary.
+- [Getting started](https://react-immersive.liveroom.dev/docs/getting-started.md): bindings and mutable state.
+- [Licensing](https://react-immersive.liveroom.dev/docs/licensing.md): local vs production, manual account/key steps.
+- [Troubleshooting](https://react-immersive.liveroom.dev/docs/troubleshooting.md): imports, types, assets, CORS and rendering.
+- [Versions and migration](https://react-immersive.liveroom.dev/docs/releases.md): supported baseline and upgrading starters.
+- [Manifest](https://react-immersive.liveroom.dev/docs/manifest.json): exact version, peers, all page URLs and small ModelViewer section URLs.
+
+## Reference pages
+
+- [useObjectBindingIds](https://react-immersive.liveroom.dev/docs/hooks/use-object-binding-ids.md)
+- [useObjectBinding](https://react-immersive.liveroom.dev/docs/hooks/use-object-binding.md)
+- [useObjectBindings](https://react-immersive.liveroom.dev/docs/hooks/use-object-bindings.md)
+- [useSceneConfig](https://react-immersive.liveroom.dev/docs/hooks/use-scene-config.md)
+- [useShareableViewerState](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state.md)
+- [useViewerActions](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-actions.md)
+- [useViewerAnimations](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-animations.md)
+- [useViewerCamera](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera.md)
+- [useViewerConnection](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-connection.md)
+- [useViewerEffects](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-effects.md)
+- [useViewerHover](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-hover.md)
+- [useViewerIsolation](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-isolation.md)
+- [useViewerModel](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model.md)
+- [useViewerSelection](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-selection.md)
+- [useViewer](https://react-immersive.liveroom.dev/docs/hooks/use-viewer.md)
+- [BindingBuilder](https://react-immersive.liveroom.dev/docs/reference/binding-builder.md)
+- [CompareViewer](https://react-immersive.liveroom.dev/docs/reference/compare-viewer.md)
+- [UI Labels](https://react-immersive.liveroom.dev/docs/reference/labels.md)
+- [ModelViewer](https://react-immersive.liveroom.dev/docs/reference/model-viewer.md)
+- [SimpleModelViewer](https://react-immersive.liveroom.dev/docs/reference/simple-model-viewer.md)
+- [Types Reference](https://react-immersive.liveroom.dev/docs/reference/types.md)
+
+## Examples and optional full reference
+
+- [Examples](https://react-immersive.liveroom.dev/docs/examples.md): runnable starters and live demos.
+- [Sample model](https://react-immersive.liveroom.dev/red_room.glb): Red Room by LaisLH, CC BY 4.0; https://skfb.ly/6VBJR.
+- [Package license](https://react-immersive.liveroom.dev/LICENSE.txt)
+- [Extended package reference](https://react-immersive.liveroom.dev/docs/package-reference.md): detailed package examples preserved separately from the short npm README.
+- [Full documentation](https://react-immersive.liveroom.dev/llms-full.txt): large; prefer individual pages or manifest sections.
+
+Each HTML docs page has a .md alternative. Accept: text/markdown also selects it.

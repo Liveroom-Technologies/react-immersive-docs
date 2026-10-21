@@ -6,6 +6,11 @@ import { Callout, Tabs } from "nextra/components";
 
 # `@liveroom-tech/react-immersive`
 
+Documentation baseline: **5.2.0 · React 19**. [Version and migration notes](https://react-immersive.liveroom.dev/docs/releases).
+
+[AI Agent Guide](https://react-immersive.liveroom.dev/docs/agent-guide) · [Markdown index](https://react-immersive.liveroom.dev/llms.txt)
+· [Vite setup](https://react-immersive.liveroom.dev/docs/frameworks/vite) · [Next.js setup](https://react-immersive.liveroom.dev/docs/frameworks/nextjs).
+
 A React 3D model viewer for interactive 3D assets, mesh selection, object bindings, built-in UI panels, and a full suite of hooks for camera, animations, visibility, and more.
 
 ## Features
@@ -20,21 +25,21 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
 - **SimpleModelViewer**, a lightweight model inspection viewer with no bindings or actions
 - **BindingBuilder**, browser-based design-time tool for generating bindings and positioning model objects
 - **Hooks API**:
-  - [`useViewer`](/hooks/use-viewer)
-  - [`useViewerCamera`](/hooks/use-viewer-camera)
-  - [`useViewerConnection`](/hooks/use-viewer-connection)
-  - [`useViewerAnimations`](/hooks/use-viewer-animations)
-  - [`useViewerEffects`](/hooks/use-viewer-effects)
-  - [`useViewerSelection`](/hooks/use-viewer-selection)
-  - [`useViewerHover`](/hooks/use-viewer-hover)
-  - [`useViewerModel`](/hooks/use-viewer-model)
-  - [`useViewerIsolation`](/hooks/use-viewer-isolation)
-  - [`useViewerActions`](/hooks/use-viewer-actions)
-  - [`useObjectBinding`](/hooks/use-object-binding)
-  - [`useObjectBindingIds`](/hooks/use-object-binding-ids)
-  - [`useObjectBindings`](/hooks/use-object-bindings)
-  - [`useSceneConfig`](/hooks/use-scene-config)
-  - [`useShareableViewerState`](/hooks/use-shareable-viewer-state)
+  - [`useViewer`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer)
+  - [`useViewerCamera`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera)
+  - [`useViewerConnection`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-connection)
+  - [`useViewerAnimations`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-animations)
+  - [`useViewerEffects`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-effects)
+  - [`useViewerSelection`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-selection)
+  - [`useViewerHover`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-hover)
+  - [`useViewerModel`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model)
+  - [`useViewerIsolation`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-isolation)
+  - [`useViewerActions`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-actions)
+  - [`useObjectBinding`](https://react-immersive.liveroom.dev/docs/hooks/use-object-binding)
+  - [`useObjectBindingIds`](https://react-immersive.liveroom.dev/docs/hooks/use-object-binding-ids)
+  - [`useObjectBindings`](https://react-immersive.liveroom.dev/docs/hooks/use-object-bindings)
+  - [`useSceneConfig`](https://react-immersive.liveroom.dev/docs/hooks/use-scene-config)
+  - [`useShareableViewerState`](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state)
 
 ## Quick Install
 
@@ -42,21 +47,21 @@ A React 3D model viewer for interactive 3D assets, mesh selection, object bindin
   <Tabs.Tab>
 
     ```bash
-    npm install @liveroom-tech/react-immersive three @react-three/fiber
+    npm install @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    pnpm add @liveroom-tech/react-immersive three @react-three/fiber
+    pnpm add @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    yarn add @liveroom-tech/react-immersive three @react-three/fiber
+    yarn add @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
     ```
 
   </Tabs.Tab>
@@ -94,7 +99,7 @@ export default function App() {
 
 Without `objectBindings`, the viewer generates a binding for every mesh when the
 model loads. To choose which objects are interactive and what they do, author
-the bindings by hand, or generate starter bindings in [`BindingBuilder`](/reference/binding-builder) and export them as
+the bindings by hand, or generate starter bindings in [`BindingBuilder`](https://react-immersive.liveroom.dev/docs/reference/binding-builder) and export them as
 `objectBindings.json` or a TypeScript file to import into your app.
 
 <Callout type="info">
@@ -104,7 +109,7 @@ the bindings by hand, or generate starter bindings in [`BindingBuilder`](/refere
 
 ## Quick Inspection With `SimpleModelViewer`
 
-If you don't need `objectBindings`-driven styling and actions, [`SimpleModelViewer`](/reference/simple-model-viewer) gives you a lightweight viewer for inspecting GLB, GLTF, OBJ, FBX, USDZ, STL, or PLY assets. It can also run in an upload-first mode for ad-hoc local model inspection:
+If you don't need `objectBindings`-driven styling and actions, [`SimpleModelViewer`](https://react-immersive.liveroom.dev/docs/reference/simple-model-viewer) gives you a lightweight viewer for inspecting GLB, GLTF, OBJ, FBX, USDZ, STL, or PLY assets. It can also run in an upload-first mode for ad-hoc local model inspection:
 
 ```tsx
 import "@liveroom-tech/react-immersive/simple-model-viewer.css";
@@ -121,14 +126,12 @@ export default function App() {
 
 ## Exports
 
-```ts
+```ts filename="exports.ts"
 import {
-  BindingBuilder,
   material,
   ModelViewer,
   patchBindings,
   patchSceneConfig,
-  SimpleModelViewer,
   useObjectBinding,
   useObjectBindings,
   useSceneConfig,
@@ -141,6 +144,8 @@ import {
   useViewerModel,
   useViewerSelection,
 } from "@liveroom-tech/react-immersive";
+import { SimpleModelViewer } from "@liveroom-tech/react-immersive/simple-model-viewer";
+import { BindingBuilder } from "@liveroom-tech/react-immersive/binding-builder";
 ```
 
 Pure data helpers such as `defineObjectBindings`, `patchBindings`,

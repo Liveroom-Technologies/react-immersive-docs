@@ -1,4 +1,5 @@
 import type { DocsThemeConfig } from "nextra-theme-docs";
+import docsVersion from "./docs-version.json";
 
 const DOCS_REPO_URL =
   "https://github.com/liveroom-technologies/react-immersive-docs";
@@ -26,6 +27,9 @@ const config: DocsThemeConfig = {
           style={{ display: "block" }}
         />
         <span>React Immersive</span>
+        <span style={{ fontSize: "0.75rem", fontWeight: 400 }}>
+          {docsVersion.version} · React 19
+        </span>
       </span>
     </>
   ),

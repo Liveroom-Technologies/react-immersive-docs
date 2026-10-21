@@ -1,0 +1,24 @@
+Copyright (c) Liveroom. All rights reserved.
+
+This package is proprietary software. It is made available for download via
+npm to support installation into applications licensed through the Liveroom
+Developer Portal (https://react-immersive.liveroom.dev).
+
+SimpleModelViewer may be used and distributed as part of local and production
+applications without a license key. This permission does not apply to
+ModelViewer, BindingBuilder, or other licensed components.
+
+Use of ModelViewer and BindingBuilder requires a valid license key issued
+from the Developer Portal, subject to the terms of the plan tier associated
+with that key. Production or non-local use of those components requires a
+production-enabled plan.
+
+Except for the SimpleModelViewer permission above or as expressly permitted
+by a valid license key and its associated plan terms, you may not copy, modify, merge, publish, distribute,
+sublicense, decompile, reverse engineer, or sell copies of this software.
+
+This software is provided "as is", without warranty of any kind, express
+or implied, including but not limited to the warranties of merchantability,
+fitness for a particular purpose, and noninfringement. In no event shall
+Liveroom be liable for any claim, damages, or other liability arising from
+the use of this software.

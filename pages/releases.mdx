@@ -1,0 +1,47 @@
+---
+title: Versions and Migration
+---
+
+# Versions and migration
+
+## Supported documentation baseline: 5.2.0
+
+The current documentation and public starter applications target
+`@liveroom-tech/react-immersive@5.2.0`, published to npm on 5 October 2026.
+The [machine-readable manifest](https://react-immersive.liveroom.dev/docs/manifest.json)
+records the package version, peer dependencies, and documentation URLs.
+
+| Peer                 | Supported range |
+| -------------------- | --------------- |
+| `react`              | `^19.0.0`       |
+| `react-dom`          | `^19.0.0`       |
+| `three`              | `^0.184.0`      |
+| `@react-three/fiber` | `^9.6.1`        |
+
+The Vite examples require Node `^20.19.0 || >=22.12.0`; the Next.js starter
+uses Node 22.12+. These are starter tooling requirements, separate from the
+React package's runtime peers.
+
+## Upgrade a public starter previously pinned to 5.0.2
+
+From that starter's directory:
+
+```bash
+npm install --save-exact @liveroom-tech/react-immersive@5.2.0
+npm run typecheck
+npm run build
+```
+
+Keep its lockfile with the updated manifest. Use React 19 and the peer ranges
+above. Import SimpleModelViewer from
+`@liveroom-tech/react-immersive/simple-model-viewer`, BindingBuilder from
+`@liveroom-tech/react-immersive/binding-builder`, and the corresponding CSS
+entry for each component. Pure data helpers can be imported from `/utils`,
+including in server code.
+
+If `defineObjectBindings` preserves literal keys in your initial data, widen
+editable React state to `Record<string, ObjectBinding>`. Follow
+[Getting Started](https://react-immersive.liveroom.dev/docs/getting-started) for
+the complete pattern. Then verify a browser render and your intended
+interactions. Back up authored bindings/scene data before changing an
+existing integration.

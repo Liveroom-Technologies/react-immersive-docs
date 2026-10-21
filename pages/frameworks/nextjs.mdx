@@ -1,0 +1,120 @@
+---
+title: Next.js App Router
+---
+
+# Next.js App Router
+
+This setup targets React Immersive **5.2.0**, React **19.2.4**, and Next.js
+**16.2.7**. Use Node **22.12+** for the included starter.
+
+## Install
+
+In a Next.js App Router TypeScript application:
+
+```bash
+npm install next@16.2.7 react@19.2.4 react-dom@19.2.4 @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
+npm install -D typescript@^5.9.0 @types/node@^22 @types/react@~19.2.0 @types/react-dom@~19.2.0 @types/three@^0.184.0
+```
+
+Download [red_room.glb](https://react-immersive.liveroom.dev/red_room.glb) to
+`public/red_room.glb`. It is [Red Room by LaisLH](https://skfb.ly/6VBJR),
+licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+## Add these files
+
+For a new standalone app, explicitly set its root so Next.js does not inherit
+the surrounding documentation repository's configuration or lockfile. If your
+application already has a Next.js config, merge these options into that file.
+
+```js filename="next.config.mjs"
+import { fileURLToPath } from "node:url";
+
+const root = fileURLToPath(new URL(".", import.meta.url));
+
+export default {
+  turbopack: { root },
+  outputFileTracingRoot: root,
+};
+```
+
+Import component CSS from the root layout. This layout remains a Server Component.
+
+```tsx filename="app/layout.tsx"
+import type { ReactNode } from "react";
+import "@liveroom-tech/react-immersive/simple-model-viewer.css";
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <body style={{ margin: 0 }}>{children}</body>
+    </html>
+  );
+}
+```
+
+Put browser state and callbacks behind a client boundary. The dynamic import
+keeps the WebGL viewer out of server rendering; use it inside the client file.
+
+```tsx filename="app/Viewer.tsx"
+"use client";
+
+import dynamic from "next/dynamic";
+import { useState } from "react";
+
+const SimpleModelViewer = dynamic(
+  () => import("@liveroom-tech/react-immersive/simple-model-viewer").then((module) => module.SimpleModelViewer),
+  { ssr: false, loading: () => <p>Starting viewer…</p> },
+);
+
+export default function Viewer() {
+  const [status, setStatus] = useState("Loading model…");
+
+  return (
+    <main>
+      <p role="status">{status}</p>
+      <div style={{ height: "80vh" }}>
+        <SimpleModelViewer
+          modelUrl="/red_room.glb"
+          onModelLoaded={(model) => setStatus(`Loaded ${model.objectCount} objects`)}
+          onLoadError={() => setStatus("Model failed to load. Check the URL and browser console.")}
+        />
+      </div>
+      <p>Red Room by LaisLH, CC BY 4.0 — https://skfb.ly/6VBJR</p>
+    </main>
+  );
+}
+```
+
+```tsx filename="app/page.tsx"
+import Viewer from "./Viewer";
+
+export default function Page() {
+  return <Viewer />;
+}
+```
+
+```bash
+npm run dev
+npm run build
+```
+
+Expect a visible room, scene objects, and the loaded-object count. The
+[standalone Next.js starter](https://github.com/Liveroom-Technologies/react-immersive-docs/tree/main/examples/nextjs-model-viewer-demo)
+also includes `package.json`, TypeScript configuration and the sample asset.
+When nesting the app in another repository, scope `compilerOptions.types` to
+`node`, `react`, and `react-dom`, as the starter does, so unrelated ambient
+types from the parent repository are not loaded into the React 19 app.
+
+## Use licensed components
+
+Create a key in the [console](https://react-immersive.liveroom.dev/console), then
+set `NEXT_PUBLIC_LICENSE_KEY=your-license-key` in an uncommitted `.env.local` and
+restart Next.js. Use `process.env.NEXT_PUBLIC_LICENSE_KEY` in client code.
+Import the matching component stylesheet from `app/layout.tsx` and put hooks
+and event handlers in a file beginning with `"use client"`.
+
+`NEXT_PUBLIC_` values are exposed in browser bundles. Domain-bound viewer keys
+are passed to the browser for validation; do not put account credentials,
+payment tokens, or server API secrets in these variables. See
+[Licensing](https://react-immersive.liveroom.dev/docs/licensing) and
+[Getting Started](https://react-immersive.liveroom.dev/docs/getting-started).

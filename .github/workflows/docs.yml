@@ -1,0 +1,67 @@
+name: Documentation and starters
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check:published
+      - run: npm run check:snippets
+      - run: npm run build
+      - run: git diff --exit-code -- public/llms.txt
+
+  starters:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example:
+          - animation-studio-demo
+          - ar-product-viewer-demo
+          - binding-builder-demo
+          - cinematic-tour-demo
+          - exploded-view-demo
+          - guided-tour-demo
+          - light-flicker-demo
+          - model-viewer-demo
+          - mouse-controller-demo
+          - nextjs-model-viewer-demo
+          - shareable-view-demo
+          - simple-model-viewer-demo
+          - switch-room-demo
+          - texture-upload-demo
+          - vehicle-configurator-demo
+    defaults:
+      run:
+        working-directory: examples/${{ matrix.example }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: examples/${{ matrix.example }}/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+  external-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/check-docs.mjs --external

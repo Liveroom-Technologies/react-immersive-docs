@@ -409,7 +409,7 @@ type AnimationControls = {
 ## `ViewerIsolation`
 
 `ModelViewer`'s `isolation` prop. See
-[Isolating objects](/reference/model-viewer#isolating-objects).
+[Isolating objects](https://react-immersive.liveroom.dev/docs/reference/model-viewer#isolating-objects).
 
 ```ts
 type ViewerIsolation = {
@@ -424,7 +424,7 @@ type ViewerIsolation = {
 ## `SceneSectionConfig`
 
 `sceneConfig.section`. See
-[`showSectionTools`](/reference/model-viewer#showsectiontools).
+[`showSectionTools`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#showsectiontools).
 
 ```ts
 type SceneSectionConfig = {
@@ -442,7 +442,7 @@ type SceneSectionConfig = {
 ## `SceneStyleRule`
 
 The rules in `sceneConfig.styleRules`, applied in order. See
-[Style rules](/reference/model-viewer#style-rules).
+[Style rules](https://react-immersive.liveroom.dev/docs/reference/model-viewer#style-rules).
 
 ```ts
 type SceneStyleRule = {
@@ -562,7 +562,7 @@ type SceneConfig = {
 `ModelViewer` props aren't passed; passed props win. `model.activeVariants`
 selects the model's glTF material variants by name, at most one from each
 option group (see
-[`showMaterialVariants`](/reference/model-viewer#showmaterialvariants)). Import
+[`showMaterialVariants`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#showmaterialvariants)). Import
 `DEFAULT_SCENE_CONFIG` when creating a scene from code so new sections and
 defaults remain populated, then update it with `useSceneConfig` or
 `patchSceneConfig`. For `lighting.lights`, `sceneLight({ id, ...settings })`
@@ -594,7 +594,7 @@ here. They don't change when the viewer moves or scales the model.
 
 ## `CinematicConfig`
 
-Configures the [`cinematic`](/reference/model-viewer#cinematic) auto-camera on `ModelViewer`.
+Configures the [`cinematic`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#cinematic) auto-camera on `ModelViewer`.
 
 ```ts
 type CinematicConfig = {
@@ -639,7 +639,7 @@ type SceneCinematicWaypoint = {
 };
 ```
 
-`ModelViewer` activates a `sceneConfig`-authored path when `enabled` is `true` and there are at least two waypoints. The [`cinematic`](/reference/model-viewer#cinematic) prop overrides it field-by-field.
+`ModelViewer` activates a `sceneConfig`-authored path when `enabled` is `true` and there are at least two waypoints. The [`cinematic`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#cinematic) prop overrides it field-by-field.
 
 ---
 
@@ -676,7 +676,7 @@ type CustomSceneObjectsPanelProps = {
 
 Options for `ViewerReadyState.captureVideo`, `useViewerConnection().captureVideo`,
 and `useViewer().connection.captureVideo`. The result is a video `Blob` in the
-browser-supported format. See [Video export](/reference/model-viewer#video-export)
+browser-supported format. See [Video export](https://react-immersive.liveroom.dev/docs/reference/model-viewer#video-export)
 for readiness requirements and recording behavior.
 
 ```ts
@@ -702,7 +702,7 @@ type CaptureVideoOptions = {
 
 The discriminated event union received by `ModelViewer.onEngagement`. Narrow on
 `event.type` to access event-specific fields. See
-[Engagement analytics](/reference/model-viewer#onengagement--debugengagement)
+[Engagement analytics](https://react-immersive.liveroom.dev/docs/reference/model-viewer#onengagement--debugengagement)
 for event triggers, opt-in logging, and session semantics.
 
 ```ts
@@ -785,7 +785,7 @@ type SceneAnnotationMarker = {
 };
 ```
 
-All rich fields are optional. See [Rich annotations](/reference/model-viewer#rich-annotations) for saved-view playback,
+All rich fields are optional. See [Rich annotations](https://react-immersive.liveroom.dev/docs/reference/model-viewer#rich-annotations) for saved-view playback,
 category filtering, and marker-distance behavior. These annotation types are
 exported from the main entry and the server-safe `/utils` entry.
 
@@ -797,38 +797,38 @@ described with the API it belongs to.
 
 | Types | Described with |
 | --- | --- |
-| `ModelViewerProps`, `ModelViewerPreset`, `GroupedModelViewerProps`, `ModelViewerUiOptions`, `ModelViewerToolsOptions`, `ModelViewerControlsOptions`, `ModelViewerPerfOptions`, `ModelViewerTilesOptions`, `ModelViewerXrOptions`, `ModelViewerDecoderOptions`, `ObjectTransformSpace`, `TexturePositioningControls`, `XRScaleMode`, `ModelFormat`, `AnnotationMarker`, `CameraLimits`, `CameraControllerType`, `MouseControllerPosition`, `PerformanceProfile`, `ViewerObjectInfo` | [`ModelViewer`](/reference/model-viewer) |
-| `SimpleModelViewerProps` (from `/simple-model-viewer`) | [`SimpleModelViewer`](/reference/simple-model-viewer) |
-| `BindingBuilderProps` (from `/binding-builder`) | [`BindingBuilder`](/reference/binding-builder) |
+| `ModelViewerProps`, `ModelViewerPreset`, `GroupedModelViewerProps`, `ModelViewerUiOptions`, `ModelViewerToolsOptions`, `ModelViewerControlsOptions`, `ModelViewerPerfOptions`, `ModelViewerTilesOptions`, `ModelViewerXrOptions`, `ModelViewerDecoderOptions`, `ObjectTransformSpace`, `TexturePositioningControls`, `XRScaleMode`, `ModelFormat`, `AnnotationMarker`, `CameraLimits`, `CameraControllerType`, `MouseControllerPosition`, `PerformanceProfile`, `ViewerObjectInfo` | [`ModelViewer`](https://react-immersive.liveroom.dev/docs/reference/model-viewer) |
+| `SimpleModelViewerProps` (from `/simple-model-viewer`) | [`SimpleModelViewer`](https://react-immersive.liveroom.dev/docs/reference/simple-model-viewer) |
+| `BindingBuilderProps` (from `/binding-builder`) | [`BindingBuilder`](https://react-immersive.liveroom.dev/docs/reference/binding-builder) |
 | `ObjectBindingMaterialBlendingMode`, `ObjectBindingMaterialSide`, `ObjectBindingTextureSlot`, `ObjectBindingTextureChannel` | [`ObjectBindingMaterial`](#objectbindingmaterial) |
 | `AnimationActionEffect`, `CameraActionEffect`, `ObjectBindingsActionEffect`, `SceneConfigActionEffect`, `VisibilityActionEffect` | [`ObjectBindingAction`](#objectbindingaction) |
 | `AnimationLoopMode`, `SceneAnimationClipConfig`, `SceneLightType`, `SceneModelConfig`, `SceneCameraConfig`, `SceneLightingConfig`, `SceneShadowConfig`, `SceneEnvironmentConfig`, `SceneWireframeConfig`, `SceneBackgroundConfig`, `SceneGroundShadowConfig`, `ScenePostProcessingConfig`, `EnvironmentPreset`, `GlitchModeName`, `KernelSizeName`, `RampTypeName` | [`SceneConfig`](#sceneconfig) and [`SceneLight`](#scenelight) |
 | `SceneAnnotationMarker`, `SceneAnnotationCameraView`, `SceneAnnotationImage`, `SceneAnnotationLink` | [`SceneAnnotationMarker`](#sceneannotationmarker) |
-| `ObjectBindingDecal`, `ObjectSurfacePoint` | [Decals](/reference/model-viewer#decals) |
-| `MaterialVariantGroup`, `MaterialVariantOption` (also from `/simple-model-viewer` and `/utils`) | [`showMaterialVariants`](/reference/model-viewer#showmaterialvariants) |
-| `ReducedMotionSetting` (also from `/simple-model-viewer` and `/utils`) | [`reducedMotion`](/reference/model-viewer#reducedmotion) |
-| `RendererBackend` (also from `/utils`) | [`webgpu`](/reference/model-viewer#webgpu) |
-| `ViewerLoading`, `ViewerReveal` (also from `/simple-model-viewer`) | [Lazy loading and posters](/reference/model-viewer#lazy-loading-and-posters) |
-| `CompareViewerProps`, `CompareViewerSide` | [`CompareViewer`](/reference/compare-viewer) |
+| `ObjectBindingDecal`, `ObjectSurfacePoint` | [Decals](https://react-immersive.liveroom.dev/docs/reference/model-viewer#decals) |
+| `MaterialVariantGroup`, `MaterialVariantOption` (also from `/simple-model-viewer` and `/utils`) | [`showMaterialVariants`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#showmaterialvariants) |
+| `ReducedMotionSetting` (also from `/simple-model-viewer` and `/utils`) | [`reducedMotion`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#reducedmotion) |
+| `RendererBackend` (also from `/utils`) | [`webgpu`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#webgpu) |
+| `ViewerLoading`, `ViewerReveal` (also from `/simple-model-viewer`) | [Lazy loading and posters](https://react-immersive.liveroom.dev/docs/reference/model-viewer#lazy-loading-and-posters) |
+| `CompareViewerProps`, `CompareViewerSide` | [`CompareViewer`](https://react-immersive.liveroom.dev/docs/reference/compare-viewer) |
 | `ViewerIsolation`, `IsolatedObjectBindings` | [`ViewerIsolation`](#viewerisolation) |
-| `ViewerIsolationProps` | [`useViewerIsolation`](/hooks/use-viewer-isolation) |
+| `ViewerIsolationProps` | [`useViewerIsolation`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-isolation) |
 | `SceneSectionConfig`, `SceneSectionAxis` | [`SceneSectionConfig`](#scenesectionconfig) |
 | `SceneStyleRule`, `SceneStyleCondition`, `SceneStyleColorScale`, `SceneStylePulse` | [`SceneStyleRule`](#scenestylerule) |
-| `StyledObjectBindings`, `StyledObjectPulse` | `applyStyleRules`, see [Style rules](/reference/model-viewer#style-rules) |
-| `HiddenObjectsState`, `ObjectBindingsController`, `BindingEdit`, `ObjectBindingSelector`, `DeepPartial` | [`useObjectBindings`](/hooks/use-object-bindings) |
-| `ViewerSelectionProps` | [`useViewerSelection`](/hooks/use-viewer-selection) |
-| `ViewerHoverProps` | [`useViewerHover`](/hooks/use-viewer-hover) |
-| `ShareableViewerStateProps`, `UseShareableViewerStateOptions` | [`useShareableViewerState`](/hooks/use-shareable-viewer-state) |
-| `ViewerModelBounds`, `ViewerModelInfo`, `ViewerModelProps` | [`useViewerModel`](/hooks/use-viewer-model) |
-| `ViewerActionAnimationController`, `ViewerActionBindingsController`, `ViewerActionCameraController`, `ViewerActionSceneController`, `ViewerActionsOptions`, `ViewerActionsProps` | [`useViewerActions`](/hooks/use-viewer-actions) |
-| `HomeCameraState`, `ViewerCameraConfig`, `ViewerCameraProps`, `UseViewerCameraOptions` | [`useViewerCamera`](/hooks/use-viewer-camera) |
-| `ViewerConnectionController`, `ViewerReadyConsumer`, `ViewerReadyHandler` | [`useViewerConnection`](/hooks/use-viewer-connection) |
-| `AnimationClipInfo`, `AnimationClipState`, `AnimationClipStatus`, `AnimationPlayOptions`, `ViewerAnimationsProps` | [`useViewerAnimations`](/hooks/use-viewer-animations) |
-| `RuntimeMaterialPatch`, `RuntimeMaterialRanges`, `RuntimePointLightOptions`, `RuntimePointLightPatch`, `RuntimeTransformPatch`, `RuntimeTransformRanges`, `UseViewerEffectsOptions`, `ViewerEffectEasing`, `ViewerEffectsController`, `ViewerEffectRange`, `ViewerEffectTarget`, `ViewerFlickerOptions`, `ViewerLightEffectChannel`, `ViewerMaterialEffectChannel`, `ViewerTimelineOptions`, `ViewerTimelineStep`, `ViewerPulseOptions`, `ViewerTransformEffectChannel`, `ViewerTransitionOptions`, `ViewerVector3` | [`useViewerEffects`](/hooks/use-viewer-effects) |
+| `StyledObjectBindings`, `StyledObjectPulse` | `applyStyleRules`, see [Style rules](https://react-immersive.liveroom.dev/docs/reference/model-viewer#style-rules) |
+| `HiddenObjectsState`, `ObjectBindingsController`, `BindingEdit`, `ObjectBindingSelector`, `DeepPartial` | [`useObjectBindings`](https://react-immersive.liveroom.dev/docs/hooks/use-object-bindings) |
+| `ViewerSelectionProps` | [`useViewerSelection`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-selection) |
+| `ViewerHoverProps` | [`useViewerHover`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-hover) |
+| `ShareableViewerStateProps`, `UseShareableViewerStateOptions` | [`useShareableViewerState`](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state) |
+| `ViewerModelBounds`, `ViewerModelInfo`, `ViewerModelProps` | [`useViewerModel`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model) |
+| `ViewerActionAnimationController`, `ViewerActionBindingsController`, `ViewerActionCameraController`, `ViewerActionSceneController`, `ViewerActionsOptions`, `ViewerActionsProps` | [`useViewerActions`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-actions) |
+| `HomeCameraState`, `ViewerCameraConfig`, `ViewerCameraProps`, `UseViewerCameraOptions` | [`useViewerCamera`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera) |
+| `ViewerConnectionController`, `ViewerReadyConsumer`, `ViewerReadyHandler` | [`useViewerConnection`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-connection) |
+| `AnimationClipInfo`, `AnimationClipState`, `AnimationClipStatus`, `AnimationPlayOptions`, `ViewerAnimationsProps` | [`useViewerAnimations`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-animations) |
+| `RuntimeMaterialPatch`, `RuntimeMaterialRanges`, `RuntimePointLightOptions`, `RuntimePointLightPatch`, `RuntimeTransformPatch`, `RuntimeTransformRanges`, `UseViewerEffectsOptions`, `ViewerEffectEasing`, `ViewerEffectsController`, `ViewerEffectRange`, `ViewerEffectTarget`, `ViewerFlickerOptions`, `ViewerLightEffectChannel`, `ViewerMaterialEffectChannel`, `ViewerTimelineOptions`, `ViewerTimelineStep`, `ViewerPulseOptions`, `ViewerTransformEffectChannel`, `ViewerTransitionOptions`, `ViewerVector3` | [`useViewerEffects`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-effects) |
 
 ## `ModelViewerLabels` / `ModelViewerLabelKey`
 
 `ModelViewerLabelKey` is the union of keys in `DEFAULT_MODEL_VIEWER_LABELS`.
 `ModelViewerLabels` is `Partial<Record<ModelViewerLabelKey, string>>`, accepted by both viewers' `labels` prop. The default dictionary and both types are exported from the main package, `/simple-model-viewer`, and `/utils` (which can be imported without React).
 
-See the [labels reference](/reference/labels) for examples and the complete catalog.
+See the [labels reference](https://react-immersive.liveroom.dev/docs/reference/labels) for examples and the complete catalog.

@@ -8,7 +8,7 @@ import { Callout } from "nextra/components";
 
 Shows two configurations next to each other with one camera: a before and
 after of a renovation, two paint options, the current part against its
-replacement. Each side is a full [`ModelViewer`](/reference/model-viewer),
+replacement. Each side is a full [`ModelViewer`](https://react-immersive.liveroom.dev/docs/reference/model-viewer),
 so a side can differ in anything a viewer takes: `objectBindings`,
 `sceneConfig`, material variants, even a different `modelUrl`.
 
@@ -73,24 +73,24 @@ type CompareViewerSide = Partial<ModelViewerProps> & {
 Every other prop is shared by both sides, and a side's own props win.
 Callbacks run per side: give `before.onObjectSelect` and
 `after.onObjectSelect` to tell the sides apart. Both sides start from the
-`minimal` [preset](/reference/model-viewer#presets-and-grouped-props),
+`minimal` [preset](https://react-immersive.liveroom.dev/docs/reference/model-viewer#presets-and-grouped-props),
 with no panels or buttons, so their interfaces don't overlap; pass `preset`
 or `ui` to change that. Pass `split` to control the divider yourself;
 without it, `CompareViewer` keeps the position.
 
 <Callout type="info">
-  Each side has its own WebGL (or [WebGPU](/reference/model-viewer#webgpu))
+  Each side has its own WebGL (or [WebGPU](https://react-immersive.liveroom.dev/docs/reference/model-viewer#webgpu))
   canvas. The two share one download and parse of the model file, but the GPU
   holds two copies of its geometry and textures.
 </Callout>
 
 `poster`, `loading` and `reveal` work as on
-[`ModelViewer`](/reference/model-viewer#lazy-loading-and-posters). With
+[`ModelViewer`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#lazy-loading-and-posters). With
 `reveal="interaction"`, one **View in 3D** button starts both sides.
 
 BindingBuilder has the same slider over its preview (**Compare**), to check
 edits against the project as it was opened.
 
 The divider and the default side labels use the
-[`labels`](/reference/labels) keys `compareBefore`, `compareAfter`,
+[`labels`](https://react-immersive.liveroom.dev/docs/reference/labels) keys `compareBefore`, `compareAfter`,
 `compareDivider`, and `compareDividerValue`.

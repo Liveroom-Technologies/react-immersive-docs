@@ -5,7 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "docs:generate": "node scripts/generate-agent-docs.mjs",
+    "predev": "npm run docs:generate",
+    "prebuild": "npm run docs:generate",
+    "check:docs": "node scripts/check-docs.mjs",
+    "check:snippets": "node scripts/check-snippets.mjs",
+    "docs:sync": "node scripts/sync-to-website.mjs",
+    "docs:sync:check": "node scripts/sync-to-website.mjs --check",
+    "check:published": "node scripts/check-docs.mjs --published"
   },
   "dependencies": {
     "next": "^13.0.6",

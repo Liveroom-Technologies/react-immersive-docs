@@ -37,3 +37,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated machine-readable documentation (built from MDX)
+/public/docs/
+/public/llms-full.txt
+/public/LICENSE.txt
+/.cache/
