@@ -6,6 +6,10 @@ title: useViewerModel
 
 Provides model lifecycle state and scene metadata: loading status, errors, scene bounds, object count, and the list of bindable objects.
 
+This reports one model's metadata. For the model array,
+active URL, and per-model binding edits, use
+[`useViewerModels`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model#useviewermodels).
+
 ## Usage
 
 ```tsx
@@ -78,3 +82,37 @@ const { objects, handleObjectCatalog } = useViewerModel();
   ))}
 </ul>;
 ```
+
+## `useViewerModels`
+
+Owns the models array, active URL, and write-back of binding edits to the active
+entry. Spread its return value onto `ModelViewer`:
+
+```tsx
+import { ModelViewer, useViewerModels } from "@liveroom-tech/react-immersive";
+
+const viewer = useViewerModels(initialModels);
+<ModelViewer {...viewer} licenseKey={licenseKey} />;
+```
+
+### Parameter
+
+`initialModels: ModelViewerModelEntry[]` initializes state on mount. Each entry
+requires a unique `url` and an explicit `objectBindings` record. The first URL is
+initially active. Later changes to `initialModels` do not replace state. The hook
+does not expose upload, add/remove, or scene-config setters; own that state
+yourself when you need a dynamic model list.
+
+### Returns
+
+| Name | Type | Description |
+| --- | --- | --- |
+| `models` | `ModelViewerModelEntry[]` | Entries with their current binding edits |
+| `modelUrl` | `string` | Active model URL; initially the first entry's URL, or `""` |
+| `onModelChange` | React state setter for `string` | Changes the active URL; also enables the built-in model switcher |
+| `objectBindings` | `Record<string, ObjectBinding>` | Stable empty record; entry bindings take precedence |
+| `onObjectBindingsChange` | `(next: Record<string, ObjectBinding>) => void` | Replaces bindings on the active URL only |
+
+The hook does not manage selection or animation controls. Clear your selection
+when changing the active model and use `onModelAnimationsReady` for playback
+across entries. See the [complete export-to-viewer example](https://react-immersive.liveroom.dev/docs/reference/model-viewer#controlled-group-selection-and-playback).

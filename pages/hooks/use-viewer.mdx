@@ -81,6 +81,13 @@ exactly as if no scene config were passed.
 
 ## When to use the individual hooks
 
+Use
+[`useViewerModels`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model#useviewermodels)
+to manage independent model entries. `useViewer` does not manage a model list or
+multi-selected key array. Its model, selection, bindings, and animation helpers
+describe the active model; wire multi-model callbacks and state explicitly as
+shown in the [multiple-model reference](https://react-immersive.liveroom.dev/docs/reference/model-viewer#multiple-models).
+
 Use the hooks one by one when state lives elsewhere: for example, when a store
 owns the bindings and passes them to `ModelViewer`, or when you only need one
 piece, such as the camera.

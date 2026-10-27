@@ -773,6 +773,31 @@ type BindingBuilderProps = {
 
 `licenseKey` is validated the same way as `ModelViewer`'s (see [`licenseKey`](#licensekey) below). While the key is being checked, `BindingBuilder` renders a "Verifying license…" placeholder; if it's invalid, it renders an error message instead of the editor.
 
+### Multiple models and multi-select
+
+After the first upload, **Add Model** offers **Add as Separate Model** or
+**Add Nodes** to a chosen destination. Separate models stay visible and can be
+activated in Scene Nodes; added nodes become part of the destination with
+prefixed identifiers. Each separate model has its own binding history.
+
+Enable **Multi-select** to toggle nodes through checkboxes or canvas clicks.
+**Select all** and **Clear** apply to the current search results; Escape clears
+the whole group. Empty-space clicks preserve it. Materials and the
+visible/selectable/hoverable flags apply across selected bindings, while
+individual identity, decals, and actions remain single-object edits.
+Multi-selection can span original and added nodes of one active model, but not
+independent models. Switching models clears multi-select mode.
+
+The shared move/rotate gizmo and uniform corner-scale handle transform a group
+around its combined bounds. Local axes follow the active object. Numeric fields
+set each binding's local value independently, rather than applying a shared
+world-space delta. Saved edits can include `pivot` and `shear`; preserve those
+fields when passing exported bindings to ModelViewer.
+
+**Remove model** chooses an independent model or an added source. Added-source
+removal can be undone in the owner's binding history. Removing an independent
+model or all models cannot be undone; keep exports for work you need to retain.
+
 Current behavior, Object tab:
 
 - upload a `.glb`, standalone/data-URI `.gltf`, `.obj`, `.fbx`, `.usdz`, `.stl`, or `.ply` file, or a `.zip` bundle (a `.gltf` with its `.bin` and textures, an `.obj` with its MTL and textures, or an `.fbx` with external textures)
@@ -807,11 +832,20 @@ Preview:
 
 Autosave:
 
-- the session (the model, its object bindings, and the scene settings, with an uploaded model file included) is saved to this browser's IndexedDB, in a database named `react-immersive:binding-builder`, shortly after each edit and when the tab is hidden or closed
+- the session (model files, object bindings, and scene settings; including separate models, active model, and added sources with their edits) is saved to this browser's IndexedDB, in a database named `react-immersive:binding-builder`, shortly after each edit and when the tab is hidden or closed
 - **Restore last session** in the preview's "⋯" menu reopens it; one session is kept per browser
 - while there are edits on screen, leaving or reloading the page asks for confirmation
 - if the browser refuses to store a session, usually for lack of space, the editor says so; export your work to keep it
 - enable **Transform gizmo**, select a mesh, then use the arrows and plane handles to move it or the rings to rotate it; all changes are saved to `binding.transform`
+
+### Multi-model exports
+
+Export bindings separately for each active model, including its added nodes.
+Scene export includes shared settings plus the active model's annotations,
+variants, and animation settings. Supply original model files, the model list,
+and merge-source URLs/prefixes in the consumer; these are not bundled into
+binding/config exports. See the
+[complete integration](https://react-immersive.liveroom.dev/docs/reference/binding-builder#reusing-multiple-models).
 
 ### `BindingBuilder` licensing & plan tiers
 
@@ -914,7 +948,7 @@ const {
 
 Pass `initialPosition`, `initialTarget`, and optional named `presets` to `useViewerCamera` to configure the first view without writing an `onViewerReady` wrapper.
 
-If you want a link that opens the viewer the way it looks now, the library also exports `useShareableViewerState`. It keeps the camera, the hidden objects, and the selection in the page URL's hash (`#view=…`), and puts them back when the link is opened:
+If you want a link that opens the viewer the way it looks now, the library also exports `useShareableViewerState`. It keeps camera, visibility and selection in the page URL's hash (`#view=…`) for existing callers. Pass controlled `configuration`/`onConfigurationChange` to save full bindings, models and scene state. The local 5.3.0 build also provides `getState`, `restoreState`, JSON serialization, and optional storage-backed short links; use `mode: "view"` for compact legacy behavior:
 
 ```tsx
 const viewer = useViewer();
@@ -960,7 +994,7 @@ const share = useShareableViewerState({
 
 Things to know:
 
-- The link holds the view, not the model. Keep whatever identifies the model, such as a route or query parameter, in the URL too. Objects are stored by `binding.id`, so links keep working while the ids stay the same.
+- When `configuration` is omitted, keep whatever identifies the model, such as a route or query parameter, in the URL too. With `configuration`, model/source URLs and scene settings are included. Objects are stored by `binding.id`, so links keep working while the ids stay the same.
 - The hash is only updated after `restoreFromUrl` has been called once, so an incoming link isn't overwritten before it's read. Call it even if you don't restore links; with nothing in the hash it does nothing.
 - When the bindings come from the model, as with `useViewer` or `objectBindings="auto"`, they exist only once it has loaded, after the first `onViewerReady`. A link that hides or selects objects then restores its camera at once and waits for them: `onViewerReady` runs again when the bindings arrive, and that call hides and selects them. The hash isn't updated while it waits.
 - The camera jumps to the shared view without a transition. `refitOnResize={false}` keeps a later resize from re-framing the model away from it.
@@ -1209,9 +1243,23 @@ type Props = {
   xr?: ModelViewerXrOptions;
   decoders?: ModelViewerDecoderOptions;
   modelUrl: string;
+  models?: ModelViewerModelEntry[];
+  onModelChange?: (url: string) => void;
+  mergeModels?: ModelMergeSource[];
+  originalNodePoses?: Record<string, {
+    position: [number, number, number];
+    rotation?: [number, number, number];
+    scale?: [number, number, number];
+  }>;
+  extraModelUrls?: string[];
+  onExtraModelLoaded?: (url: string, scene: Object3D) => void;
+  onExtraModelError?: (url: string, error: unknown) => void;
+  onMergeModelLoaded?: (url: string, mergedRoot: Object3D) => void;
+  onMergeModelError?: (url: string, error: unknown) => void;
   poster?: string;
   loading?: "lazy" | "eager"; // default "lazy"
   reveal?: "auto" | "interaction"; // default "auto"
+  labels?: ModelViewerLabels;
   tilesetUrl?: string | null;
   tilesErrorTarget?: number;
   tilesCacheSize?: number;
@@ -1220,11 +1268,21 @@ type Props = {
   licenseKey: string;
   objectBindings?: Record<string, ObjectBinding> | "auto"; // default "auto"
   selectedObject?: ObjectBinding | null;
+  multiSelectedKeys?: readonly string[]; // active model's binding keys
+  selectedObjectRefs?: Object3D[] | null; // overrides key-based selection
+  selectedObjectOutlineColor?: string; // default green
   panelHoveredObject?: ObjectBinding | null;
   onObjectBindingsChange?: (next: Record<string, ObjectBinding>) => void;
   onObjectSelect?: (binding: ObjectBinding | null) => void;
   onObjectHover?: (binding: ObjectBinding | null) => void;
   onObjectDoubleClick?: (event: ObjectPointerEvent) => boolean | void;
+  onDecalDoubleClick?: (binding: ObjectBinding, decalId: string) => void;
+  decalMove?: { // controlled surface drag
+    objectId: string;
+    decal: ObjectBindingDecal;
+    onCommit: (surface: ObjectSurfacePoint) => void;
+    onCancel: () => void;
+  } | null;
   onObjectContextMenu?: (event: ObjectPointerEvent) => void;
   onModelLoaded?: (model: ViewerModelInfo) => void;
   onLoadError?: (error: unknown) => void;
@@ -1242,9 +1300,13 @@ type Props = {
   onTextureUpload?: (file: File, objectId: string) => Promise<string>;
   texturePositioning?: boolean | TexturePositioningControls;
   onAnimationsReady?: (controls: AnimationControls) => void;
+  onModelAnimationsReady?: (url: string, controls: AnimationControls) => void;
   onAnnotationsChange?: (annotations: AnnotationMarker[]) => void;
   activeAnnotation?: AnnotationMarker | null;
   onActiveAnnotationChange?: (annotation: AnnotationMarker | null) => void;
+  annotationCategories?: string[] | null;
+  onAnnotationCategoriesChange?: (categories: string[] | null) => void;
+  showAnnotationFilters?: boolean;
   camera?: ViewerCameraConfig;
   cameraLimits?: CameraLimits;
   backgroundColor?: string;
@@ -1280,6 +1342,7 @@ type Props = {
   highlightOnHover?: boolean;
   enableCameraControls?: boolean;
   moveModeEnabled?: boolean;
+  scaleModeEnabled?: boolean; // independent uniform scale handle
   objectTransformSpace?: "local" | "world";
   enableKeyboardNavigation?: boolean;
   showObjectNavigator?: boolean;
@@ -1328,6 +1391,51 @@ Example:
 ```tsx
 modelUrl = "/model.glb";
 ```
+
+### Multiple models
+
+`models` renders independent entries in one canvas. `modelUrl` is still required
+and chooses the active entry by URL. Use unique URLs; other entries remain
+visible and mounted, but only the active one receives object selection, hover,
+and editing. Models retain their authored coordinates, so they can overlap.
+Entry bindings take precedence over top-level `objectBindings`; provide an
+explicit record for every entry rather than relying on automatic bindings.
+
+Pass `onModelChange` to show the built-in switcher when there is more than one
+entry, and update `modelUrl` when it fires. Without it, switch through your own
+state/UI. [`useViewerModels`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model#useviewermodels)
+wires active URL and binding write-back. Without `onObjectBindingsChange`, the
+viewer retains runtime binding edits per URL internally. With that callback,
+write edits back to the active entry in your controlled `models` state.
+
+`onModelLoaded`, `onObjectCatalog`, `onProgress`, and `onAnimationsReady` describe
+the active model. `onExtraModelLoaded(url, scene)` reports **every** loaded slot,
+including the active one. `onModelAnimationsReady(url, controls)` likewise
+registers every slot's animation controls; inactive clips can keep playing.
+`onExtraModelError(url, error)` reports inactive failures without replacing the
+active view. Activating a failed slot reports its error through `onLoadError`.
+
+The active slot uses top-level `sceneConfig`. An inactive slot uses its entry's
+`sceneConfig` when supplied, otherwise the top-level config. When switching,
+your application must pass the newly active model's scene config explicitly;
+the hook only updates bindings and URL.
+
+For **Add Nodes**, use `mergeModels: [{ url, namePrefix }]` on its destination
+entry; in single-model mode use the top-level `mergeModels`. Keep the exact
+authoring prefix so exported node and clip identifiers resolve. Load/error
+callbacks for added sources are `onMergeModelLoaded` / `onMergeModelError`;
+one failed source does not prevent the owner from rendering.
+
+`extraModelUrls` adds passive geometry with no bindings, selection, or styling;
+it is ignored with `models`. A non-empty `models` array uses slots unless
+`tilesetUrl` is set, which takes the streamed rendering path instead.
+See [entry/source types](https://react-immersive.liveroom.dev/docs/reference/types#modelviewermodelentry)
+and [exporting multiple models](https://react-immersive.liveroom.dev/docs/reference/binding-builder#reusing-multiple-models).
+
+`originalNodePoses` optionally supplies reference local positions, rotations, and
+scales by node identifier. Use it only when supplying authored reference data;
+it does not replace `objectBindings.transform` for placement edits. Each model
+entry accepts its own record.
 
 ### `modelFormat`
 
@@ -1514,6 +1622,109 @@ If provided, `ModelViewer` behaves as a controlled component.
 If omitted, `ModelViewer` manages its own selection state internally.
 
 When the selected object has a `cameraState` with both `position` and `target`, the viewer uses that saved camera view for focus/select behavior instead of falling back to `fitToBox`.
+
+### Multiple-object selection
+
+`multiSelectedKeys` takes binding **record keys** from the active model. It draws
+each selected object's outline in green and suppresses the single-selection
+blue outline. `selectedObjectOutlineColor` overrides green. For advanced callers,
+`selectedObjectRefs` supplies live Three.js nodes directly and takes precedence
+over `multiSelectedKeys` when non-null, including an empty array.
+
+These props do not implement a toggle policy or checkboxes: manage the key list
+in your app, update `selectedObject` from `onObjectSelect`, and clear both on a
+null selection callback (including Escape). Clear selection when switching
+models. `useViewerSelection` continues to manage only the active binding.
+Independent slots cannot share one group selection; original and merged nodes
+within the active slot can. Selection state is not part of binding exports.
+
+With `moveModeEnabled` or `scaleModeEnabled`, multiple selected bound nodes use
+a shared transform gizmo. Group changes are written through
+`onObjectBindingsChange`. The normal selected binding remains the active object
+for its detail panel and Local-axis orientation. See the
+controlled example below.
+
+#### Controlled group selection and playback
+
+This component accepts exported bindings through `initialModels`, keeps edits
+per model, and clears selection when switching. It also registers animation
+controls for each loaded model. Record keys identify selected objects;
+`binding.id` can be different application metadata.
+
+```tsx filename="MultiModelViewer.tsx"
+"use client";
+
+import { useCallback, useRef, useState } from "react";
+import {
+  ModelViewer,
+  useViewerModels,
+  type AnimationControls,
+  type ModelViewerModelEntry,
+  type ObjectBinding,
+} from "@liveroom-tech/react-immersive";
+import "@liveroom-tech/react-immersive/styles.css";
+
+export default function MultiModelViewer({ licenseKey, initialModels }: {
+  licenseKey: string;
+  initialModels: ModelViewerModelEntry[];
+}) {
+  const viewer = useViewerModels(initialModels);
+  const [keys, setKeys] = useState<string[]>([]);
+  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const controls = useRef(new Map<string, AnimationControls>());
+  const registerAnimations = useCallback((url: string, next: AnimationControls) => {
+    controls.current.set(url, next);
+  }, []);
+  const active = viewer.models.find((model) => model.url === viewer.modelUrl);
+  const bindings = active?.objectBindings ?? {};
+
+  const select = (binding: ObjectBinding | null) => {
+    if (!binding) { setKeys([]); setActiveKey(null); return; }
+    const key = Object.keys(bindings).find(
+      (candidate) => bindings[candidate].modelObjectId === binding.modelObjectId,
+    );
+    if (!key) return;
+    const next = keys.includes(key) ? keys.filter((item) => item !== key) : [...keys, key];
+    setKeys(next);
+    setActiveKey(next.includes(key) ? key : (next.at(-1) ?? null));
+  };
+
+  return (
+    <div>
+      <button onClick={() => {
+        for (const model of viewer.models) {
+          const animation = controls.current.get(model.url);
+          const clip = animation?.clips[0];
+          if (clip) animation?.play(clip);
+        }
+      }}>Play first clip on each model</button>
+      <button onClick={() => {
+        for (const animation of controls.current.values()) animation.pause();
+      }}>Pause all</button>
+      <button onClick={() => select(null)}>Clear selection</button>
+      <div style={{ height: 600 }}>
+        <ModelViewer
+          {...viewer}
+          licenseKey={licenseKey}
+          sceneConfig={active?.sceneConfig}
+          onModelChange={(url) => {
+            setKeys([]);
+            setActiveKey(null);
+            viewer.onModelChange(url);
+          }}
+          selectedObject={activeKey ? bindings[activeKey] ?? null : null}
+          multiSelectedKeys={keys}
+          onObjectSelect={select}
+          onModelAnimationsReady={registerAnimations}
+          moveModeEnabled
+          scaleModeEnabled
+          objectTransformSpace="world"
+        />
+      </div>
+    </div>
+  );
+}
+```
 
 ### `panelHoveredObject`
 
@@ -1956,6 +2167,11 @@ panel fields; dragging and scrolling on the canvas still write to the binding.
 
 ### `onAnimationsReady`
 
+In multi-model mode this follows the active slot. Use
+`onModelAnimationsReady(url, controls)` for every slot, including inactive ones.
+Register controls by URL and use each model's local clip names; see
+[multi-model playback](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-animations#multiple-models).
+
 Optional callback fired after the GLB/GLTF model is loaded, providing animation controls. If the model contains no animations, it is still called with an empty `clips` array and no-op control functions.
 
 Current callback shape:
@@ -2380,6 +2596,12 @@ true;
 
 ### `showDownloadButton`
 
+GLB download includes loaded models, retains current
+materials/transforms, omits hidden meshes, and bakes skinned meshes at their
+current pose without rigs or animation clips. UV downloads cover loaded models
+and group layouts by model/material where needed. Binding JSON/TypeScript export
+is a separate per-active-model operation.
+
 Optional boolean that enables the download split-button (export GLB, export the
 model's UV layout, and—when `preserveDrawingBuffer` is enabled—export a PNG
 screenshot).
@@ -2579,11 +2801,12 @@ disabled for performance, while panel-row highlighting remains available.
 
 ### Moving and rotating objects
 
-Set `moveModeEnabled` to show a centered Drei `PivotControls` gizmo for the
-selected bound object. Translation arrows, plane handles, and rotation rings
-are available together; scaling is not enabled. While object editing is on,
-the camera controls are paused so pointer drags manipulate the object instead
-of the camera.
+Set `moveModeEnabled` to show a centered `PivotControls` gizmo for the selected
+bound object. Its translation arrows, plane handles, and rotation rings are
+available at the same time. `scaleModeEnabled`
+independently shows a corner handle for uniform resizing; it works with or
+without move/rotate enabled. Both controls default to off. These gizmos require
+WebGL; they are unavailable on the WebGPU path.
 
 ```tsx
 import { useState } from "react";
@@ -2597,14 +2820,14 @@ export function EditableViewer({
 }: {
   initialBindings: Record<string, ObjectBinding>;
 }) {
-  const [objectBindings, setObjectBindings] = useState(initialBindings);
+  const [bindings, setBindings] = useState(initialBindings);
 
   return (
     <ModelViewer
       modelUrl="/model.glb"
       licenseKey="your-license-key"
-      objectBindings={objectBindings}
-      onObjectBindingsChange={setObjectBindings}
+      objectBindings={bindings}
+      onObjectBindingsChange={setBindings}
       moveModeEnabled
       objectTransformSpace="world"
     />
@@ -2612,26 +2835,33 @@ export function EditableViewer({
 }
 ```
 
-Click a bound mesh to select it, then drag an arrow to move on one axis, a
-plane handle to move on two axes, or a ring to rotate. The pivot is placed at
-the center of the selected object's renderable geometry, so rotation happens
-around the object itself even when the source model's node origin is elsewhere.
+Click a bound mesh to select it. Drag an arrow to move on one axis, a plane
+handle to move on two axes, or a ring to rotate. The pivot is calculated from
+the center of the object's renderable geometry, so the object rotates around
+itself even when its authored node origin is elsewhere.
 
 `objectTransformSpace` accepts:
 
-- `"world"` (default): the gizmo remains aligned with the scene axes
-- `"local"`: the gizmo follows the selected object's current orientation
+- `"world"` (default): handles stay aligned with the scene axes
+- `"local"`: handles follow the selected object's current orientation
 
-Axis space changes the direction of the handles; it does not change the
-object's position when toggled. The resulting `transform.position` and
-`transform.rotation` values are always persisted in the object's local space,
-with rotation stored in radians.
+Changing axis space only changes handle alignment; it does not move the
+object. Changes are persisted to the binding as local-space
+`transform.position` and `transform.rotation`. Positions use model units and
+rotations use radians.
 
-Passing `onObjectBindingsChange` makes binding edits controlled, so the parent
-must store the returned record as shown above. Without that callback,
-`ModelViewer` keeps edits internally for the mounted viewer. Similarly, when
-you pass `selectedObject`, update it from `onObjectSelect`; otherwise selection
-is managed internally.
+Transforms also persist `transform.pivot` for centered edits and, when a
+non-uniform parent requires it, `transform.shear`. Preserve these exported fields
+when saving or patching transforms. With multiple bound objects selected the
+gizmo applies a shared world-space delta and preserves their relative placement.
+
+<Callout type="info">
+  If you pass `selectedObject`, selection is controlled too. Update it from
+  `onObjectSelect`. If you omit both props, `ModelViewer` manages selection
+  internally.
+</Callout>
+
+---
 
 ### `enableCameraControls`
 
@@ -3145,6 +3375,11 @@ viewer.scene.updateSceneConfig({
   `model.materialVariant`, still show that variant.
 
 ### Decals
+
+Double-clicking a decal in BindingBuilder activates surface
+Move. A custom viewer can use `onDecalDoubleClick(binding, decalId)` and controlled
+`decalMove` to commit a new surface point/normal into the binding. See the
+[decal controls](https://react-immersive.liveroom.dev/docs/reference/model-viewer#decals).
 
 `binding.decals` prints images and text onto an object's surface: a logo on a
 shirt, a name on a mug, a label on a machine. Each decal is projected onto the
@@ -3688,6 +3923,8 @@ type ObjectBindingStyle = {
 };
 
 type ObjectBindingTransform = {
+  shear?: [number, number, number]; // xy/xz/yz
+  pivot?: { point: [number, number, number]; offset: [number, number, number] };
   position?: [number, number, number];
   rotation?: [number, number, number]; // radians
   scale?: [number, number, number];
@@ -3697,6 +3934,7 @@ type ObjectBinding = {
   id: string;
   type?: ObjectBindingType; // any string; suggestions: "body" | "light" | "wheel" | "wall" | "door" | "furniture" | ...; default "other"
   modelObjectId: string;
+  removed?: boolean; // deleted-node tombstone
   label?: string;
   group?: string;
   tags?: string[];
@@ -3721,6 +3959,7 @@ Notes:
 - `transform` is persistent local-space render state; position values use model units and rotation values use radians
 - the transform gizmo is displayed at the center of the object's renderable geometry for intuitive rotation, even if the authored node origin is elsewhere; this does not rewrite the GLB/GLTF origin
 - missing transform fields retain their model-authored values, and removing `transform` restores the authored transform
+- transforms may persist centered-editing `pivot` and affine `shear`; preserve both when passing exported data to ModelViewer, especially after group edits under non-uniform parents
 - `style.material.baseColor` is read by the renderer and is the committed source of truth for color picks
 - `style.material.texture.path` is read by the renderer and is the committed source of truth for texture uploads (stored as durable URLs via `onTextureUpload` when provided, or session-scoped blob URLs otherwise)
 - if no `texture.path` is provided and no `style.material.baseColor` is set, the viewer falls back to the node's original GLB/GLTF material

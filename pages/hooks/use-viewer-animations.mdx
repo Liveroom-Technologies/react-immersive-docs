@@ -117,3 +117,24 @@ it the other way turns it around where it is.
 <Callout type="info">
   `onAnimationsReady` is called even when the model has no animations, with an empty `clips` array and no-op control functions.
 </Callout>
+
+## Multiple models
+
+`useViewerAnimations` follows whichever model reports through
+`onAnimationsReady`, which is the **active** slot in a multi-model viewer. It
+does not combine clips from different models. Switching models reconnects this
+hook; animations on inactive models can continue independently.
+
+For simultaneous playback across models, use
+`onModelAnimationsReady(url, controls)` and keep controls in a map keyed by URL.
+Register by replacement because callbacks can repeat after activation/reload;
+drop entries when models are removed. Call `play`, `pause`, `stop`, `setSpeed`, or
+`seek` on the owning controls. Two models can both have a clip named `Idle`:
+their URL identifies which controls to use. `alongside` and `fade` apply within
+that model's mixer, not across all entries.
+
+BindingBuilder aggregates these controls for its Animation tab and resolves
+display-name collisions there. Those combined display names are not the names
+to send to another model's controls. The original asset provides the animation
+data; JSON/TypeScript bindings do not contain clips. See the
+[complete playback and multi-select component](https://react-immersive.liveroom.dev/docs/reference/model-viewer#controlled-group-selection-and-playback).

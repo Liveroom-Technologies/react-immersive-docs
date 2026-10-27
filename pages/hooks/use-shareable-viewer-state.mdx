@@ -6,122 +6,275 @@ import { Callout } from "nextra/components";
 
 # `useShareableViewerState`
 
-Serializes the current camera angle, hidden objects, and selection into a URL
-hash so a configured view can be copied as a link and restored exactly when
-opened.
+Save and restore a complete viewer configuration as JSON, an inline URL, or an
+application-owned short link. Existing camera/visibility/selection links remain
+readable. Complete snapshots include binding materials, textures, decals,
+transforms (including pivots/shear), actions and metadata. Pass `configuration`
+to also include model sources, scene settings, variant choices, section cuts,
+isolation, multi-selection, annotation filters and the active annotation.
 
-Try the complete [Shareable View / Deep Link demo](https://react-immersive.liveroom.dev/examples/shareable-view)
-to create a walkthrough, copy its link, and open it in a new tab.
+## Complete configuration example
 
-<Callout type="info">
-  The encoded state covers camera + visibility + selection for the **currently
-  loaded model** only, it doesn't carry the model URL itself, so combine it
-  with whatever query param already identifies which model to load.
-</Callout>
+Keep the props you want to save controlled. The hook cannot inspect changes
+kept privately inside a viewer. This example connects scene settings, isolation,
+annotations, bindings, selection, and camera, and offers JSON download/import.
 
-## Usage
+```tsx filename="configuration-sharing.tsx"
+"use client";
 
-```tsx
+import { useState } from "react";
 import {
+  DEFAULT_SCENE_CONFIG,
+  MAX_VIEWER_STATE_BYTES,
   ModelViewer,
+  serializeViewerState,
   useShareableViewerState,
   useViewerCamera,
   useViewerSelection,
+  type ViewerConfiguration,
 } from "@liveroom-tech/react-immersive";
+import type { ObjectBinding } from "@liveroom-tech/react-immersive";
 
-const [objectBindings, setObjectBindings] = useState(initialBindings);
-const { cameraState, setCameraState, handleCameraChange, handleViewerReady } =
-  useViewerCamera();
-const { selectedObjectBinding, setSelectedObjectBinding, handleObjectSelect } =
-  useViewerSelection();
+export function ConfigurationViewer({
+  licenseKey,
+  modelUrl,
+}: {
+  licenseKey: string;
+  modelUrl: string;
+}) {
+  const [configuration, setConfiguration] = useState<ViewerConfiguration>({
+    modelUrl,
+    sceneConfig: DEFAULT_SCENE_CONFIG,
+    isolation: null,
+    activeAnnotation: null,
+    annotationCategories: null,
+  });
+  const [bindings, setBindings] = useState<Record<string, ObjectBinding>>();
+  const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState("");
+  const camera = useViewerCamera();
+  const selection = useViewerSelection();
+  const report = (error: unknown) => setError(String(error));
+  const sharing = useShareableViewerState({
+    cameraState: camera.cameraState,
+    setCameraState: camera.setCameraState,
+    objectBindings: bindings ?? {},
+    onObjectBindingsChange: setBindings,
+    selectedObjectBinding: selection.selectedObjectBinding,
+    setSelectedObjectBinding: selection.setSelectedObjectBinding,
+    configuration,
+    onConfigurationChange: (next) => {
+      if (next.modelUrl !== configuration.modelUrl) setIsReady(false);
+      setConfiguration(next);
+    },
+    isReady,
+    autoSync: false,
+    onError: report,
+  });
 
-const { getShareUrl, restoreFromUrl } = useShareableViewerState({
-  cameraState,
-  setCameraState,
-  objectBindings,
-  onObjectBindingsChange: setObjectBindings,
-  selectedObjectBinding,
-  setSelectedObjectBinding,
-});
+  function saveJson() {
+    try {
+      const blob = new Blob([serializeViewerState(sharing.getState())], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "viewer-configuration.json";
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch (error) {
+      report(error);
+    }
+  }
 
-<ModelViewer
-  modelUrl="/model.glb"
-  licenseKey="your-license-key"
-  objectBindings={objectBindings}
-  onObjectBindingsChange={setObjectBindings}
-  selectedObject={selectedObjectBinding}
-  onObjectSelect={handleObjectSelect}
-  onCameraChange={handleCameraChange}
-  onViewerReady={(viewer) => {
-    handleViewerReady(viewer);
-    restoreFromUrl();
-  }}
-  refitOnResize={false}
-/>;
-
-<button onClick={() => navigator.clipboard.writeText(getShareUrl())}>
-  Copy link
-</button>;
+  return (
+    <>
+      <button
+        disabled={!isReady}
+        onClick={() => {
+          void sharing
+            .createShareUrl()
+            .then((url) => navigator.clipboard.writeText(url))
+            .catch(report);
+        }}
+      >
+        Copy configuration link
+      </button>
+      <button disabled={!isReady} onClick={saveJson}>
+        Save JSON
+      </button>
+      <label>
+        Load JSON{" "}
+        <input
+          type="file"
+          accept=".json,application/json"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (!file) return;
+            if (file.size > MAX_VIEWER_STATE_BYTES) {
+              report("Configuration exceeds 5 MiB.");
+              return;
+            }
+            void file.text().then(sharing.restoreState).catch(report);
+          }}
+        />
+      </label>
+      {error && <p role="alert">{error}</p>}
+      <div style={{ height: 600 }}>
+        <ModelViewer
+          {...configuration}
+          licenseKey={licenseKey}
+          objectBindings={bindings ?? "auto"}
+          onObjectBindingsChange={setBindings}
+          selectedObject={selection.selectedObjectBinding}
+          onObjectSelect={selection.handleObjectSelect}
+          onCameraChange={camera.handleCameraChange}
+          onSceneConfigChange={(sceneConfig) =>
+            setConfiguration((old) => ({ ...old, sceneConfig }))
+          }
+          onIsolationChange={(isolation) =>
+            setConfiguration((old) => ({ ...old, isolation }))
+          }
+          onActiveAnnotationChange={(activeAnnotation) =>
+            setConfiguration((old) => ({ ...old, activeAnnotation }))
+          }
+          onAnnotationCategoriesChange={(annotationCategories) =>
+            setConfiguration((old) => ({ ...old, annotationCategories }))
+          }
+          onModelLoaded={() => setIsReady(true)}
+          onViewerReady={(ready) => {
+            camera.handleViewerReady(ready);
+            void sharing.restoreFromUrl().catch(report);
+          }}
+          refitOnResize={false}
+          tools={{ section: true, isolate: true }}
+        />
+      </div>
+    </>
+  );
+}
 ```
 
-<Callout type="warning">
-  `selectedObject={selectedObjectBinding}` is required for a restored selection
-  to actually appear in the viewer. Without it, `ModelViewer` manages selection
-  internally and `setSelectedObjectBinding` only updates state used for
-  serialization, it has no visible effect on its own.
-</Callout>
+`getState()` returns a detached snapshot. You can store
+`serializeViewerState(sharing.getState())` in a file or your own persistence
+layer and restore its JSON with `restoreState(json)`. `parseViewerState(input)`
+is also exported for standalone validation. These utilities are available from
+the main entry and `/utils`.
+
+## Multiple models
+
+Include the current `modelUrl`, `models`, `mergeModels`, and active `sceneConfig`
+in `configuration`. Each model entry includes its own bindings, scene settings
+and merge-source prefixes. Write binding changes back to the active entry, as
+shown in [multiple-model usage](https://react-immersive.liveroom.dev/docs/reference/model-viewer#multiple-models).
+Apply `onConfigurationChange` to the same state that supplies these props; this
+callback replaces the configuration rather than patching it. Keep `isReady`
+false while a restored active model or its sources load. Staged restoration
+resumes when readiness/configuration changes or `restoreFromUrl()` is called
+again from `onViewerReady`. The saved camera is applied after configuration.
+
+The configuration type also supports `modelFormat`, `tilesetUrl`,
+`backgroundColor`, `shadows`, `cinematic`, `cameraControllerType`,
+`objectTransformSpace`, `arScaleMode`, and `usdzUrl`. License keys, callbacks,
+React overlays, raw Three.js objects, transient animation playback positions,
+and measurement picks are not serialized. The active annotation identifies the
+current tour stop; it does not start or resume tour autoplay.
+
+## Short links with application-owned storage
+
+For large configurations, provide a `ViewerStateStorage` adapter:
+
+```ts
+import type {
+  ShareableViewerState,
+  ViewerStateStorage,
+} from "@liveroom-tech/react-immersive";
+
+const storage: ViewerStateStorage = {
+  async save(state: ShareableViewerState) {
+    const response = await fetch("/api/configurations", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(state),
+    });
+    if (!response.ok) throw new Error("Could not save configuration");
+    const result: { id: string } = await response.json();
+    return result.id;
+  },
+  async load(id) {
+    const response = await fetch(
+      `/api/configurations/${encodeURIComponent(id)}`,
+    );
+    if (!response.ok) throw new Error("Configuration is unavailable");
+    return response.json();
+  },
+};
+```
+
+Pass `storage` and normally `autoSync: false` to the hook. Then
+`await sharing.createShareUrl()` saves a detached snapshot and returns
+`#viewId=...`; `restoreFromUrl()` loads that ID through the adapter. The endpoint
+above is an application example, not a service supplied by this SDK. Implement
+access, retention and asset hosting in your application. A recipient needs the
+same storage adapter. Storage failures reject the operation; newer incoming
+links supersede older pending requests.
+
+`getShareUrl()` and `syncUrl()` always use inline JSON. Inline URLs are limited
+to 65,536 characters by default; `maxUrlLength` can change this guard, but an
+application/browser/link-sharing service may impose a smaller limit. JSON state
+is limited to 5 MiB, including when loaded from storage. Autosync reports errors
+through `onError` and never overwrites an incoming link while restoration waits
+for configuration, models or bindings.
 
 ## Parameters
 
-| Name                       | Type                                                                         | Description                                                              |
-| -------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `cameraState`              | `ViewerCameraState \| null`                                                  | From `useViewerCamera()`                                                 |
-| `setCameraState`           | `(state: ViewerCameraState, enableTransition?: boolean) => Promise<boolean>` | From `useViewerCamera()`; used to restore a decoded camera state         |
-| `objectBindings`           | `Record<string, ObjectBinding>`                                              | The current bindings map (owned by consumer)                             |
-| `onObjectBindingsChange`   | `(next: Record<string, ObjectBinding>) => void`                              | State setter from `useState`                                             |
-| `selectedObjectBinding`    | `ObjectBinding \| null`                                                      | From `useViewerSelection()`                                              |
-| `setSelectedObjectBinding` | `(binding: ObjectBinding \| null) => void`                                   | From `useViewerSelection()`                                              |
-| `paramKey`                 | `string`                                                                     | Hash key the state is stored under. Default `"view"`                     |
-| `debounceMs`               | `number`                                                                     | Debounce before the URL hash updates after a state change. Default `400` |
-| `autoSync`                 | `boolean`                                                                    | Auto-write state to the URL hash on change. Default `true`               |
+| Name                                                | Description                                                                                                                                                                                                   |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cameraState`, `setCameraState`                     | Current camera and instant restore handler from `useViewerCamera`. A failed/not-ready camera returns false and is retried later.                                                                              |
+| `objectBindings`, `onObjectBindingsChange`          | Current active-model bindings and their setter. Complete snapshots replace the binding map.                                                                                                                   |
+| `selectedObjectBinding`, `setSelectedObjectBinding` | Current selection and setter. Also pass `selectedObject` to the viewer.                                                                                                                                       |
+| `configuration`, `onConfigurationChange`            | Optional `ViewerConfiguration` and replacement setter. The callback is required when restoring a snapshot that includes configuration.                                                                        |
+| `isReady`                                           | Defaults to true; pass false while restored assets load.                                                                                                                                                      |
+| `mode`                                              | `"configuration"` captures full bindings and supplied configuration. This is the default when `configuration` is supplied; otherwise the default is compact `"view"` mode (camera, hidden IDs and selection). |
+| `storage`                                           | Optional `ViewerStateStorage` for async short links.                                                                                                                                                          |
+| `maxUrlLength`                                      | Maximum inline URL length; default 65536.                                                                                                                                                                     |
+| `onError`                                           | Background errors; direct API calls reject/throw to their caller. Without a handler, background errors are logged.                                                                                            |
+| `paramKey`                                          | Default `"view"`; stored-link IDs use `viewId` (or `${paramKey}Id`). Other hash parameters are preserved.                                                                                                     |
+| `debounceMs`                                        | Autosync debounce; default 400 milliseconds.                                                                                                                                                                  |
+| `autoSync`                                          | Default true. Starts after an initial URL read/full restore; false leaves sharing explicit.                                                                                                                   |
 
 ## Returns
 
-| Name             | Type                     | Description                                                                                                                           |
-| ---------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `getShareUrl`    | `() => string`           | Builds the full share URL for the current state, without touching the address bar                                                     |
-| `syncUrl`        | `() => void`             | Writes the current state into the URL hash via `history.replaceState` (no navigation, no history entry)                               |
-| `restoreFromUrl` | `() => Promise<boolean>` | Reads state from the current URL hash, if any, and applies it; resolves `true` once all of it is applied. Safe to call from `onViewerReady`; only a new hash snapshot re-applies |
+| Name             | Signature                              | Behavior                                                                             |
+| ---------------- | -------------------------------------- | ------------------------------------------------------------------------------------ |
+| `getState`       | `() => ShareableViewerState`           | Returns a detached version-1 snapshot.                                               |
+| `restoreState`   | `(input: unknown) => Promise<boolean>` | Validates/restores JSON or parsed state; false while pending. No address-bar change. |
+| `getShareUrl`    | `() => string`                         | Builds an inline link without changing the page URL.                                 |
+| `createShareUrl` | `() => Promise<string>`                | Uses storage when supplied, otherwise inline JSON.                                   |
+| `syncUrl`        | `() => void`                           | Writes an inline link with `history.replaceState`.                                   |
+| `restoreFromUrl` | `() => Promise<boolean>`               | Restores a new link; repeated ready callbacks do not reapply the same snapshot.      |
 
-## Notes
+## Compatibility and assets
 
-- By default the hook keeps the URL hash in sync automatically (debounced) as
-  the camera moves or visibility/selection changes, so the address bar is
-  always a working link to the current view. Pass `autoSync: false` to only
-  update the hash explicitly, e.g. from a "Copy link" button via `syncUrl`
-  or `getShareUrl`.
-- **Auto-sync stays dormant until `restoreFromUrl` has been called at least
-  once.** `restoreFromUrl` only resolves once the viewer is ready (after the
-  model finishes loading), which takes far longer than the sync debounce,
-  without this guard, auto-sync's first write would overwrite an incoming
-  shared link with the app's default state before it was ever restored. If
-  you use `autoSync` but don't need restore-on-load, still call
-  `restoreFromUrl()` once (it's a no-op when there's nothing in the hash),
-  otherwise auto-sync never activates.
-- `restoreFromUrl` depends on `viewer.raw.controls` being available, so call it
-  from inside (or after) `onViewerReady`, not before the viewer has mounted.
-- When the bindings come from the model, as with `useViewer` or
-  `objectBindings="auto"`, they exist only once it has loaded, after the first
-  `onViewerReady`. A link that hides or selects objects then restores its
-  camera at once and waits for them: `onViewerReady` runs again when the
-  bindings arrive, and that call hides and selects them. The hash isn't
-  updated while it waits.
-  It's also safe to call from there even though `onViewerReady` fires
-  repeatedly (camera changes, model load, binding changes): only the first
-  call for a given hash snapshot does anything, so a newer permalink can
-  still be applied later in the same tab.
-- The hook also listens for `hashchange`, so an already-open tab can respond
-  when the URL hash is replaced with a newer shared link.
-- Camera restoration snaps instantly (no fly-in transition) by design, so
-  opening a shared link doesn't make visitors wait through an animated
-  camera move.
+- Unversioned links containing camera, hidden IDs and selection still work,
+  including automatic bindings that become available after the model loads.
+- For compact links that omit materials and metadata, use `mode: "view"`.
+  Configuration mode includes all binding data. Existing callers that omit
+  both `configuration` and `mode` keep compact links. To save full bindings
+  without model/scene props, explicitly pass `mode: "configuration"`.
+- Relative model, texture, annotation-image/link and environment paths become
+  absolute against the sender's page URL. HTTP(S) assets and embedded image
+  data URLs are supported. Original model files are not bundled.
+- Blob URLs are local to a browser session and cannot make portable saves.
+  Upload those assets to durable URLs before sharing, using e.g.
+  `onTextureUpload`. A snapshot with blob asset references fails with a useful
+  field-level error instead of generating a broken link.
+- Save original assets for animations. A configuration describes the viewer's
+  data; it is not a GLB export, an asset archive, or a license grant.
+- Invalid JSON, unsupported versions, invalid core state shapes, unsafe object
+  keys, cycles/non-JSON values and excessive state size are rejected before
+  application state is changed. Application-specific metadata is preserved as
+  JSON; these checks are not a substitute for validation/access control in a
+  storage service.

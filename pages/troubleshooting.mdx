@@ -21,6 +21,23 @@ These checks apply to React Immersive **5.2.0**.
 | Binding import or state setter fails TypeScript | Export and inferred state type | Export the bindings; use `useState<Record<string, ObjectBinding>>(initialBindings)` for mutable state |
 | Compressed model fails | Decoder requests and CSP | Follow the ModelViewer decoder setup; self-host version-matched files when necessary |
 
+## Multiple models and selection
+
+| Symptom | Check / fix |
+| --- | --- |
+| Only one model is editable | Expected: only `modelUrl` is active. Pass `onModelChange` to enable the switcher and update that URL. |
+| Binding edits disappear on switching | With `onObjectBindingsChange`, write edits to the active `models` entry, not a shared top-level record. Use `useViewerModels`. |
+| Export contains only one model's bindings | Expected: export each independent model separately and supply each record on its entry. |
+| Added-node bindings have no geometry | Provide the original `mergeModels` sources with the exact authoring prefixes. Bindings do not include assets. |
+| Only the active model's clips are listed | `onAnimationsReady` is active-model only. Register every URL through `onModelAnimationsReady`. |
+| Wrong animation plays when names repeat | Select the owning controls by URL, using that model's local clip name. Editor aggregate suffixes are display names. |
+| Group outlines or gizmo point at the wrong objects | Use active-model binding keys, clear selection on model switches, and handle null selection callbacks. |
+| Models overlap | Their authored coordinates are retained. Apply placement transforms or author suitable positions. |
+| Downloaded GLB no longer animates | GLB download bakes the current geometry pose. Keep original models plus binding/config exports for animated reuse. |
+
+See the [export-to-viewer example](https://react-immersive.liveroom.dev/docs/reference/binding-builder#reusing-multiple-models)
+for a complete controlled integration.
+
 ## Observe load success and failure
 
 Use `onModelLoaded` to confirm the asset loaded, and `onLoadError` to present a

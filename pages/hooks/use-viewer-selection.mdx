@@ -6,6 +6,13 @@ title: useViewerSelection
 
 Manages selection state for the viewer. Pass `handleObjectSelect` to `onObjectSelect` and consume `selectedObjectBinding` wherever you need to react to the user's selection.
 
+This hook manages one active binding. Manage a
+separate array of `multiSelectedKeys` for group outlines/transforms; use binding
+record keys rather than `binding.id`. Handle a null selection callback by
+clearing that array, and clear selection when switching models. The hook does
+not add checkbox or toggle behavior. See the
+[complete multi-select example](https://react-immersive.liveroom.dev/docs/reference/model-viewer#controlled-group-selection-and-playback).
+
 ## Usage
 
 ```tsx

@@ -4,6 +4,10 @@ import { spawnSync } from "node:child_process";
 import { pages, root, support } from "./generate-agent-docs.mjs";
 
 const fixture = path.join(root, ".cache", "docs-snippets");
+const sdkOption = process.argv.indexOf("--sdk-path");
+if (sdkOption !== -1 && !process.argv[sdkOption + 1]) throw new Error("--sdk-path requires a built package directory");
+const sdkPath = sdkOption === -1 ? null : path.resolve(process.argv[sdkOption + 1]);
+if (sdkPath && !existsSync(path.join(sdkPath, "dist/index.d.ts"))) throw new Error(`Build the SDK first: ${sdkPath}`);
 mkdirSync(fixture, { recursive: true });
 const pkg = {
   private: true,
@@ -26,8 +30,8 @@ const docs = pages();
 let imports = "";
 let counter = 0;
 for (const doc of docs) {
-  for (const match of doc.text.matchAll(/```(?:tsx?|jsx?)[^\n]*\n([\s\S]*?)\n```/g)) {
-    const ast = ts.createSourceFile("example.tsx", match[1], ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  for (const match of doc.text.matchAll(/```(?:tsx?|jsx?)([^\n]*)\n([\s\S]*?)\n```/g)) {
+    const ast = ts.createSourceFile("example.tsx", match[2], ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     for (const node of ast.statements) {
       if (!ts.isImportDeclaration(node) || !ts.isStringLiteral(node.moduleSpecifier)) continue;
       const module = node.moduleSpecifier.text;
@@ -38,19 +42,25 @@ for (const doc of docs) {
         imports += `import ${type}{ ${name} as symbol${counter++} } from ${JSON.stringify(module)};\n`;
       }
     }
+    const filename = match[1].match(/filename="([^"]+)"/)?.[1];
+    if (filename) {
+      const file = path.join(src, doc.slug, filename);
+      mkdirSync(path.dirname(file), { recursive: true });
+      writeFileSync(file, match[2] + "\n");
+    }
   }
-  if (!["getting-started", "frameworks/vite", "frameworks/nextjs", "index"].includes(doc.slug)) continue;
-  for (const match of doc.text.matchAll(/```tsx? filename="([^"]+)"\n([\s\S]*?)\n```/g)) {
-    const file = path.join(src, doc.slug, match[1]);
-    mkdirSync(path.dirname(file), { recursive: true });
-    writeFileSync(file, match[2] + "\n");
-  }
+
 }
 writeFileSync(path.join(src, "public-imports.ts"), imports);
 writeFileSync(path.join(src, "sample-bindings.ts"), readFileSync(path.join(root, "public/objectBindings.ts")));
 writeFileSync(path.join(fixture, "tsconfig.json"), JSON.stringify({
-  compilerOptions: { target: "ES2022", lib: ["DOM", "DOM.Iterable", "ES2022"], module: "ESNext", moduleResolution: "bundler", jsx: "react-jsx", strict: true, noEmit: true, skipLibCheck: false, esModuleInterop: true, types: ["node"] },
+  compilerOptions: { target: "ES2022", lib: ["DOM", "DOM.Iterable", "ES2022"], module: "ESNext", moduleResolution: "bundler", jsx: "react-jsx", strict: true, noEmit: true, skipLibCheck: false, esModuleInterop: true, types: ["node"],
+    ...(sdkPath ? { paths: {
+      [support.package]: [path.join(sdkPath, "dist/index.d.ts")],
+      [`${support.package}/*`]: [path.join(sdkPath, "dist/*")],
+    } } : {}),
+  },
   include: ["src"],
 }, null, 2));
 run(process.execPath, [path.join(fixture, "node_modules/typescript/bin/tsc"), "-p", fixture]);
-console.log(`Compiled onboarding, Vite/Next.js guide files, sample bindings, and ${counter} documented package imports against npm ${support.version}.`);
+console.log(`Compiled onboarding, Vite/Next.js guide files, sample bindings, complete reference examples, and ${counter} documented package imports against ${sdkPath ?? `npm ${support.version}`}.`);

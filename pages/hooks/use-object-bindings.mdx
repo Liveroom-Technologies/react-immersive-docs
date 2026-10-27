@@ -240,6 +240,14 @@ an identifier array, or a group, tag, or type selector. `hiddenObjects` and
 
 ## Externally owned state
 
+Each `models` entry owns a separate
+binding record. Apply updates to the active URL's record rather than sharing a
+controller across all models with overlapping node names.
+[`useViewerModels`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model#useviewermodels)
+handles this write-back for a fixed initial list. Preserve exported `pivot` and
+`shear` fields when editing transforms; overwriting the whole transform with
+only position/rotation/scale can change previously authored group edits.
+
 When a parent component or store owns the bindings, use the pure
 `patchBindings` utility instead:
 

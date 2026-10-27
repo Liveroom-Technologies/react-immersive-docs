@@ -108,6 +108,16 @@ typechecks and builds every starter, and checks external links for 404/410.
 Build/dev scripts generate clean Markdown, a manifest, small API sections,
 `llms.txt`, the optional full bundle, and the package license mirror.
 
+To check snippets against a locally built SDK instead of the installed npm
+package, pass its directory:
+
+```bash
+npm run check:snippets -- --sdk-path ../react-immersive-core/react-immersive-npm
+```
+
+Build that package first. This checks all documented imports and complete
+examples without changing the starter manifests or installed dependency.
+
 The long package README examples are retained in `reference/package.md`; npm's
 README stays short and links to that extended reference.
 

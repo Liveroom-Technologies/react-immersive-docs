@@ -52,6 +52,7 @@ See the
 - Add decals from the **Decals** panel: upload an image or add text to place it
   automatically at the centre of the camera-facing surface. Set its size,
   rotation, and opacity; **Move** lets you drag it across the object's surface.
+  Double-clicking a decal also activates Move.
   Release to save, or press Escape to cancel. The **Position** arrows move
   the decal in small steps on the visible surface relative to the camera;
   click for a fine adjustment or hold an arrow to keep moving. Each step
@@ -85,6 +86,11 @@ See the
 </Callout>
 
 ### Scene tab
+
+The Animation tab combines clips from every model
+and routes controls to the owning model. Duplicate names receive display
+suffixes such as `Idle (2)`. Animation settings, annotations, and variant choices
+are retained per model; lighting, environment, and camera settings are shared.
 
 In **Annotations**, edit a marker's title, description, category, image URLs and
 alt text, and link URLs and labels. **Capture current view** saves the preview
@@ -153,9 +159,10 @@ range (scene units); blank fields mean no limit. These fields persist in exporte
 doesn't lose it:
 
 - Once you change something, the session is saved shortly after each edit, and
-  again when the tab is hidden or closed. A session is the model, its object
-  bindings, and the scene settings. An uploaded model file is saved with it, so
-  it doesn't need uploading again.
+  again when the tab is hidden or closed. A session includes model files,
+  object bindings, and scene settings. This includes
+  separate models, the active model, and added sources with their edits, so
+  restoring does not require uploading those files again.
 - **Restore last session** (in the "⋯" menu above the preview) reopens the
   saved session. One session is kept per browser, and each save replaces
   the last.
@@ -170,9 +177,34 @@ doesn't lose it:
 Autosave is a safety net, not a way to keep or share work: export JSON or
 TypeScript to keep bindings and scene settings with your application.
 
+### Multiple models and multi-select
+
+After the first upload, **Add Model** offers **Add as Separate Model** or
+**Add Nodes** to a chosen destination. Separate models stay visible and can be
+activated in Scene Nodes; added nodes become part of the destination with
+prefixed identifiers. Each separate model has its own binding history.
+
+Enable **Multi-select** to toggle nodes through checkboxes or canvas clicks.
+**Select all** and **Clear** apply to the current search results; Escape clears
+the whole group. Empty-space clicks preserve it. Materials and the
+visible/selectable/hoverable flags apply across selected bindings, while
+individual identity, decals, and actions remain single-object edits.
+Multi-selection can span original and added nodes of one active model, but not
+independent models. Switching models clears multi-select mode.
+
+The shared move/rotate gizmo and uniform corner-scale handle transform a group
+around its combined bounds. Local axes follow the active object. Numeric fields
+set each binding's local value independently, rather than applying a shared
+world-space delta. Saved edits can include `pivot` and `shear`; preserve those
+fields when passing exported bindings to ModelViewer.
+
+**Remove model** chooses an independent model or an added source. Added-source
+removal can be undone in the owner's binding history. Removing an independent
+model or all models cannot be undone; keep exports for work you need to retain.
+
 ### Moving and rotating objects
 
-Open the **Move & Rotate** panel in the Object tab, then:
+Open **Move, Rotate & Scale** in the Object tab, then:
 
 1. Turn on **Transform gizmo**. Camera controls pause while editing is enabled.
 2. Select a bound mesh in the preview or object list.
@@ -186,7 +218,10 @@ Open the **Move & Rotate** panel in the Object tab, then:
 The pivot is placed at the center of the selected object's renderable geometry,
 so rotation happens around the object itself even when the source node's
 authored origin is elsewhere. This authoring pivot does not rewrite the
-GLB/GLTF origin.
+GLB/GLTF origin. The independent **Scale** toggle adds a
+corner handle and a uniform scale field, preserving authored proportions.
+Centered edits persist a `transform.pivot`, and group rotations under
+non-uniform parents may also persist `transform.shear`.
 
 Both gizmo and numeric edits are saved to the selected binding's local-space
 `transform.position` and `transform.rotation`. Changing World/Local axis space
@@ -195,6 +230,15 @@ position. Use **Restore original position & rotation** to remove those
 overrides and return to the model-authored transform.
 
 ## Exporting and Reusing Files
+
+The Object toolbar exports the **active model's
+bindings only**, including its added nodes. Export each independent model
+separately. The Scene toolbar exports shared scene settings plus the active
+model's annotations, material variants, and animation settings. Export does not
+include the model list, model files, merge-source URLs/prefix configuration, or
+selection state. Supply those explicitly in your application. See
+[reusing multiple models](#reusing-multiple-models)
+for the `models` / `mergeModels` integration and the difference from GLB download.
 
 BindingBuilder has separate toolbars for bindings and scene settings, so export
 the data from the tab that owns it:
@@ -240,6 +284,54 @@ export default function ProductViewer() {
   );
 }
 ```
+
+### Reusing multiple models
+
+Export bindings separately for each independent model and import each record
+onto its own entry. Export each model's scene config as well if its annotations,
+variants, or animation settings differ:
+
+```tsx
+import { ModelViewer, useViewerModels } from "@liveroom-tech/react-immersive";
+import { objectBindings as roomBindings } from "./roomBindings";
+import { objectBindings as furnitureBindings } from "./furnitureBindings";
+import { sceneConfig as roomScene } from "./roomScene";
+import { sceneConfig as furnitureScene } from "./furnitureScene";
+
+const viewer = useViewerModels([
+  { url: "/room.glb", label: "Room", objectBindings: roomBindings,
+    sceneConfig: roomScene },
+  { url: "/furniture.glb", label: "Furniture", objectBindings: furnitureBindings,
+    sceneConfig: furnitureScene },
+]);
+const active = viewer.models.find((model) => model.url === viewer.modelUrl);
+<ModelViewer {...viewer} licenseKey={licenseKey} sceneConfig={active?.sceneConfig} />;
+```
+
+If you used **Add Nodes**, include the added source on its destination's entry:
+
+```tsx
+const room = {
+  url: "/room.glb",
+  objectBindings: roomBindings, // includes exported furniture_* keys
+  mergeModels: [{ url: "/furniture.glb", namePrefix: "furniture" }],
+};
+```
+
+Keep the exact prefix used during authoring, including any collision suffix.
+The prefix identifies added nodes and their animation tracks. Host every source
+asset and any exported `materials/` files at their declared paths; binding
+exports do not merge assets into a new model file. Playback uses the original
+assets' animation clips, so these bindings work with animated and skinned models.
+
+The preview's **Download GLB** is a separate operation: it exports loaded models
+with current materials and transforms, omits hidden meshes, and bakes skinned
+meshes at the current pose. It does not preserve rigs or animation clips. Keep
+the original assets plus bindings/configs for animated reuse. UV download covers
+loaded models and groups layouts by model/material where needed.
+
+For controlled multi-selection and simultaneous playback, see the
+[ModelViewer example](https://react-immersive.liveroom.dev/docs/reference/model-viewer#controlled-group-selection-and-playback).
 
 ### Importing Back into BindingBuilder
 

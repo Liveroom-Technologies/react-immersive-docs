@@ -17,6 +17,7 @@ type ObjectBinding = {
   group?: string;
   tags?: string[];
   status?: "normal" | "hidden" | "selected" | "disabled";
+  removed?: boolean; // deleted binding/node tombstone
   visible?: boolean;
   selectable?: boolean;
   hoverable?: boolean;
@@ -88,6 +89,11 @@ type ObjectBindingTransform = {
   position?: [number, number, number]; // local model units
   rotation?: [number, number, number]; // local Euler angles in radians
   scale?: [number, number, number];
+  shear?: [number, number, number]; // local xy/xz/yz, between rotation and scale
+  pivot?: { // centered-editing reference in local space
+    point: [number, number, number];
+    offset: [number, number, number];
+  };
 };
 ```
 
@@ -100,6 +106,43 @@ degrees for authoring, but exports radians. Its transform gizmo is positioned
 at the center of the object's renderable geometry so an object can rotate around
 itself even when its source node origin is offset; that temporary authoring
 pivot does not modify the model file's origin.
+
+The viewer persists that centered-editing reference in `pivot`. With a pivot,
+the rendered node origin is `position + offset - R * H * S * point`, where `H`
+is shear. Without it, transforms keep legacy direct local position/rotation/scale
+semantics. Group rotation under a non-uniform parent can require shear to retain
+a rigid world-space result; preserve the exported fields rather than rebuilding
+only position/rotation/scale.
+
+## `ModelViewerModelEntry`
+
+An independent model in `ModelViewer.models`:
+
+```ts
+type ModelMergeSource = { url: string; namePrefix: string };
+
+type ModelViewerModelEntry = {
+  url: string;
+  label?: string;
+  objectBindings: Record<string, ObjectBinding>;
+  mergeModels?: ModelMergeSource[];
+  sceneConfig?: SceneConfig;
+  originalNodePoses?: Record<string, {
+    position: [number, number, number];
+    rotation?: [number, number, number];
+    scale?: [number, number, number];
+  }>;
+};
+```
+
+URLs identify independent entries; use unique URLs and make `modelUrl` match an
+entry. Bindings are explicit and scoped to that entry. `sceneConfig` supplies
+inactive-slot settings; the active slot uses top-level `sceneConfig`.
+`originalNodePoses` is optional reference-pose data for authored transforms.
+`ModelMergeSource` is also accepted by single-model `mergeModels`; its prefix
+must match the added nodes and clips used during binding authoring. Both types
+are exported from the main package. See the
+[multiple-model reference](https://react-immersive.liveroom.dev/docs/reference/model-viewer#multiple-models).
 
 ---
 
@@ -363,7 +406,9 @@ type ObjectPointerEvent = {
 
 ## `AnimationControls`
 
-Provided via `onAnimationsReady`.
+Provided via `onAnimationsReady`. In multi-model mode that callback
+follows the active model. `onModelAnimationsReady(url, controls)` provides the
+same interface independently for every slot; clip names are local to its URL.
 
 ```ts
 type AnimationPlayOptions = {
@@ -797,6 +842,7 @@ described with the API it belongs to.
 
 | Types | Described with |
 | --- | --- |
+| `ModelViewerModelEntry`, `ModelMergeSource` | [Multiple models](#modelviewermodelentry) |
 | `ModelViewerProps`, `ModelViewerPreset`, `GroupedModelViewerProps`, `ModelViewerUiOptions`, `ModelViewerToolsOptions`, `ModelViewerControlsOptions`, `ModelViewerPerfOptions`, `ModelViewerTilesOptions`, `ModelViewerXrOptions`, `ModelViewerDecoderOptions`, `ObjectTransformSpace`, `TexturePositioningControls`, `XRScaleMode`, `ModelFormat`, `AnnotationMarker`, `CameraLimits`, `CameraControllerType`, `MouseControllerPosition`, `PerformanceProfile`, `ViewerObjectInfo` | [`ModelViewer`](https://react-immersive.liveroom.dev/docs/reference/model-viewer) |
 | `SimpleModelViewerProps` (from `/simple-model-viewer`) | [`SimpleModelViewer`](https://react-immersive.liveroom.dev/docs/reference/simple-model-viewer) |
 | `BindingBuilderProps` (from `/binding-builder`) | [`BindingBuilder`](https://react-immersive.liveroom.dev/docs/reference/binding-builder) |
@@ -818,7 +864,7 @@ described with the API it belongs to.
 | `HiddenObjectsState`, `ObjectBindingsController`, `BindingEdit`, `ObjectBindingSelector`, `DeepPartial` | [`useObjectBindings`](https://react-immersive.liveroom.dev/docs/hooks/use-object-bindings) |
 | `ViewerSelectionProps` | [`useViewerSelection`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-selection) |
 | `ViewerHoverProps` | [`useViewerHover`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-hover) |
-| `ShareableViewerStateProps`, `UseShareableViewerStateOptions` | [`useShareableViewerState`](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state) |
+| `ShareableViewerState`, `ViewerConfiguration`, `ViewerStateStorage`, `ShareableViewerStateProps`, `UseShareableViewerStateOptions` | [`useShareableViewerState`](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state) |
 | `ViewerModelBounds`, `ViewerModelInfo`, `ViewerModelProps` | [`useViewerModel`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model) |
 | `ViewerActionAnimationController`, `ViewerActionBindingsController`, `ViewerActionCameraController`, `ViewerActionSceneController`, `ViewerActionsOptions`, `ViewerActionsProps` | [`useViewerActions`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-actions) |
 | `HomeCameraState`, `ViewerCameraConfig`, `ViewerCameraProps`, `UseViewerCameraOptions` | [`useViewerCamera`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera) |
