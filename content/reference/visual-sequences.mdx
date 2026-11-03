@@ -1,0 +1,133 @@
+---
+title: Visual Sequence Authoring
+---
+
+# Visual sequence authoring
+
+BindingBuilder includes a **Sequences** timeline in its bottom dock, under ModelViewer and
+BindingBuilder's existing license. It coordinates camera framing,
+object transforms, appearance, visibility and existing animation clips on one
+timeline.
+
+## Author a sequence
+
+1. Load a model and open **Sequences** in the bottom dock. Choose **Create sequence**.
+2. Name the sequence and set its duration. Changing duration rescales the existing
+   keyframe times, preserving their relative timing.
+3. Choose an object property, Camera, or Animation clip and click **Add track**.
+   The editor captures the live value at the start and end. Clip tracks map from
+   the current clip pose to its duration (or the shorter sequence duration).
+4. Select a diamond keyframe and edit its value, time and easing. Position and
+   scale use the model's local units; the editor displays rotation in degrees.
+   Camera values are world-space position/target, field of view and zoom.
+5. Scrub the playhead, frame the camera or adjust a pose, then choose
+   **Capture keyframe at playhead**. At an existing time, capture replaces that
+   keyframe. **Capture current value** updates the selected keyframe.
+6. Use Play, Pause and Stop to preview. Stop restores the scene's authored state.
+
+Drag diamonds to retime them. Arrow Left/Right moves a selected diamond by 0.1s;
+Shift changes the step to 0.01s. Home/End moves it to the sequence boundaries.
+Double-click empty space in a track lane to capture a keyframe at that time.
+Dropping a key at an occupied time replaces the other key. Mute temporarily skips
+one track. Sequence/track/keyframe deletion and edits use the Scene footer's undo
+history. Sequences can be duplicated and renamed.
+
+A track begins at its first keyframe; before that point it leaves the authored
+value untouched. After its final key, it holds that value. Interpolation supports
+linear, ease-in, ease-out, ease-in-out, and hold/step. Visibility always uses steps.
+Rotation values are Euler angles in radians in saved data and interpolate directly,
+so a rotation from 0 to 2π can make a complete turn. Colors interpolate in linear
+RGB. Each sequence has at most one track per object property, camera, or clip.
+
+## Persistence and asset scope
+
+Sequences are stored in optional `sceneConfig.sequences`. They are included in
+Scene settings JSON/TypeScript, complete scene ZIPs, local autosave and full
+configuration links. Older scenes can omit the property. Each asset retains its
+own sequence list when switching, duplicating or saving a composed scene.
+Object IDs and clip source names are local to that owning asset. The shared camera
+uses world coordinates. Only the active asset's sequence player runs; switch to
+another asset to author or play its sequences.
+
+Preview playback changes live render values without writing frames into bindings
+or undo history. Leaving the authoring tab or pressing Stop restores the preview.
+Editing authored values or sequence data rebases preview state. Missing/deleted
+objects or clips are reported as unavailable targets; working tracks still run.
+Camera input pauses playback so the author can reframe a view for capture.
+
+JSON validation limits each scene to 64 sequences, each sequence to 128 tracks,
+each track to 2048 keys, and all sequences together to 20,000 keys. Duration must
+be 0.1–3600 seconds. IDs, times, values, target types and easing names are validated.
+
+## Play in ModelViewer
+
+When a scene contains sequences, ModelViewer shows a compact sequence selector,
+playback controls and scrubber. `showSequenceControls={false}` or
+`tools={{ sequences: false }}` hides that player. The editor uses its timeline
+controls instead of duplicating this player over the canvas.
+
+`autoPlay: true` starts the first flagged sequence after the model and camera are
+ready. `sequenceAutoPlay={false}` disables this, as does reduced motion. The editor
+always disables autoplay; its checkbox configures the exported viewer. Looping is
+per sequence. Users may explicitly play a sequence even with reduced motion.
+Cinematic playback, measuring, video capture and AR sessions stop sequence preview
+so those tools can own the scene/camera.
+
+```tsx
+import {
+  DEFAULT_SCENE_CONFIG,
+  ModelViewer,
+  type SceneSequence,
+} from "@liveroom-tech/react-immersive";
+import "@liveroom-tech/react-immersive/styles.css";
+
+const reveal: SceneSequence = {
+  id: "reveal", name: "Reveal", duration: 3, loop: false, autoPlay: false,
+  tracks: [{
+    id: "body-opacity", name: "Reveal body",
+    target: { kind: "object", objectId: "Body", property: "opacity" },
+    keyframes: [
+      { id: "start", time: 0, value: 0, easing: "ease-in-out" },
+      { id: "finish", time: 3, value: 1 },
+    ],
+  }],
+};
+
+export function RevealViewer() {
+  return <ModelViewer licenseKey="your_license_key" modelUrl="/model.glb"
+    objectBindings="auto"
+    sceneConfig={{ ...DEFAULT_SCENE_CONFIG, sequences: [reveal] }} />;
+}
+```
+
+Use the stable `modelObjectId` from your bindings, including duplicate-name suffixes,
+for `objectId`. Position/rotation/scale keyframes are absolute node-local values,
+not binding-transform offsets. Targets apply to the node's rendered material(s).
+A clip track's numeric values are source clip time in seconds; the mixer clamps
+values to the clip length. Stop restores the prior clip pose, speed and playback
+state (finished poses are restored paused).
+
+## Programmatic playback and data utilities
+
+Connect [useViewerSequences](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-sequences)
+to `onSequencesReady`, or use the callback's `SequenceControls` directly.
+`getState()` returns a stable `SequencePlaybackState` snapshot and `subscribe`
+provides an unsubscribe function. Frame values are evaluated from absolute time,
+so backward scrubbing does not accumulate transform or color changes.
+
+The main and `/utils` entries export `parseSequences(input)`,
+`sampleSequenceTrack(track, time)`, `upsertSequenceKeyframe(track, frame)`,
+`SEQUENCE_EASINGS` and `SEQUENCE_OBJECT_PROPERTIES`. Parse before sampling;
+validation returns detached tracks with sorted keys. `sampleSequenceTrack` returns
+null for muted/empty tracks or before the first key. Upsert keeps a moved key's ID
+and replaces keys at the same time. It returns a new track.
+
+Types: `SceneSequence`, `SequenceTrack`, `SequenceTarget`, `SequenceKeyframe`,
+`SequenceValue`, `SequenceCameraView`, `SequenceVector3`, `SequenceObjectProperty`,
+`SequenceEasing`, `SequenceControls`, and `SequencePlaybackState` are exported from
+both entries. `ViewerSequencesProps` and the React hook are main-entry exports.
+
+Sequences are runtime scene data. Static GLB/USDZ exports capture the visible pose;
+they do not embed an executable sequence. Existing video capture modes remain
+turntable/cinematic. A phone configuration link retains sequence definitions and
+autoplay flags, while an AR USDZ remains a static snapshot.

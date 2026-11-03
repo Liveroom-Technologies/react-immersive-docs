@@ -1,0 +1,617 @@
+---
+title: BindingBuilder
+---
+
+import { Callout } from "nextra/components";
+
+# `BindingBuilder`
+
+A design-time helper component for authoring `objectBindings` and `sceneConfig` in the browser. Load a GLB, GLTF, OBJ, FBX, USDZ, STL, or PLY asset, inspect its mesh nodes, edit binding fields, configure the scene, preview the result live, and export as JSON or TypeScript.
+
+Try the public editor at [react-immersive.liveroom.dev/editor](https://react-immersive.liveroom.dev/editor).
+
+## Usage
+
+```tsx
+import "@liveroom-tech/react-immersive/binding-builder.css";
+import { BindingBuilder } from "@liveroom-tech/react-immersive/binding-builder";
+
+export default function App() {
+  return <BindingBuilder licenseKey="your_license_key" />;
+}
+```
+
+## Props
+
+```ts
+type BindingBuilderProps = {
+  licenseKey: string;
+  dracoDecoderPath?: string | false;
+  ktx2TranscoderPath?: string | false;
+  meshopt?: boolean;
+  arHandoff?: boolean | ARHandoffOptions; // default true
+  mobileHandoffUrl?: string;
+  hideLicenseCheckingOverlay?: boolean;
+};
+```
+
+`licenseKey` is **required** and is validated the same way as [`ModelViewer`](https://react-immersive.liveroom.dev/docs/reference/model-viewer)'s, see [Licensing & plan tiers](#licensing--plan-tiers) below. While the key is being checked, `BindingBuilder` renders a "Checking license" placeholder; if the key is invalid, it renders an error message instead of the editor.
+
+The decoder props are forwarded to the editor preview. Built-in defaults support
+Meshopt, DRACO, and KTX2; override them with self-hosted directories or `false`.
+See the
+[`ModelViewer` decoder setup](https://react-immersive.liveroom.dev/docs/reference/model-viewer#dracodecoderpath--ktx2transcoderpath--meshopt).
+
+The preview includes **AR handoff**. Prepare the edited
+scene for USDZ download/Quick Look or share a portable configuration with a phone.
+Set `arHandoff={false}` to hide preparation, or pass application adapters. See
+[Configuration-preserving AR](https://react-immersive.liveroom.dev/docs/reference/configured-ar)
+for local-file and public-URL requirements.
+
+The **Sequences** tab of the bottom timeline dock is a visual timeline for camera,
+object transform, material, visibility and animation clip tracks. Capture/edit keys,
+scrub or play the result, and save it in the existing scene exports. Stop restores
+the authored scene. See [Visual sequence authoring](https://react-immersive.liveroom.dev/docs/reference/visual-sequences).
+
+## Capabilities
+
+## The editor at a glance
+
+| Area | What's there |
+|---|---|
+| **Top bar** | Model menu (open, add, restore, reset, remove), undo and redo, the Select, Move, Rotate, and Scale tools, setting search, **AR handoff**, **Compare**, **Code**, **Import**, and **Export** |
+| **Left panel** | **Outliner**, **Assets**, **Annotations**, and **Measure** |
+| **Viewport** | The preview, **View** options (including a floor grid that is never exported or captured), and renderer |
+| **Inspector** | **Object** (General, Material, Decals, Actions, Data) or **Scene** (Model, Camera, World, Lights, Effects, Rules) |
+| **Timeline dock** | **Sequences**, **Clips**, and **Cinematic** |
+| **Status bar** | Save state, object counts, and the config key of the field under the pointer |
+
+Both side panels and the dock can be resized and hidden, and remember their size in this browser.
+
+### From the UI to your code
+
+Hover any field to see the key it writes in the status bar, for example
+`sceneConfig.postProcessing.bloom.intensity`. Right-click a field to copy that path.
+
+**Code** in the top bar opens a live view of the binding or scene settings you're
+editing, as TypeScript or JSON. Its copy button gives you the same text **Export**
+downloads for scene settings, and the selected object's record for bindings.
+
+### Keyboard shortcuts
+
+| Keys | Action |
+|---|---|
+| `V` `G` `R` `T` | Select, Move, Rotate, and Scale tools |
+| `F` | Frame the selected object, or the whole scene |
+| `Cmd/Ctrl+K` | Search settings and commands |
+| `Cmd/Ctrl+Z`, `Cmd/Ctrl+Shift+Z` | Undo and redo |
+| `?` | Show all shortcuts |
+| `Esc` | Clear the selection, or leave multi-select |
+| `W` `A` `S` `D`, `Space`, `C` | Move the camera while the preview has focus |
+
+### Theming
+
+The editor has one dark theme. Override its accent and font with CSS variables on
+`:root` or any ancestor:
+
+```css
+:root {
+  --ri-ui-accent: #ff7a33;
+  --ri-ui-on-accent: #1a0c04; /* text on the accent */
+  --ri-ui-font: "Your Font", sans-serif;
+}
+```
+
+The viewers use the same variables, alongside the
+[`--ri-sidepanel-*` and `--ri-databinding-*` variables](https://react-immersive.liveroom.dev/docs/reference/model-viewer#theming).
+
+### Object inspector
+
+- Upload a `.glb`, standalone/data-URI `.gltf`, `.obj`, `.fbx`, `.usdz`, `.stl`, `.ply`, or `.zip` bundle. ZIP bundles may contain GLTF dependencies, OBJ + MTL/textures, or FBX external textures; USDZ is uploaded directly
+- Traverse renderable mesh nodes and generate starter bindings automatically
+- For an object without texture coordinates (STL, most PLY), the **Material**
+  image map fields are turned off with a note, and the starter actions leave out
+  **Change Material** (see [STL and PLY](https://react-immersive.liveroom.dev/docs/reference/model-viewer#stl-and-ply))
+- Edit binding fields: identity, label, type, status, booleans, style, actions, metrics, metadata, and saved camera state
+- Add decals from the **Decals** panel: upload an image or add text to place it
+  automatically at the centre of the camera-facing surface. Set its size,
+  rotation, and opacity; **Move** lets you drag it across the object's surface.
+  Double-clicking a decal also activates Move.
+  Release to save, or press Escape to cancel. The **Position** arrows move
+  the decal in small steps on the visible surface relative to the camera;
+  click for a fine adjustment or hold an arrow to keep moving. Each step
+  can be undone. Uploaded images are exported
+  under `materials/` with the bindings
+- Move and rotate the selected object with a geometry-centered pivot, World or
+  Local axes, numeric position/rotation fields, and restore-to-authored-transform
+  support
+- Author a full per-object material in the **Material** panel, a one-click
+  preset gallery (wood, metal, chrome, glass, plastic, fabric, ceramic,
+  concrete, etc.) plus collapsible sub-panels for PBR maps, roughness,
+  emission, opacity, normal & bump, displacement, ambient occlusion,
+  clearcoat, sheen, anisotropy, transmission & volume, and faces rendering.
+  Each sub-panel has an enable toggle, and every field maps to a
+  `style.material` override (see
+  [`ObjectBindingMaterial`](https://react-immersive.liveroom.dev/docs/reference/types#objectbindingmaterial))
+- Undo/redo (top bar, or `Cmd/Ctrl+Z` / `Cmd/Ctrl+Shift+Z`) acts on whatever you
+  edited last, and the button's tooltip names it. Rapid edits like slider drags
+  coalesce into a single undo step
+- Import a previously exported `objectBindings.json` and merge it back onto
+  the current model (matched by `modelObjectId`, so re-imports survive
+  hand edits or partial files)
+- Export the current bindings as **JSON** or **TypeScript**
+
+<Callout type="info">
+  Model ZIPs are limited to 128 MiB compressed, 1,024 entries, 128 MiB per
+  expanded entry, 256 MiB expanded in total, and a 200:1 per-entry compression
+  ratio. Every GLTF dependency must be included in the archive: absolute,
+  root-relative, and other external asset URLs are rejected. `data:` URIs are
+  allowed.
+</Callout>
+
+### Scene inspector and timeline dock
+
+The **Clips** dock tab combines clips from every model
+and routes controls to the owning model. Duplicate names receive display
+suffixes such as `Idle (2)`. Animation settings, annotations, and variant choices
+are retained per model; lighting, environment, and camera settings are shared.
+
+In **Annotations**, edit a marker's title, description, category, image URLs and
+alt text, and link URLs and labels. **Capture current view** saves the preview
+camera, **Preview** recalls it, and **Clear view** uses automatic tour framing.
+New markers use automatic close-up zoom until you explicitly capture a custom
+view. Optional minimum and maximum distances hide markers outside the chosen
+range (scene units); blank fields mean no limit. These fields persist in exported
+`sceneConfig.annotations`.
+
+- Configure scene-wide settings (lighting, environment, background, ground
+  shadows, wireframe, post-processing, annotations, per-clip animation options,
+  and a cinematic camera path), the same `SceneConfig` shape consumed by
+  `ModelViewer`'s `sceneConfig` prop
+- In **Scene › World**, the environment always lights the model. To see it behind
+  the model as well, turn on **As background**, or set **Background › Show** to
+  **Environment**.
+- Configure scene auto-rotation and speed. These values are exported as
+  `sceneConfig.model.autoRotate` and `sceneConfig.model.autoRotateSpeed`
+- Isolate an object from the Outliner (the button at the end of its row)
+  to see it on its own in the preview while you edit it. This is only for
+  editing and isn't exported
+- Set up a section cut in **Scene → Model** (axis, position, and which side
+  stays), exported as `sceneConfig.section`. Drag the plane in the preview, or
+  use the section's settings
+- Build style rules in **Scene → Rules**: pick the objects (all, a group,
+  tag, type, or one object), the conditions (metric ranges, status, metadata
+  values), and the look (colour, opacity, glow, a colour scale from a metric,
+  or a pulse). The form suggests the model's own groups, tags, metric names,
+  and metadata keys, shows how many objects each rule matches, and the preview
+  updates as you edit. Exported as `sceneConfig.styleRules`; see
+  [Style rules](https://react-immersive.liveroom.dev/docs/reference/model-viewer#style-rules)
+- Check your changes with **Compare** in the top bar: a divider across the
+  preview shows the project as it was opened on its left and as it is now on
+  its right. Drag it (or focus it and use the arrow keys) to sweep between
+  them; orbiting either side moves both. **Pin**, on the "Before" label, makes
+  the current state the "before", to compare the next round of changes with it. The
+  preview stays live while comparing, and the "before" side is view only. It
+  is the same slider as [`CompareViewer`](https://react-immersive.liveroom.dev/docs/reference/compare-viewer)
+- Pick which of the model's glTF material variants (`KHR_materials_variants`)
+  the scene starts with (**General**, one select per option group, such as
+  **Paint** and **Wheels**), exported as `sceneConfig.model.activeVariants`.
+  The preview's swatch rows change the same setting
+- Position and rotate directional, point, and spot lights with transform
+  gizmos; spot lights also expose angle and penumbra controls
+- Switch the model renderer between **PBR**, **Matcap**, and **UV Checker**.
+  UV Checker overlays a numbered directional chart to diagnose stretching,
+  seams, rotation, texel-density differences, and missing UV0 coordinates
+- Author a **cinematic camera path** visually in the **Cinematic** dock tab:
+  frame the model in the preview, click **Add waypoint from current view** to
+  capture the camera pose, then set its segment duration, reorder,
+  fly-to-preview (📍), or delete waypoints. Toggle Enabled, Loop, and Autoplay, and set
+  the overall glide Duration. The path
+  is stored on `sceneConfig.cinematic` and replayed by
+  [`ModelViewer`'s `cinematic` prop](https://react-immersive.liveroom.dev/docs/reference/model-viewer#cinematic)
+- Undo/redo scene changes independently of object changes
+- Import a previously exported `sceneConfig.json`, merged by top-level
+  section so a partial file doesn't wipe sections it doesn't include
+- Export the current scene config as **JSON** or **TypeScript**
+
+### Preview
+
+- Live preview of the selected node in an embedded `ModelViewer`, including
+  loading progress and orbit/pointer-lock camera modes
+
+### Autosave and restoring a session
+
+`BindingBuilder` keeps your work in the browser, so a reload or a closed tab
+doesn't lose it:
+
+- Once you change something, the session is saved shortly after each edit, and
+  again when the tab is hidden or closed. A session includes model files,
+  object bindings, and scene settings. This includes
+  separate models, the active model, and added sources with their edits, so
+  restoring does not require uploading those files again.
+- **Restore last session** (in the model menu at the top left) reopens the
+  saved session. One session is kept per browser, and each save replaces
+  the last.
+- While there are edits on screen, leaving or reloading the page asks for
+  confirmation first. Loading or restoring a model without changing it doesn't.
+- Sessions live in this browser's IndexedDB, in a database named
+  `react-immersive:binding-builder`. They aren't shared across browsers or
+  devices, and private browsing may discard them. If the browser refuses to
+  store a session, usually for lack of space, `BindingBuilder` says so; export
+  your work to keep it.
+
+Autosave is a safety net, not a way to keep or share work: export JSON or
+TypeScript to keep bindings and scene settings with your application.
+
+### Multiple models and multi-select
+
+After the first upload, **Add model** offers **Add as separate model** or
+**Merge into model** for a chosen destination. Separate models stay visible and can be
+activated in the Outliner; merged objects become part of the destination with
+prefixed identifiers. Each separate model has its own binding history.
+
+Enable **Multi-select** explicitly to toggle nodes through checkboxes or canvas
+clicks. Click **Done**, click the mode button again, or press Escape to leave
+checkbox mode. Done keeps the primary object selected; Escape clears the group.
+**Select matches** and **Clear matches** apply to the current search results.
+Empty-space clicks preserve the group while checkbox mode is enabled. Materials and the
+visible/selectable/hoverable flags apply across selected bindings, while
+individual identity, decals, and actions remain single-object edits.
+Multi-selection can span original and added nodes of one active model, but not
+independent models. Switching models clears multi-select mode.
+
+In the development SDK, **Ctrl/Cmd-click** toggles objects into or out of the
+selection without enabling persistent checkbox mode. Releasing the modifier
+and clicking normally selects only that object. **Shift-click** selects a range
+in the displayed tree order; combine Ctrl/Cmd with Shift to add a range.
+Shift-click on the canvas adds an object to the selection. Saved selection sets
+and Select matches also create temporary selections: a plain click replaces
+them unless checkbox mode was explicitly enabled.
+
+### Hierarchy, saved selections, and style batches
+
+The Outliner displays the model's nested source groups. Expand/collapse branches,
+search names, labels, types, binding groups, or tags, and select a whole subtree
+through its checkbox in Multi-select mode. Search retains matching ancestors;
+matching a group includes its children. The list renders only rows near the
+viewport so a large assembly does not create thousands of DOM elements.
+Catalog-only objects without loaded hierarchy remain in a flat fallback.
+
+Focus the tree and use Up/Down, Home/End, Left/Right, Enter, and Space to browse,
+expand, and select. Ctrl/Cmd+A selects search matches while the tree has focus.
+Browsing preserves authored node names and parent relationships, including
+duplicate-name identifiers; it does not reparent a model or rewrite its rigs.
+
+Under **Saved selections**, enter a name and save the current objects. Click a
+saved name to restore that selection, or delete the set with its trash button.
+Sets use stable model object IDs and live in `sceneConfig.selectionSets`, so
+scene exports, shared configurations, standalone autosave, and model switching
+preserve them. Each model owns its sets. Unavailable objects are skipped when
+loading a set and its available/total count is shown. Up to 128 sets are allowed.
+Saving/deleting sets participates in the scene undo history.
+
+**Copy style** in the Object inspector snapshots the primary object's authored
+material overrides. **Paste style** applies that snapshot to the current object
+or selection as one undo step. The clipboard stays available when switching
+models. Pasting replaces style overrides while keeping identities, transforms,
+decals, actions, metadata, and visibility. Texture references and UV settings
+are copied; source assets still need to be present. A copied empty style resets
+targets to their authored model materials. Bulk flag changes are also discrete
+undo steps. Mixed flags are shown with an indeterminate checkbox; material
+controls identify the primary object whose values are displayed.
+
+The SDK exports `collectObjectHierarchy`, `copyBindingStyle`,
+`pasteBindingStyle`, and `parseSelectionSets` from the main and `/utils` entries.
+See [selection types and utilities](https://react-immersive.liveroom.dev/docs/reference/types#hierarchy-and-saved-selections).
+
+The shared move/rotate gizmo and uniform corner-scale handle transform a group
+around its combined bounds. Local axes follow the active object. Numeric fields
+set each binding's local value independently, rather than applying a shared
+world-space delta. Saved edits can include `pivot` and `shear`; preserve those
+fields when passing exported bindings to ModelViewer.
+
+**Remove model** chooses an independent model or an added source. Added-source
+removal can be undone in the owner's binding history. Removing an independent
+model or all models cannot be undone; keep exports for work you need to retain.
+
+### Moving and rotating objects
+
+1. Choose **Move** (`G`) or **Rotate** (`R`) in the top bar, or **Scale** (`T`) to
+   resize. Camera controls pause while a transform tool is active.
+2. Select a bound mesh in the preview or Outliner.
+3. Drag an arrow to move on one axis, a plane handle to move on two axes, or a
+   colored ring to rotate.
+4. Choose **World** to keep the handles aligned with the scene, or **Local** to
+   align them with the selected object's current orientation.
+5. For precise values, use **Object → General → Transform**. Type a number, or drag
+   an axis letter to change it. Rotation fields display degrees; the exported
+   binding stores radians.
+
+The pivot is placed at the center of the selected object's renderable geometry,
+so rotation happens around the object itself even when the source node's
+authored origin is elsewhere. This authoring pivot does not rewrite the
+GLB/GLTF origin. The independent **Scale** toggle adds a
+corner handle and a uniform scale field, preserving authored proportions.
+Centered edits persist a `transform.pivot`, and group rotations under
+non-uniform parents may also persist `transform.shear`.
+
+Both gizmo and numeric edits are saved to the selected binding's local-space
+`transform.position` and `transform.rotation`. Changing World/Local axis space
+only changes the direction of the gizmo handles; it does not change the saved
+position. Use **Restore original position & rotation** to remove those
+overrides and return to the model-authored transform.
+
+## Exporting and Reusing Files
+
+**Export → Object bindings** covers the **active model's
+bindings only**, including its merged objects. Export each independent model
+separately. **Export → Scene settings** covers shared scene settings plus the active
+model's annotations, material variants, and animation settings. Export does not
+include the model list, model files, merge-source URLs/prefix configuration, or
+selection state. Supply those explicitly in your application. See
+[reusing multiple models](#reusing-multiple-models)
+for the `models` / `mergeModels` integration and the difference from GLB download.
+
+1. Load your model first. The import and export controls become available once
+   BindingBuilder has inspected its nodes.
+2. For `objectBindings`, use **Export → Object bindings JSON** or
+   **Object bindings TypeScript** in the top bar.
+3. For `sceneConfig`, use **Export → Scene settings JSON** or
+   **Scene settings TypeScript**, producing `sceneConfig.json` or `sceneConfig.ts`.
+4. Choose **TypeScript** for a file you will import into your application.
+   Choose **JSON** for a portable snapshot that you want to bring back into
+   BindingBuilder later.
+
+We recommend keeping TypeScript exports alongside the viewer route, for example:
+
+```text
+src/immersive/objectBindings.ts
+src/immersive/sceneConfig.ts
+public/model.glb
+public/materials/... (when the export includes uploaded textures)
+```
+
+The TypeScript bindings export already wraps the record in `defineObjectBindings`, so TypeScript validates the complete file without widening its keys or literal IDs. Import the named exports directly and pass them to `ModelViewer`:
+
+```tsx
+import { useState } from "react";
+import { ModelViewer, type ObjectBinding } from "@liveroom-tech/react-immersive";
+import { objectBindings as initialObjectBindings } from "./objectBindings";
+import { sceneConfig } from "./sceneConfig";
+
+export default function ProductViewer() {
+  const [objectBindings, setObjectBindings] = useState<Record<string, ObjectBinding>>(initialObjectBindings);
+
+  return (
+    <ModelViewer
+      modelUrl="/model.glb"
+      licenseKey="your-license-key"
+      objectBindings={objectBindings}
+      sceneConfig={sceneConfig}
+      onObjectBindingsChange={setObjectBindings}
+    />
+  );
+}
+```
+
+### Reusing multiple models
+
+Export bindings separately for each independent model and import each record
+onto its own entry. Export each model's scene config as well if its annotations,
+variants, or animation settings differ:
+
+```tsx
+import { ModelViewer, useViewerModels } from "@liveroom-tech/react-immersive";
+import { objectBindings as roomBindings } from "./roomBindings";
+import { objectBindings as furnitureBindings } from "./furnitureBindings";
+import { sceneConfig as roomScene } from "./roomScene";
+import { sceneConfig as furnitureScene } from "./furnitureScene";
+
+const viewer = useViewerModels([
+  { url: "/room.glb", label: "Room", objectBindings: roomBindings,
+    sceneConfig: roomScene },
+  { url: "/furniture.glb", label: "Furniture", objectBindings: furnitureBindings,
+    sceneConfig: furnitureScene },
+]);
+const active = viewer.models.find((model) => model.url === viewer.modelUrl);
+<ModelViewer {...viewer} licenseKey={licenseKey} sceneConfig={active?.sceneConfig} />;
+```
+
+If you used **Add Nodes**, include the added source on its destination's entry:
+
+```tsx
+const room = {
+  url: "/room.glb",
+  objectBindings: roomBindings, // includes exported furniture_* keys
+  mergeModels: [{ url: "/furniture.glb", namePrefix: "furniture" }],
+};
+```
+
+Keep the exact prefix used during authoring, including any collision suffix.
+The prefix identifies added nodes and their animation tracks. Host every source
+asset and any exported `materials/` files at their declared paths; binding
+exports do not merge assets into a new model file. Playback uses the original
+assets' animation clips, so these bindings work with animated and skinned models.
+
+The preview's **Download GLB** is a separate operation: it exports loaded models
+with current materials and transforms, omits hidden meshes, and keeps animation
+clips, exported in the rest pose. Keep the original assets plus bindings/configs for
+reuse with the editor's settings. UV download covers
+loaded models and groups layouts by model/material where needed.
+
+For controlled multi-selection and simultaneous playback, see the
+[ModelViewer example](https://react-immersive.liveroom.dev/docs/reference/model-viewer#controlled-group-selection-and-playback).
+
+### Importing Back into BindingBuilder
+
+Use **Import** in the top bar:
+
+- **Object bindings JSON** accepts an `objectBindings.json` file. Load the model
+  first; incoming records are matched by `modelObjectId`, so bindings for nodes
+  absent from the current model are safely skipped.
+- **Scene settings JSON** accepts a `sceneConfig.json` file. Included top-level
+  sections are merged into the current scene config, which lets you restore a
+  partial scene preset without resetting the other settings.
+
+TypeScript exports are deliberately for your application source code, not for
+the editor's import button. Keep a JSON export whenever you expect to reopen or
+share the configuration in BindingBuilder.
+
+<Callout type="info">
+  **Picking a texture map** stores the durable path `materials/<filename>` in
+  the binding (this is what's exported), and shows the image immediately in
+  the live preview via an in-memory `blob:` URL, so you can author without
+  first copying files into `public/`.
+
+**Exporting bundles the files automatically:** if any material field was
+filled by uploading a file, clicking **Export**
+downloads a `.zip` instead of a single `.json`/`.ts`, containing the
+export file plus a `materials/` folder with every uploaded image. Unzip it
+into your app's `public/` folder and the exported bindings resolve as-is.
+Two different uploads that happen to share a filename are kept distinct
+(`materials/wood.jpg`, `materials/wood-2.jpg`, ...) rather than one
+overwriting the other. If nothing was uploaded, Export downloads a plain
+`.json`/`.ts` file exactly as before.
+
+</Callout>
+
+## Calibrated, persistent measurements
+
+BindingBuilder's left panel has a **Measure** tab.
+It holds source/display units, known-distance calibration, and saved named
+measurements, and the tool, snapping, undo, clear, and bounding-dimension
+controls. Start measuring from that tab. Leaving the tab stops measuring.
+
+Complete a measurement, give it a name, and save it in the Measure tab. Rename,
+show/hide, and delete saved records there. Optional JSON/CSV export and JSON
+import live under the collapsed **Import / export** disclosure.
+
+Records and calibration belong to each model's scene settings. Switching models
+keeps their collections separate. Scene JSON/TypeScript exports include them;
+the standalone editor's autosaved session also restores them, including uploaded
+file models. Importing a scene JSON with a `measurements` section replaces that
+collection and its calibration together.
+
+Saved measurements follow rigid object transforms. Changed geometry, missing
+objects, or changed skeletal/morph poses show a stale status until measured
+again. See [measurement behavior and API](https://react-immersive.liveroom.dev/docs/reference/model-viewer#calibrated-and-saved-measurements).
+
+## Licensing & plan tiers
+
+`BindingBuilder` validates `licenseKey` the same way `ModelViewer` does, and additionally gates some editor features by the license's plan tier:
+
+| Area                                                       | `free`                                                          | `starter`                                                            | `growth`                     |
+| ---------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------- |
+| Materials                                                  | PBR maps, Roughness, Emission, Opacity, Normal & Bump, AO, Faces | + Displacement, Clearcoat, Sheen, Anisotropy, Transmission & Volume  | ✓                            |
+| Material variants                                          | —                                                               | ✓                                                                    | ✓                            |
+| Decals per object                                          | 1                                                               | unlimited                                                            | unlimited                    |
+| Lights                                                     | 3                                                               | unlimited                                                            | unlimited                    |
+| Environment lighting and backgrounds                       | built-in presets                                                | + custom environments, background images                             | ✓                            |
+| Wireframe, Compare, Asset diagnostics, scene tree           | ✓                                                               | ✓                                                                    | ✓                            |
+| Section cut                                                | 1 plane                                                         | + multiple planes and box                                            | ✓                            |
+| Saved selection sets                                       | 3                                                               | unlimited                                                            | unlimited                    |
+| Measurements                                               | basic                                                           | + calibrated, saved                                                  | ✓                            |
+| Animations                                                 | play clips                                                      | + autoplay, looping, speed, names                                    | ✓                            |
+| Visual sequences                                           | 1                                                               | unlimited                                                            | unlimited                    |
+| Annotations                                                | 3                                                               | unlimited                                                            | unlimited                    |
+| Models in a scene                                          | 1                                                               | 3                                                                    | unlimited                    |
+| Complete scene ZIP                                         | —                                                               | ✓                                                                    | ✓                            |
+| Post-processing                                            | Color effects                                                   | + SSAO, depth of field, god rays, lens flare                         | + Outline, selective bloom, SMAA, stylize effects |
+| Cinematic camera paths                                     | —                                                               | ✓                                                                    | ✓                            |
+| Style rules                                                | —                                                               | —                                                                    | ✓                            |
+
+Locked controls never change saved settings: a scene authored on a higher plan keeps them, and things already over a limit stay editable.
+
+A locked feature is shown in place (not hidden) with a message naming the required plan, so the feature stays discoverable while editing. Get a license key at the [React Immersive Console](https://react-immersive.liveroom.dev/console).
+
+## Typical Workflow
+
+1. Mount `<BindingBuilder />` in a dev-only route (e.g. `/dev/bindings`)
+2. Upload your `.glb`, `.gltf`, `.obj`, `.fbx`, `.usdz`, `.stl`, `.ply`, or `.zip`
+3. Select objects in the Outliner, edit their binding fields in the inspector, move or rotate
+   them as needed, or apply a material preset
+4. Configure scene-wide settings in the inspector's **Scene** tab
+5. Preview the interactive result in the embedded viewer
+6. Use **Export** in the top bar to download the bindings as JSON or TypeScript (and, if you uploaded any textures, a `.zip` with them included)
+7. Drop the exported file (and any `materials/` folder) into your app as the initial `objectBindings` / `sceneConfig` state
+
+## Asset diagnostics
+
+**Scene → Model → Diagnostics** reports on the loaded asset. Open it to
+inspect UV channels, missing resources, geometry counts/buffers, texture sizes,
+glTF extension support and source metadata. Expand findings for suggested fixes
+and affected objects; object links select and focus them. **Rescan asset** updates
+the snapshot, and **Download report** saves JSON locally.
+
+The runtime section reports this canvas's renderer, last-pass draw counts, active
+frame intervals, quality settings and streamed cache/detail pressure when applicable.
+It samples only while the section is open and does not force demand rendering.
+See [Asset Diagnostics](https://react-immersive.liveroom.dev/docs/reference/asset-diagnostics)
+for scope, estimates and SDK callbacks.
+
+## Asset composition
+
+With more than one model, switch between them from the model menu in the top bar, the
+**Outliner**, or the **Assets** tab. Switching keeps your camera where it is; press
+`F` or **Frame** to fit a model.
+
+The left panel's **Assets** tab provides whole-asset placement,
+duplication, visibility, undoable deletion, grid/ground placement and complete
+scene ZIP save/load. The top bar's **Import** and **Export** menus group **Complete scene ZIP**,
+**Scene settings**, and **Object bindings** under their own descriptions. See [Multi-asset composition](https://react-immersive.liveroom.dev/docs/reference/multi-asset-composition).
+
+## Semantic comparison and advanced sections
+
+Open **Compare** in the top bar for a searchable object change list, category
+filters, old/new values, synchronized object focus, colored bounds, and **Save
+report**. Match by model object ID, binding ID, or metadata. **Pin** updates the
+baseline. See [Semantic comparison](https://react-immersive.liveroom.dev/docs/reference/compare-viewer#semantic-comparison)
+for matching rules and the limits of configuration comparison.
+
+With the preview's section tool, choose a single/angled plane, multiple
+named planes, or a section box. Select the active plane or box face to drag it.
+Save named cuts in **Saved section presets** and restore them with one click.
+Settings and presets are included in autosave and existing import/export flows;
+there are no separate section file buttons. See
+[Advanced sections](https://react-immersive.liveroom.dev/docs/reference/model-viewer#advanced-sections).
+## Product options
+
+**Configure**, beside Object and Scene in the inspector, lets customers customize a
+model. They pick from your options beside it and watch it change, with a price and a
+button to buy. It takes no code.
+
+1. **Click a part of the model**, then choose **Its color** or **Show or hide it**.
+   That creates a choice for customers, such as "Frame color". For a choice that does
+   something else, use **Or start with a blank choice**, or start from the model's
+   material variants if it has them.
+2. **Open an option** to edit it. It appears on the model as you work, without being
+   saved. **Change another part** lets one option change several parts. With an object
+   selected, the target icon points a change at it. **Start here** sets what customers
+   see first.
+3. **Add a price**, if you want one. Under **Prices and buying**, set a base price and
+   a **Buy link**, and open an option to add what it costs extra. The link can use
+   `{sku}`, `{quantity}`, `{productId}` and `{selections}`. This price is for show, so
+   always charge from your own store.
+4. **Add restrictions**, if some combinations don't exist: "when Leather, must have
+   Walnut". Customers see your message, and choosing a blocked option changes the
+   others to fit, telling them what will change first.
+5. **Preview as a customer** shows the whole page as they'd see it. Press Esc to return.
+6. **Publish.** In a hosted project, get the [embed code](https://react-immersive.liveroom.dev/docs/embedding). Otherwise,
+   export the scene and render [`ModelViewer` with `productOptions`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#productoptions).
+
+The tab warns you about problems as you work, such as a change targeting an object
+that isn't in the model, or an option no combination allows.
+
+**Advanced** holds the product ID and revision, the SKU list and the definition JSON,
+for textures and anything else without a control. Each option can have an SKU, under
+**More**. With no list, the chosen options' SKUs are joined, such as `WALNUT-LEATHER`.
+**Generate from option SKUs** lists every allowed combination; once a list exists,
+combinations not on it can't be bought.
+
+On the Free plan you can build and preview up to two choices. Prices, restrictions,
+SKUs and buy links start on Starter.
+
+Edits work with undo. Exports, imports, autosave and model switching keep them per
+model. To connect your own pricing, stock, cart and quote services, see
+[`useProductConfigurator`](https://react-immersive.liveroom.dev/docs/hooks/use-product-configurator).
+

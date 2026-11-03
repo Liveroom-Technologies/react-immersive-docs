@@ -4,7 +4,7 @@ Thanks for helping improve the public `react-immersive` experience.
 
 ## What We Accept
 
-- Docs corrections and clarity improvements
+- Docs corrections and clarity improvements, as [docs issues](https://github.com/Liveroom-Technologies/react-immersive-docs/issues/new?template=docs-issue.yml)
 - New or improved examples
 - Reproducible public bug reports
 - Feature requests with a clear use case
@@ -12,6 +12,8 @@ Thanks for helping improve the public `react-immersive` experience.
 ## What We Do Not Accept
 
 - Pull requests against the closed-source package internals
+- Pull requests that edit `content/`: those files are published from the website
+  on each deploy, so direct edits would be overwritten
 - License, billing, or account requests in public
 - Security disclosures in issues or discussions
 - Uploads of proprietary customer models, textures, or internal code
@@ -20,11 +22,9 @@ Thanks for helping improve the public `react-immersive` experience.
 
 Pull requests should stay within:
 
-- `pages/`
 - `examples/`
 - `.github/` community files
-- `scripts/`, `docs-version.json`, and `reference/` documentation tooling
-- Generated `public/llms.txt` and public sample bindings
+- `scripts/check-docs.mjs` and `scripts/check-snippets.mjs`
 
 If an issue requires private product changes, maintainers will track that work
 internally and link back here when there is a public update to share.
@@ -37,8 +37,6 @@ internally and link back here when there is a public update to share.
 4. Do not add secrets, internal URLs, or proprietary assets.
 5. Run `npm run check:docs` and `npm run check:snippets`. For a changed starter,
    run its `npm ci`, `npm run typecheck`, and `npm run build`.
-6. Run `npm run docs:generate` after editing MDX. Commit the generated
-   `public/llms.txt`; per-page Markdown and the full bundle are build outputs.
 
 ## Review Notes
 

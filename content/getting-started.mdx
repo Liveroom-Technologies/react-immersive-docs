@@ -6,9 +6,13 @@ import { Callout, Steps, Tabs } from "nextra/components";
 
 # Getting Started
 
-This guide targets **5.2.0** and **React 19**. For a complete first-render app,
+For a complete first-render app,
 start with [Vite + React](https://react-immersive.liveroom.dev/docs/frameworks/vite) or [Next.js App Router](https://react-immersive.liveroom.dev/docs/frameworks/nextjs).
 For a compact API/task map, see the [AI Agent Guide](https://react-immersive.liveroom.dev/docs/agent-guide).
+
+Using Shopify, WordPress, Webflow, or plain HTML? See
+[Embedding outside React](https://react-immersive.liveroom.dev/docs/embedding) to use a hosted project without
+installing React or this package.
 
 ## Installation
 
@@ -16,21 +20,21 @@ For a compact API/task map, see the [AI Agent Guide](https://react-immersive.liv
   <Tabs.Tab>
 
     ```bash
-    npm install @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
+    npm install @liveroom-tech/react-immersive three@^0.184.0 @react-three/fiber@^9.6.1
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    pnpm add @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
+    pnpm add @liveroom-tech/react-immersive three@^0.184.0 @react-three/fiber@^9.6.1
     ```
 
   </Tabs.Tab>
   <Tabs.Tab>
 
     ```bash
-    yarn add @liveroom-tech/react-immersive@5.2.0 three@^0.184.0 @react-three/fiber@^9.6.1
+    yarn add @liveroom-tech/react-immersive three@^0.184.0 @react-three/fiber@^9.6.1
     ```
 
   </Tabs.Tab>
@@ -68,9 +72,10 @@ development it logs a console warning naming the import to add.
 3. Generate a license key from your dashboard
 
 <Callout type="info">
-  Keep keys out of public repositories. `NEXT_PUBLIC_LICENSE_KEY` (Next.js)
-  and `VITE_LICENSE_KEY` (Vite) are browser-visible values, not server secrets.
-  Use a key for the registered domain and follow the [licensing guide](https://react-immersive.liveroom.dev/docs/licensing).
+  Keep keys out of public repositories. `NEXT_PUBLIC_LICENSE_KEY` (Next.js) and
+  `VITE_LICENSE_KEY` (Vite) are browser-visible values, not server secrets. Use
+  a key for the registered domain and follow the [licensing
+  guide](https://react-immersive.liveroom.dev/docs/licensing).
 </Callout>
 
 ## Quick Start
@@ -123,10 +128,10 @@ and `Cube [2]`. BindingBuilder generates the correct identifiers automatically.
 You can write the bindings by hand, or generate starter bindings in
 [`BindingBuilder`](https://react-immersive.liveroom.dev/docs/reference/binding-builder) and export them as
 `objectBindings.json` or a TypeScript file to import into your app.
-For a configured scene, export `sceneConfig.ts` from BindingBuilder's **Scene**
-tab and pass its named `sceneConfig` export to `ModelViewer` as well. The
+For a configured scene, export `sceneConfig.ts` from BindingBuilder's **Export**
+menu and pass its named `sceneConfig` export to `ModelViewer` as well. The
 [`BindingBuilder export and import guide`](https://react-immersive.liveroom.dev/docs/reference/binding-builder#exporting-and-reusing-files)
-explains where each toolbar action lives and when to choose JSON versus
+explains where each action lives and when to choose JSON versus
 TypeScript.
 If you want a ready-to-run starter, download the sample
 [`red_room.glb`](https://react-immersive.liveroom.dev/red_room.glb) model and
@@ -182,11 +187,15 @@ Replace the placeholder key below with the framework-specific environment value.
 "use client";
 
 import { useState } from "react";
-import { ModelViewer, type ObjectBinding } from "@liveroom-tech/react-immersive";
+import {
+  ModelViewer,
+  type ObjectBinding,
+} from "@liveroom-tech/react-immersive";
 import { objectBindings as initialBindings } from "./objectBindings";
 
 export default function App() {
-  const [objectBindings, setObjectBindings] = useState<Record<string, ObjectBinding>>(initialBindings);
+  const [objectBindings, setObjectBindings] =
+    useState<Record<string, ObjectBinding>>(initialBindings);
 
   return (
     <div style={{ height: "100vh", overflow: "hidden" }}>
@@ -234,9 +243,7 @@ export default function Example() {
         Toggle Visibility
       </button>
       <button onClick={() => resetView()}>Reset Camera</button>
-      <button onClick={() => focusObject("Quarto_Wall_0")}>
-        Focus Object
-      </button>
+      <button onClick={() => focusObject("Quarto_Wall_0")}>Focus Object</button>
       {clips.map((name) => (
         <button key={name} onClick={() => play(name)}>
           {name}

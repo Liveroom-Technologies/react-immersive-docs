@@ -62,13 +62,10 @@ for (const doc of docs) {
 
 // Compatibility tables are checked in addition to the machine manifest.
 const introduction = docs.find((doc) => doc.slug === "introduction").text;
-for (const slug of ["index", "introduction", "getting-started", "agent-guide", "frameworks/vite", "frameworks/nextjs", "releases"]) {
-  const doc = docs.find((page) => (page.slug || "index") === slug);
-  check(doc?.text.includes(support.version), `${slug}: missing supported version ${support.version}`);
-}
 for (const [peer, range] of Object.entries(support.peerDependencies)) {
-  check(introduction.includes(`| \`${peer}\` | \`${range}\` |`), `Introduction is missing ${peer} ${range}`);
+  check(introduction.replace(/ +/g, " ").includes(`| \`${peer}\` | \`${range}\` |`), `Introduction is missing ${peer} ${range}`);
 }
+const starterVersions = new Set();
 for (const folder of readdirSync(path.join(root, "examples"), { withFileTypes: true }).filter((entry) => entry.isDirectory())) {
   const directory = path.join(root, "examples", folder.name);
   if (!existsSync(path.join(directory, "package.json"))) continue;
@@ -78,16 +75,20 @@ for (const folder of readdirSync(path.join(root, "examples"), { withFileTypes: t
     continue;
   }
   const lock = JSON.parse(readFileSync(path.join(directory, "package-lock.json"), "utf8"));
-  check(pkg.dependencies[support.package] === support.version, `${folder.name}: incorrect SDK version`);
-  check(lock.packages[""].dependencies[support.package] === support.version, `${folder.name}: stale root lockfile version`);
+  // Starters pin one exact SDK version; the docs themselves follow npm latest.
+  const version = pkg.dependencies[support.package];
+  starterVersions.add(version);
+  check(lock.packages[""].dependencies[support.package] === version, `${folder.name}: stale root lockfile version`);
   const locked = lock.packages[`node_modules/${support.package}`];
-  check(locked?.version === support.version, `${folder.name}: stale resolved SDK version`);
+  check(locked?.version === version, `${folder.name}: stale resolved SDK version`);
   check(Boolean(pkg.scripts.typecheck), `${folder.name}: missing typecheck script`);
   const native = pkg.dependencies.next ? "@next/swc" : "@rolldown/binding";
   for (const platform of ["linux-x64-gnu", "darwin-arm64"]) {
     check(Boolean(lock.packages[`node_modules/${native}-${platform}`]), `${folder.name}: lockfile is missing ${native}-${platform}; regenerate it without an existing node_modules directory`);
   }
 }
+
+check(starterVersions.size === 1, `Starters use different SDK versions: ${[...starterVersions].join(", ")}`);
 
 // The Next.js guide is executable source, so changes must also update its app.
 const nextGuide = docs.find((doc) => doc.slug === "frameworks/nextjs").text;
@@ -118,11 +119,14 @@ for (const doc of docs) {
 }
 
 if (process.argv.includes("--published")) {
-  const response = await fetch(`https://registry.npmjs.org/${support.package.replace("/", "%2f")}/${support.version}`);
-  check(response.ok, `Cannot read published ${support.package}@${support.version}`);
+  const registry = `https://registry.npmjs.org/${support.package.replace("/", "%2f")}`;
+  for (const version of starterVersions) {
+    check((await fetch(`${registry}/${version}`)).ok, `Starters use unpublished ${support.package}@${version}`);
+  }
+  const response = await fetch(`${registry}/latest`);
+  check(response.ok, `Cannot read published ${support.package}@latest`);
   if (response.ok) {
     const published = await response.json();
-    check(published.version === support.version, "Published version mismatch");
     for (const [peer, range] of Object.entries(support.peerDependencies)) check(published.peerDependencies[peer] === range, `Published peer mismatch: ${peer}`);
   }
 }

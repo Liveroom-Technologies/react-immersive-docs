@@ -22,10 +22,30 @@ SimpleModelViewer can be deployed to production without creating an account,
 generating a key, or choosing a paid plan.
 
 For ModelViewer and BindingBuilder, the Free plan is for local development.
-Starter supports one production domain; Growth supports up to five. Scale
-terms are arranged with Liveroom.
+Starter supports one production domain; Growth supports up to five.
 Consult [current pricing](https://react-immersive.liveroom.dev/pricing) for
 the available plans and feature entitlements for those licensed components.
+
+## Hosted editor limits
+
+Hosted projects at `/editor/projects` follow the project owner's plan. Collaborators
+use the owner's limits, and their uploads count against the owner's storage.
+
+|                                      | Free    | Starter | Growth     |
+| ------------------------------------ | ------- | ------- | ---------- |
+| Projects                             | 3       | 20      | Unlimited  |
+| Models per project                   | 1       | 3       | Unlimited  |
+| Model upload size                    | 100 MiB | 200 MiB | 200 MiB    |
+| Total storage (models and images)    | 1 GB    | 10 GB   | 50 GB      |
+| Collaborators per project            | 0       | 2       | 10         |
+| Live updates for public-link viewers | No      | No      | Yes        |
+
+Images can be up to 25 MiB each on every plan. If a plan drops below what a project
+already uses, nothing is deleted: adding more is refused, and collaborators over the
+limit become view-only until the owner upgrades.
+
+Authoring features by plan are listed in the
+[BindingBuilder reference](/docs/reference/binding-builder#licensing--plan-tiers).
 
 ## Create and configure a key for ModelViewer or BindingBuilder
 

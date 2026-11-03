@@ -72,9 +72,11 @@ export function ConfigurationViewer({
     onError: report,
   });
 
-  function saveJson() {
+  async function saveJson() {
+    setError("");
     try {
-      const blob = new Blob([serializeViewerState(sharing.getState())], {
+      const state = await sharing.getStateAsync();
+      const blob = new Blob([serializeViewerState(state)], {
         type: "application/json",
       });
       const url = URL.createObjectURL(blob);
@@ -93,6 +95,7 @@ export function ConfigurationViewer({
       <button
         disabled={!isReady}
         onClick={() => {
+          setError("");
           void sharing
             .createShareUrl()
             .then((url) => navigator.clipboard.writeText(url))
@@ -101,7 +104,7 @@ export function ConfigurationViewer({
       >
         Copy configuration link
       </button>
-      <button disabled={!isReady} onClick={saveJson}>
+      <button disabled={!isReady} onClick={() => void saveJson()}>
         Save JSON
       </button>
       <label>
@@ -157,11 +160,17 @@ export function ConfigurationViewer({
 }
 ```
 
-`getState()` returns a detached snapshot. You can store
-`serializeViewerState(sharing.getState())` in a file or your own persistence
-layer and restore its JSON with `restoreState(json)`. `parseViewerState(input)`
-is also exported for standalone validation. These utilities are available from
-the main entry and `/utils`.
+`await getStateAsync()` returns a detached snapshot with live texture, decal,
+background and annotation-image blobs embedded as data URLs. This includes
+local preview files registered under logical material paths. Save
+`serializeViewerState(await sharing.getStateAsync())` in a file or your own
+persistence layer and restore its JSON with `restoreState(json)`.
+
+`getState()` remains synchronous for configurations that already have portable
+asset references. It reports a clear error if an image needs async capture.
+`prepareViewerState(input, baseUrl?)` provides async image capture without the
+hook; `parseViewerState(input)` validates already-portable data. These utilities
+are exported from the main entry and `/utils`.
 
 ## Multiple models
 
@@ -177,9 +186,12 @@ again from `onViewerReady`. The saved camera is applied after configuration.
 
 The configuration type also supports `modelFormat`, `tilesetUrl`,
 `backgroundColor`, `shadows`, `cinematic`, `cameraControllerType`,
-`objectTransformSpace`, `arScaleMode`, and `usdzUrl`. License keys, callbacks,
+`objectTransformSpace`, `arScaleMode`, and `usdzUrl`. It also
+includes saved measurements and calibration from `sceneConfig.measurements`,
+or the explicit `measurements`, `measurementSettings`, `measurementUnit`, and
+`measurementModelId` configuration fields. License keys, callbacks,
 React overlays, raw Three.js objects, transient animation playback positions,
-and measurement picks are not serialized. The active annotation identifies the
+and unsaved measurement picks are not serialized. The active annotation identifies the
 current tour stop; it does not start or resume tour autoplay.
 
 ## Short links with application-owned storage
@@ -221,7 +233,10 @@ access, retention and asset hosting in your application. A recipient needs the
 same storage adapter. Storage failures reject the operation; newer incoming
 links supersede older pending requests.
 
-`getShareUrl()` and `syncUrl()` always use inline JSON. Inline URLs are limited
+`createShareUrl()` automatically captures live images before saving/linking.
+`getShareUrl()` and `syncUrl()` are synchronous and require portable asset
+references; use the async methods when temporary images are present. They
+always use inline JSON. Inline URLs are limited
 to 65,536 characters by default; `maxUrlLength` can change this guard, but an
 application/browser/link-sharing service may impose a smaller limit. JSON state
 is limited to 5 MiB, including when loaded from storage. Autosync reports errors
@@ -250,6 +265,7 @@ for configuration, models or bindings.
 | Name             | Signature                              | Behavior                                                                             |
 | ---------------- | -------------------------------------- | ------------------------------------------------------------------------------------ |
 | `getState`       | `() => ShareableViewerState`           | Returns a detached version-1 snapshot.                                               |
+| `getStateAsync` | `() => Promise<ShareableViewerState>` | Returns a portable snapshot, including live local images. |
 | `restoreState`   | `(input: unknown) => Promise<boolean>` | Validates/restores JSON or parsed state; false while pending. No address-bar change. |
 | `getShareUrl`    | `() => string`                         | Builds an inline link without changing the page URL.                                 |
 | `createShareUrl` | `() => Promise<string>`                | Uses storage when supplied, otherwise inline JSON.                                   |
@@ -267,10 +283,17 @@ for configuration, models or bindings.
 - Relative model, texture, annotation-image/link and environment paths become
   absolute against the sender's page URL. HTTP(S) assets and embedded image
   data URLs are supported. Original model files are not bundled.
-- Blob URLs are local to a browser session and cannot make portable saves.
-  Upload those assets to durable URLs before sharing, using e.g.
-  `onTextureUpload`. A snapshot with blob asset references fails with a useful
-  field-level error instead of generating a broken link.
+- Temporary texture/decal/image blobs are embedded automatically by
+  `getStateAsync()` and `createShareUrl()`. Their original files do not have to
+  be uploaded to a server. Captured image data survives a reload or another
+  device opening the configuration. The live bindings and preview stay intact.
+- Embedded images count toward the 5 MiB JSON and inline URL limits. For large
+  images use Save JSON, a storage adapter for a short link, or a durable image
+  URL from `onTextureUpload`. An unavailable/revoked temporary image produces a
+  clear error asking you to reload or reselect it.
+- Model files and custom HDR/EXR environments are not embedded. Those assets
+  still need durable HTTP(S) URLs; this remains a configuration save, not a
+  full model-file archive.
 - Save original assets for animations. A configuration describes the viewer's
   data; it is not a GLB export, an asset archive, or a license grant.
 - Invalid JSON, unsupported versions, invalid core state shapes, unsafe object

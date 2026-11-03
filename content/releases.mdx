@@ -1,15 +1,12 @@
 ---
-title: Versions and Migration
+title: Compatibility and Upgrading
 ---
 
-# Versions and migration
+# Compatibility and upgrading
 
-## Supported documentation baseline: 5.2.0
-
-The current documentation and public starter applications target
-`@liveroom-tech/react-immersive@5.2.0`, published to npm on 5 October 2026.
-The [machine-readable manifest](https://react-immersive.liveroom.dev/docs/manifest.json)
-records the package version, peer dependencies, and documentation URLs.
+Install the latest published version of `@liveroom-tech/react-immersive`. The
+[machine-readable manifest](https://react-immersive.liveroom.dev/docs/manifest.json)
+records the peer dependencies and documentation URLs.
 
 | Peer                 | Supported range |
 | -------------------- | --------------- |
@@ -22,12 +19,12 @@ The Vite examples require Node `^20.19.0 || >=22.12.0`; the Next.js starter
 uses Node 22.12+. These are starter tooling requirements, separate from the
 React package's runtime peers.
 
-## Upgrade a public starter previously pinned to 5.0.2
+## Upgrade an existing project
 
-From that starter's directory:
+From the project's directory:
 
 ```bash
-npm install --save-exact @liveroom-tech/react-immersive@5.2.0
+npm install --save-exact @liveroom-tech/react-immersive@latest
 npm run typecheck
 npm run build
 ```

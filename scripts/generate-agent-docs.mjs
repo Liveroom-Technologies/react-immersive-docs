@@ -72,11 +72,11 @@ export function generate() {
   const manifestPages = [];
   for (const doc of docs) {
     const output = `${doc.slug || "index"}.md`;
-    const header = `<!-- Generated from ${doc.relative}; edit the MDX source. -->\n\nPackage: ${support.package}@${support.version}\nCanonical: ${doc.url}\n\n`;
+    const header = `<!-- Generated from ${doc.relative}; edit the MDX source. -->\n\nPackage: ${support.package}\nCanonical: ${doc.url}\n\n`;
     const text = header + doc.text;
     write(`docs/${output}`, text);
     manifestPages.push({ title: doc.title, url: doc.url, markdown: `${support.site}/docs/${output}`,
-      source: `${support.repository}/blob/main/pages/${doc.relative}`,
+      source: `${support.repository}/blob/main/content/${doc.relative}`,
       bytes: Buffer.byteLength(text), sha256: createHash("sha256").update(text).digest("hex") });
     if (doc.slug !== "reference/model-viewer") continue;
     const lines = doc.text.split("\n");
@@ -109,19 +109,19 @@ export function generate() {
   const manifest = { ...support, pages: manifestPages, sections, resources };
   write("docs/manifest.json", JSON.stringify(manifest, null, 2) + "\n");
   const agent = docs.find((doc) => doc.slug === "agent-guide");
-  const index = `# React Immersive\n\n> ${support.package}@${support.version}: interactive 3D viewers and scene authoring for React 19.\n\n` +
+  const index = `# React Immersive\n\n> ${support.package}: interactive 3D viewers and scene authoring for React 19.\n\n` +
     `Official package: https://www.npmjs.com/package/${support.package}\nPublic source: ${support.repository}\nCompatibility: React/React DOM ${support.peerDependencies.react}; Three.js ${support.peerDependencies.three}; React Three Fiber ${support.peerDependencies["@react-three/fiber"]}.\n\n` +
     `Start with SimpleModelViewer from /simple-model-viewer, its simple-model-viewer.css stylesheet, a public model URL and a container with explicit height. ModelViewer is imported from the main entry; BindingBuilder from /binding-builder. Both need a runtime licenseKey. SimpleModelViewer has no key prop and needs no key or paid plan, including in production.\n\n` +
-    `## Start here\n\n- [Agent guide](${support.site}/docs/agent-guide.md): component choice, first render, APIs and validation.\n- [Vite setup](${support.site}/docs/frameworks/vite.md): complete React 19 files.\n- [Next.js setup](${support.site}/docs/frameworks/nextjs.md): App Router, CSS and client boundary.\n- [Getting started](${support.site}/docs/getting-started.md): bindings and mutable state.\n- [Licensing](${support.site}/docs/licensing.md): local vs production, manual account/key steps.\n- [Troubleshooting](${support.site}/docs/troubleshooting.md): imports, types, assets, CORS and rendering.\n- [Versions and migration](${support.site}/docs/releases.md): supported baseline and upgrading starters.\n- [Manifest](${support.site}/docs/manifest.json): exact version, peers, all page URLs and small ModelViewer section URLs.\n\n## Reference pages\n\n` +
+    `## Start here\n\n- [Agent guide](${support.site}/docs/agent-guide.md): component choice, first render, APIs and validation.\n- [Vite setup](${support.site}/docs/frameworks/vite.md): complete React 19 files.\n- [Next.js setup](${support.site}/docs/frameworks/nextjs.md): App Router, CSS and client boundary.\n- [Getting started](${support.site}/docs/getting-started.md): bindings and mutable state.\n- [Licensing](${support.site}/docs/licensing.md): local vs production, manual account/key steps.\n- [Troubleshooting](${support.site}/docs/troubleshooting.md): imports, types, assets, CORS and rendering.\n- [Compatibility and upgrading](${support.site}/docs/releases.md): peer dependencies and upgrading a project.\n- [Manifest](${support.site}/docs/manifest.json): peers, all page URLs and small ModelViewer section URLs.\n\n## Reference pages\n\n` +
     manifestPages.filter((doc) => /\/docs\/(hooks|reference)\//.test(doc.url)).map((doc) => `- [${doc.title}](${doc.markdown})`).join("\n") +
     `\n\n## Examples and optional full reference\n\n- [Examples](${support.site}/docs/examples.md): runnable starters and live demos.\n- [Sample model](${support.site}/red_room.glb): Red Room by LaisLH, CC BY 4.0; https://skfb.ly/6VBJR.\n- [Package license](${support.site}/LICENSE.txt)\n- [Extended package reference](${support.site}/docs/package-reference.md): detailed package examples preserved separately from the short npm README.\n- [Full documentation](${support.site}/llms-full.txt): large; prefer individual pages or manifest sections.\n\nEach HTML docs page has a .md alternative. Accept: text/markdown also selects it.\n`;
   write("llms.txt", index);
   write("docs/llms.txt", index);
-  write("llms-full.txt", docs.map((doc) => `Canonical: ${doc.url}\nPackage: ${support.package}@${support.version}\n\n${doc.text}`).join("\n\n---\n\n"));
+  write("llms-full.txt", docs.map((doc) => `Canonical: ${doc.url}\nPackage: ${support.package}\n\n${doc.text}`).join("\n\n---\n\n"));
   const license = path.join(root, "PACKAGE-LICENSE.txt");
   if (existsSync(license)) write("LICENSE.txt", readFileSync(license));
   if (!agent) throw new Error("Agent guide is missing");
-  console.log(`Generated ${docs.length} Markdown pages and ${sections.length} ModelViewer sections for ${support.version}.`);
+  console.log(`Generated ${docs.length} Markdown pages and ${sections.length} ModelViewer sections.`);
   return manifest;
 }
 

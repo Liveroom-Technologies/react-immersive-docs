@@ -835,6 +835,103 @@ category filtering, and marker-distance behavior. These annotation types are
 exported from the main entry and the server-safe `/utils` entry.
 
 
+## Measurements
+
+Available from the main package and the server-safe
+`/utils` entry. See [calibration and persistence](https://react-immersive.liveroom.dev/docs/reference/model-viewer#calibrated-and-saved-measurements)
+for the viewer controls and callbacks.
+
+| Type | Purpose |
+| --- | --- |
+| `MeasurementUnit` | `"m"`, `"cm"`, `"mm"`, `"in"`, or `"ft"` |
+| `MeasurementSettings` | Optional `sourceUnit`, `displayUnit`, and calibration override `metersPerUnit` |
+| `MeasurementTool` | `"distance"`, `"angle"`, `"area"`, `"pointToPlane"`, `"wrap"`, or `"wrapHorizontal"` |
+| `MeasurementPosition` | Three-number coordinate tuple |
+| `MeasurementPoint` | Numeric ID, world position, optional normal/face vertices, snapping mode, and anchor |
+| `MeasurementAnchor` | Mesh ID, local coordinates, optional instance index, geometry fingerprint, and pose fingerprint |
+| `SavedMeasurement` | String ID, name, stable `modelId`, tool, points, ISO `createdAt`, optional visibility and approximate-LOD flag |
+| `MeasurementCollection` | `{ settings: MeasurementSettings; items: SavedMeasurement[] }`, stored in `SceneConfig.measurements` |
+| `MeasurementStatus` | `"ready"`, `"approximate"`, `"model-changed"`, `"missing-object"`, `"geometry-changed"`, `"pose-changed"`, `"hidden-object"`, or `"invalid"` |
+| `MeasurementResult` | ID, status, raw value, converted value, and unit. Values are nullable for stale/invalid records |
+
+The same entries export these utilities:
+
+```ts
+import {
+  calibrateMeasurements,
+  measurementResult,
+  measurementScale,
+  measurementValue,
+  measurementsToCsv,
+  parseMeasurements,
+  serializeMeasurements,
+  type MeasurementCollection,
+} from "@liveroom-tech/react-immersive/utils";
+
+const settings = calibrateMeasurements(100, 2, "m", { displayUnit: "cm" });
+const collection: MeasurementCollection = { settings, items: [] };
+const scale = measurementScale(settings); // factor: 2 (model units to cm)
+const restored = parseMeasurements(serializeMeasurements(collection));
+const csv = measurementsToCsv(restored);
+```
+
+`MEASUREMENT_UNITS` lists the five supported units. `measurementValue(tool,
+points)` computes raw geometry and its dimensionality; `measurementResult`
+converts one saved record and returns its status. `parseMeasurements` accepts
+an object or JSON string, validates it, and returns detached data.
+`serializeMeasurements` adds the file format's `version: 1`.
+`measurementsToCsv(collection, liveResults?, legacyUnit?)` accepts resolved
+results when anchors have moved; without them it uses each record's stored
+world coordinates. The built-in CSV exporter resolves current anchors first.
+
+## Hierarchy and saved selections
+
+Available from the main entry and `/utils`:
+
+```ts
+type ViewerHierarchyNode = {
+  id: string;
+  parentId: string | null;
+  name: string;
+  objectId?: string; // Binding-compatible identifier on a named mesh.
+};
+
+type SceneSelectionSet = {
+  id: string;
+  name: string;
+  objectIds: string[]; // modelObjectId values, scoped to the owning model.
+};
+```
+
+`collectObjectHierarchy(root)` returns an ordered flat tree with parent links,
+including source groups and ancestors of bindable meshes. Tree row IDs describe
+structural paths; use `objectId` for bindings and persisted selections. Models
+with duplicate mesh names use the same stable suffixed IDs as object bindings.
+
+`parseSelectionSets(input)` validates and detaches an array of up to 128 named
+sets. `SceneConfig.selectionSets` is optional and belongs to one model.
+
+```ts
+import {
+  copyBindingStyle,
+  pasteBindingStyle,
+  type ObjectBinding,
+} from "@liveroom-tech/react-immersive/utils";
+
+export function matchDoorStyles(bindings: Record<string, ObjectBinding>) {
+  const source = bindings.FrontDoor;
+  if (!source) return bindings;
+  const style = copyBindingStyle(source);
+  return pasteBindingStyle(bindings, { type: "door" }, style);
+}
+```
+
+Style snapshots contain authored material overrides only. Paste replaces
+target styles, skips removed objects, and preserves all non-style fields.
+Both helpers return detached nested style data so editing one target cannot
+mutate the clipboard or another target. Application-owned state/history decides
+when to commit the returned batch.
+
 ## Other exported types
 
 Every type below is exported from `@liveroom-tech/react-immersive` and is
@@ -850,6 +947,7 @@ described with the API it belongs to.
 | `AnimationActionEffect`, `CameraActionEffect`, `ObjectBindingsActionEffect`, `SceneConfigActionEffect`, `VisibilityActionEffect` | [`ObjectBindingAction`](#objectbindingaction) |
 | `AnimationLoopMode`, `SceneAnimationClipConfig`, `SceneLightType`, `SceneModelConfig`, `SceneCameraConfig`, `SceneLightingConfig`, `SceneShadowConfig`, `SceneEnvironmentConfig`, `SceneWireframeConfig`, `SceneBackgroundConfig`, `SceneGroundShadowConfig`, `ScenePostProcessingConfig`, `EnvironmentPreset`, `GlitchModeName`, `KernelSizeName`, `RampTypeName` | [`SceneConfig`](#sceneconfig) and [`SceneLight`](#scenelight) |
 | `SceneAnnotationMarker`, `SceneAnnotationCameraView`, `SceneAnnotationImage`, `SceneAnnotationLink` | [`SceneAnnotationMarker`](#sceneannotationmarker) |
+| `MeasurementUnit`, `MeasurementTool`, `MeasurementPosition`, `MeasurementSettings`, `MeasurementAnchor`, `MeasurementPoint`, `SavedMeasurement`, `MeasurementCollection`, `MeasurementStatus`, `MeasurementResult` | [Measurements](#measurements) |
 | `ObjectBindingDecal`, `ObjectSurfacePoint` | [Decals](https://react-immersive.liveroom.dev/docs/reference/model-viewer#decals) |
 | `MaterialVariantGroup`, `MaterialVariantOption` (also from `/simple-model-viewer` and `/utils`) | [`showMaterialVariants`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#showmaterialvariants) |
 | `ReducedMotionSetting` (also from `/simple-model-viewer` and `/utils`) | [`reducedMotion`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#reducedmotion) |
@@ -858,11 +956,12 @@ described with the API it belongs to.
 | `CompareViewerProps`, `CompareViewerSide` | [`CompareViewer`](https://react-immersive.liveroom.dev/docs/reference/compare-viewer) |
 | `ViewerIsolation`, `IsolatedObjectBindings` | [`ViewerIsolation`](#viewerisolation) |
 | `ViewerIsolationProps` | [`useViewerIsolation`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-isolation) |
-| `SceneSectionConfig`, `SceneSectionAxis` | [`SceneSectionConfig`](#scenesectionconfig) |
+| `SceneSectionConfig`, `SceneSectionAxis`, `SceneSectionSettings`, `SceneSectionPlane`, `SceneSectionPreset` | [`SceneSectionConfig`](#scenesectionconfig) |
 | `SceneStyleRule`, `SceneStyleCondition`, `SceneStyleColorScale`, `SceneStylePulse` | [`SceneStyleRule`](#scenestylerule) |
 | `StyledObjectBindings`, `StyledObjectPulse` | `applyStyleRules`, see [Style rules](https://react-immersive.liveroom.dev/docs/reference/model-viewer#style-rules) |
 | `HiddenObjectsState`, `ObjectBindingsController`, `BindingEdit`, `ObjectBindingSelector`, `DeepPartial` | [`useObjectBindings`](https://react-immersive.liveroom.dev/docs/hooks/use-object-bindings) |
 | `ViewerSelectionProps` | [`useViewerSelection`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-selection) |
+| `ViewerHierarchyNode`, `SceneSelectionSet` | [Hierarchy and saved selections](#hierarchy-and-saved-selections) |
 | `ViewerHoverProps` | [`useViewerHover`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-hover) |
 | `ShareableViewerState`, `ViewerConfiguration`, `ViewerStateStorage`, `ShareableViewerStateProps`, `UseShareableViewerStateOptions` | [`useShareableViewerState`](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state) |
 | `ViewerModelBounds`, `ViewerModelInfo`, `ViewerModelProps` | [`useViewerModel`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-model) |
@@ -878,3 +977,66 @@ described with the API it belongs to.
 `ModelViewerLabels` is `Partial<Record<ModelViewerLabelKey, string>>`, accepted by both viewers' `labels` prop. The default dictionary and both types are exported from the main package, `/simple-model-viewer`, and `/utils` (which can be imported without React).
 
 See the [labels reference](https://react-immersive.liveroom.dev/docs/reference/labels) for examples and the complete catalog.
+
+## Product configuration types
+
+Development SDK exports include `ProductDefinition`, `ProductOptionGroup`,
+`ProductOption`, `ProductOptionRef`, `ProductOptionRule`, `ProductAppearance`,
+`ProductSku`, `ProductSelections`, `SceneProductConfig`, `ProductConfiguration`,
+`ProductConfigurationIssue`, `ProductOptionState`, `ProductAvailability`,
+`ProductPrice`, `ProductCommerceAdapter`, `ProductCommerceContext`,
+`ProductCheckoutContext`, and `ProductCommerceResult` (main and `/utils`).
+`ProductConfigurator`, `UseProductConfiguratorOptions` and `ProductOptionsProps`
+are exported from the main package. `SceneConfig.product` optionally holds
+`{ definition: ProductDefinition, selections: ProductSelections }`.
+
+See [`useProductConfigurator`](https://react-immersive.liveroom.dev/docs/hooks/use-product-configurator)
+for complete schema examples, adapter contracts and serialization behavior.
+## Asset diagnostics types
+
+Data types `AssetDiagnosticIssue`, `AssetDiagnosticsSource`,
+`AssetTextureDiagnostic`, `AssetDiagnosticsReport`, `InspectAssetOptions`,
+`StreamingDiagnostics`, and `ViewerRuntimeStats` are exported from the main
+package and `/utils`. `AssetDiagnosticsPanelProps` is exported from the main
+package. See [Asset Diagnostics](https://react-immersive.liveroom.dev/docs/reference/asset-diagnostics)
+for the report and callback contracts.
+
+## Asset placement types
+
+The package exports `AssetTransform` from the main and `/utils` entries,
+with `parseAssetTransform`, `snapAssetToGrid` and `groundAsset`.
+See [Multi-asset composition](https://react-immersive.liveroom.dev/docs/reference/multi-asset-composition).
+
+## AR handoff types
+
+The package exports `ARHandoffOptions`, `ARHandoffRequest`,
+`ARHandoffStatus`, `ARExportOptions`, `ARSnapshotSource` and `ARSnapshot` from the
+main and `/utils` entries. See [Configuration-preserving AR](https://react-immersive.liveroom.dev/docs/reference/configured-ar)
+for preparation, adapter, snapshot and URL contracts.
+
+## Visual sequence types
+
+`SceneConfig.sequences?: SceneSequence[]` stores timed tracks.
+`SceneSequence`, `SequenceTrack`, `SequenceTarget`, `SequenceKeyframe`,
+`SequenceValue`, `SequenceCameraView`, `SequenceVector3`, `SequenceObjectProperty`,
+`SequenceEasing`, `SequenceControls` and `SequencePlaybackState` are exported from
+the main and `/utils` entries. `ViewerSequencesProps` is a main-entry type.
+See [Visual sequence authoring](https://react-immersive.liveroom.dev/docs/reference/visual-sequences)
+and [useViewerSequences](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-sequences).
+
+
+## Semantic comparison types
+
+The main entry exports `SemanticComparisonOptions`, `ConfigurationComparisonInput`,
+`ConfigurationComparisonReport`, `ComparisonObject`, `ComparisonChange`,
+`ComparisonCategory`, `ComparisonStatus`, and `ComparisonHighlight`. The data-only
+`/utils` entry also exports them. See
+[Semantic comparison](https://react-immersive.liveroom.dev/docs/reference/compare-viewer#semantic-comparison).
+`ModelViewerProps.comparisonHighlights` accepts `{ objectId, color }[]` to draw
+transient bounds on the active asset without changing its materials.
+
+Advanced section types are `SceneSectionSettings` (the original fields plus
+optional `mode`, `normal`, `planes`, `activePlaneId`, `box`, `invertBox`),
+`SceneSectionPlane` (`id`, `name`, `enabled`, `axis`, `position`, `flip`, optional
+`normal`), and `SceneSectionPreset` (`id`, `name`, `settings`).
+`SceneSectionConfig` is `SceneSectionSettings & { presets?: SceneSectionPreset[] }`.

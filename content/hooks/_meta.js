@@ -6,6 +6,7 @@ export default {
   "use-viewer-camera": "useViewerCamera",
   "use-viewer-connection": "useViewerConnection",
   "use-viewer-animations": "useViewerAnimations",
+  "use-viewer-sequences": "useViewerSequences",
   "use-viewer-effects": "useViewerEffects",
   "use-viewer-isolation": "useViewerIsolation",
   "use-viewer-actions": "useViewerActions",
@@ -13,5 +14,6 @@ export default {
   "use-object-binding-ids": "useObjectBindingIds",
   "use-object-bindings": "useObjectBindings",
   "use-scene-config": "useSceneConfig",
+  "use-product-configurator": "useProductConfigurator",
   "use-shareable-viewer-state": "useShareableViewerState",
 };

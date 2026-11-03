@@ -1,0 +1,130 @@
+---
+title: Embedding outside React
+---
+
+# Embedding outside React
+
+Embed a hosted project on any website with an iframe. Your page needs no React,
+npm packages, license key, or build step. The hosted viewer loads the model,
+object bindings, materials, and scene settings saved in the project.
+
+## Copy an embed from your project
+
+1. Open your hosted project and choose **Share**.
+2. Set **General access** to **Anyone with the link**. This makes the project
+   public; enable it only for content you want visitors to see.
+3. Under **Embed on your website**, choose **Copy embed code**.
+4. Paste the code into your site's HTML or embed block, then preview your page.
+
+**Copy embed code** is disabled while access is restricted. A project configured
+for public editing can also be embedded, but the embed always shows the viewer.
+It has no editor toolbar, collaboration controls, membership UI, or save API.
+Visitors can explore the model and interact with its configured controls; their
+choices do not save changes to the hosted project.
+
+## HTML example
+
+Replace `YOUR_PROJECT_ID` with your hosted project's ID, or use the exact code
+from Share. On another deployment, use that deployment's origin.
+
+```html
+<iframe
+  src="https://react-immersive.liveroom.dev/embed/projects/YOUR_PROJECT_ID"
+  title="Interactive 3D viewer"
+  width="100%"
+  height="600"
+  style="display:block;width:100%;height:600px;border:0;"
+  loading="lazy"
+  allow="fullscreen; xr-spatial-tracking"
+  allowfullscreen
+></iframe>
+```
+
+The `/embed/projects/…` URL renders only the viewer and can be framed by another
+website. The `/editor/projects/…` sharing link opens the project workspace and
+should not be used as an embed URL. Visitors do not need an account, and the
+embed does not rely on third-party sign-in cookies. License validation stays
+inside the hosted viewer; no account credentials belong in your HTML.
+
+## Shopify
+
+If your theme provides a **Custom Liquid** section or block, add it to the page
+or product template and paste the iframe code. Preview the storefront before
+publishing. Available sections depend on the theme. See Shopify's
+[theme extension guide](https://help.shopify.com/en/manual/online-store/themes/customizing-themes/apps).
+
+## WordPress
+
+Add a **Custom HTML** block and paste the iframe code, then preview the page.
+The account and hosting plan must permit iframe HTML. WordPress strips iframe
+tags for users without the `unfiltered_html` capability; a removed iframe is a
+site permission issue. See the
+[Custom HTML documentation](https://wordpress.org/documentation/article/custom-html/).
+
+## Webflow
+
+Add a **Code Embed** element, paste the iframe code, and save it. Check the
+preview and published page. Your workspace or site plan must support custom
+code embeds. See Webflow's
+[Code Embed documentation](https://help.webflow.com/hc/en-us/articles/33961332238611-Custom-code-embed).
+
+## Size and loading
+
+The iframe fills its parent width and is 600 pixels high by default. Change
+both the `height` attribute and the inline `height` style to suit your layout.
+Give the frame a useful `title`, such as the product name. `loading="lazy"`
+defers viewers below the visible part of the page until they are needed.
+The embed fills the frame; styles on your website do not change its internal
+panels or scene presentation. Author those settings in the hosted project.
+
+The permissions in `allow` let supported viewer features request fullscreen or
+WebXR when enabled. Browser, device, HTTPS, and the parent site's permissions
+policy still apply; the attributes do not make unsupported features available.
+If you add iframe sandboxing, the viewer needs scripts and its original origin
+(`allow-scripts allow-same-origin`) to load assets and validate its hosted license.
+
+## Updates and access
+
+The embed loads the saved project and checks for updates and public access every
+30 seconds, and when its tab becomes visible. Responses are cached briefly, so
+saved scene edits and completed model processing appear within about a minute.
+Models still processing show a preparation message instead of loading the
+unprocessed source file.
+
+Setting General access back to **Restricted**, or deleting the project, takes
+effect within about a minute. Until then, new loads can still show the viewer.
+After that, new loads are refused, and existing embeds remove the scene and show
+an unavailable message. If a check simply fails, such as on a dropped connection,
+the model stays on screen and the embed tries again. A viewer that cannot load
+shows **Retry viewer**; it does not redirect visitors to sign in. Already
+loaded public asset data cannot be recalled from a visitor's browser.
+
+No first-party marketing analytics scripts or analytics consent dialog run in
+the embed. React callbacks such as `onEngagement` remain part of the
+[React API](https://react-immersive.liveroom.dev/docs/reference/model-viewer#onengagement--debugengagement);
+this iframe does not expose any other parent-page JavaScript API.
+
+## Product options in an embed
+
+If the project has [product options](https://react-immersive.liveroom.dev/docs/reference/binding-builder#product-options),
+visitors choose from them in a panel beside the model, with the price and buy link
+you set. They need no code on your page.
+
+Open the embed on a particular configuration by adding its choices to `src`:
+
+```html
+<iframe src="https://react-immersive.liveroom.dev/embed/projects/YOUR_PROJECT_ID?options=finish:walnut,seat:leather" ...></iframe>
+```
+
+When a choice changes, the frame tells the page around it. Use this to update your
+own price, cart or add-to-cart button. Check `event.origin` before trusting it, and
+always validate the choices and price on your server:
+
+```js
+window.addEventListener("message", (event) => {
+  if (event.origin !== "https://react-immersive.liveroom.dev") return;
+  if (event.data?.source !== "react-immersive" || event.data.type !== "product-configuration") return;
+  const { configuration, checkoutUrl } = event.data;
+  console.log(configuration.sku, configuration.selections, configuration.valid, checkoutUrl);
+});
+```

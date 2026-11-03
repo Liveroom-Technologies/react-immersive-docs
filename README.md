@@ -5,13 +5,11 @@
 
 [Website](https://react-immersive.liveroom.dev) · [Documentation](https://react-immersive.liveroom.dev/docs) · [Live editor](https://react-immersive.liveroom.dev/editor) · [npm](https://www.npmjs.com/package/@liveroom-tech/react-immersive)
 
-**Documentation and starters target 5.2.0 with React 19.** Start with the
+Start with the
 [AI Agent Guide](https://react-immersive.liveroom.dev/docs/agent-guide),
 [compact Markdown index](https://react-immersive.liveroom.dev/llms.txt),
 [Vite setup](https://react-immersive.liveroom.dev/docs/frameworks/vite), or
 [Next.js App Router setup](https://react-immersive.liveroom.dev/docs/frameworks/nextjs).
-The docs host has its own React dependencies; install the SDK inside a starter
-or consuming app, not into the documentation host.
 
 The package itself is commercially maintained and the core source remains
 private, but this repo is where users can:
@@ -23,36 +21,23 @@ private, but this repo is where users can:
 
 ## What Lives Here
 
-- Documentation pages under `pages/`
+- A published copy of the documentation under `content/`
 - Public sample assets in `public/`
 - Example apps in `examples/`
 
-## Local Setup
-
-Install dependencies and run the docs site:
-
-```bash
-npm install
-npm run dev
-```
-
-Open `http://localhost:3000`.
-
-Build for production:
-
-```bash
-npm run build
-npm run start
-```
-
 ## Docs Structure
 
-- `pages/index.mdx` overview
-- `pages/getting-started.mdx` onboarding and setup
-- `pages/introduction.mdx` product rationale and concepts
-- `pages/reference/` API reference pages
-- `pages/hooks/` hook reference pages
-- `pages/examples.mdx` public example index
+The docs here are published automatically from the website each time it deploys,
+so they always match [the live documentation](https://react-immersive.liveroom.dev/docs).
+Direct edits to the published files are overwritten by the next deploy. To report
+a problem or suggest a change, [open a docs issue](https://github.com/Liveroom-Technologies/react-immersive-docs/issues/new?template=docs-issue.yml).
+
+- `content/index.mdx` overview
+- `content/getting-started.mdx` onboarding and setup
+- `content/introduction.mdx` product rationale and concepts
+- `content/reference/` API reference pages
+- `content/hooks/` hook reference pages
+- `content/examples.mdx` public example index
 
 ## Public Examples
 
@@ -90,23 +75,25 @@ does not need a key or paid plan, including in production. See [Licensing](https
 
 ## Maintain and verify documentation
 
-`pages/` is the shared MDX source. `docs-version.json` records the supported npm
-version and peers. Do not hand-edit generated files under `public/docs/`.
+`content/`, `docs-version.json`, `PACKAGE-LICENSE.txt`, `reference/package.md`,
+`public/llms.txt`, `public/objectBindings.ts`, and
+`scripts/generate-agent-docs.mjs` are published from the website. Everything else
+here is maintained in this repo. `docs-version.json` records the supported peers.
 
 ```bash
 npm run docs:generate
 npm run check:docs
 npm run check:snippets
 npm run check:published
-npm run build
 ```
 
-`check:snippets` installs an isolated consumer under `.cache/` and compiles the
-complete onboarding and framework files plus all documented SDK named imports.
-`check:published` compares the supported version/peers with npm. Public CI also
+These commands have no dependencies to install. `check:snippets` installs an
+isolated consumer under `.cache/` and compiles the complete onboarding and
+framework files plus all documented SDK named imports against the latest npm
+release. `check:published` compares the supported peers with npm. Public CI also
 typechecks and builds every starter, and checks external links for 404/410.
-Build/dev scripts generate clean Markdown, a manifest, small API sections,
-`llms.txt`, the optional full bundle, and the package license mirror.
+`docs:generate` writes clean Markdown, a manifest, small API sections, `llms.txt`,
+the optional full bundle, and the package license mirror.
 
 To check snippets against a locally built SDK instead of the installed npm
 package, pass its directory:
@@ -121,8 +108,3 @@ examples without changing the starter manifests or installed dependency.
 The long package README examples are retained in `reference/package.md`; npm's
 README stays short and links to that extended reference.
 
-When maintaining the hosted website in an adjacent checkout, run
-`npm run docs:sync` to copy the MDX, version metadata, license, sample bindings,
-reference, and generator into it. Use `npm run docs:sync:check` to detect drift.
-Set `REACT_IMMERSIVE_WEBSITE` to use a different website checkout path. Each
-repository builds independently after synchronization.

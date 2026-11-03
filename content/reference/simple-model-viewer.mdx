@@ -72,6 +72,16 @@ type SimpleModelViewerProps = {
   ambientColor?: string;
   directionalIntensity?: number;
   directionalColor?: string;
+  envIntensity?: number;
+  envRotation?: number;
+  backgroundBlur?: number;
+  toneMapping?: "aces" | "agx" | "neutral" | "none";
+  groundShadow?: boolean;
+  groundShadowOpacity?: number;
+  showFloorGrid?: boolean;
+  wireframe?: boolean;
+  autoRotateSpeed?: number;
+  fov?: number;
   onModelLoaded?: (model: ViewerModelInfo) => void;
   onLoadError?: (error: unknown) => void;
 };
@@ -180,7 +190,7 @@ The following optional props seed the initial values of the scene settings (envi
 
 | Prop                   | Type          | Panel control           | Default     |
 | ---------------------- | ------------- | ----------------------- | ----------- |
-| `backgroundEnabled`    | `boolean`     | Background on/off       | `false`     |
+| `backgroundEnabled`    | `boolean`     | Show as background      | `false`     |
 | `autoRotate`           | `boolean`     | Auto Rotate             | `false`     |
 | `envPreset`            | `PresetsType` | Environment preset      | `"city"`    |
 | `exposure`             | `number`      | Exposure                | `1`         |
@@ -188,6 +198,18 @@ The following optional props seed the initial values of the scene settings (envi
 | `ambientColor`         | `string`      | Ambient Light Color     | `"#ffffff"` |
 | `directionalIntensity` | `number`      | Direct Light Intensity  | `1.2`       |
 | `directionalColor`     | `string`      | Direct Light Color      | `"#ffffff"` |
+| `envIntensity`         | `number`      | Environment Intensity   | `1`         |
+| `envRotation`          | `number`      | Environment Rotation    | `0`         |
+| `backgroundBlur`       | `number`      | Background Blur         | `0`         |
+| `toneMapping`          | `"aces" \| "agx" \| "neutral" \| "none"` | Tone Mapping | `"aces"` |
+| `groundShadow`         | `boolean`     | Ground Shadow           | `false`     |
+| `groundShadowOpacity`  | `number`      | Shadow Opacity          | `0.5`       |
+| `showFloorGrid`        | `boolean`     | Floor Grid              | `false`     |
+| `wireframe`            | `boolean`     | Wireframe               | `false`     |
+| `autoRotateSpeed`      | `number`      | Rotation Speed          | `1`         |
+| `fov`                  | `number`      | Field of View           | `45`        |
+
+The panel also lists the model's objects, triangles, materials and size, and **Reset Settings** returns every control to these starting values.
 
 `envPreset` accepts any `@react-three/drei` `PresetsType` (for example `"city"`, `"sunset"`, `"dawn"`, `"night"`, `"warehouse"`, `"forest"`, `"apartment"`, `"studio"`, `"park"`, `"lobby"`).
 

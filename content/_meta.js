@@ -5,9 +5,10 @@ export default {
   "agent-guide": "AI Agent Guide",
   frameworks: "Framework Setup",
   examples: "Examples",
+  embedding: "Embedding outside React",
   troubleshooting: "Troubleshooting",
   licensing: "Licensing",
-  releases: "Versions and Migration",
+  releases: "Compatibility and Upgrading",
   reference: "API Reference",
   hooks: "Hooks",
 };

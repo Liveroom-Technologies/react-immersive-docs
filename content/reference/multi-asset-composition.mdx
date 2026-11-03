@@ -1,0 +1,161 @@
+---
+title: Multi-asset Composition
+---
+
+# Multi-asset composition
+
+The shared multi-model canvas supports reusable instance
+IDs and whole-asset placement. ModelViewer and BindingBuilder require a valid license.
+
+## Arrange assets in BindingBuilder
+
+Upload a model, then open the left panel's **Assets** tab. **Add model** opens the
+separate-model or merge choice. Each independent asset has its own bindings,
+annotations, saved measurements, variants and animation settings. Select an asset
+in the list to inspect it; canvas object picking still belongs to that active asset.
+
+- Set **Name**, **Visible**, **Position**, **Rotation (°)** and **Scale** for the entire asset.
+- **Snap X/Z to grid** rounds the instance origin to the selected positive grid spacing.
+- **Place on ground** places the transformed bounding box on the shared Y=0 plane.
+- **Frame all assets** frames all visible independent assets with the shared camera.
+- **Duplicate** copies the active asset, node overrides and added-node sources into
+  an independent instance, offset by one grid step on X. Resolver URLs and editing
+  state belong to the copy; removing the original does not revoke its resources.
+- **Delete** in this panel is undoable. At least one asset must remain; the existing
+  **Remove model** flow in the model menu can clear the scene. That older removal flow is permanent.
+
+Undo, Redo and Cmd/Ctrl+Z apply to asset composition after you edit in this tab,
+and the buttons' tooltips say so. **Reset** in the model menu restores asset positions, rotations, scales and grid spacing, while
+keeping membership, names, visibility and object edits; this reset is undoable.
+Placement and duplication history survives switching assets during the session.
+Deleted/undone instances retain source files until the session is cleared, so undo
+can restore them. Local autosave and scene bundles retain the current placements
+and hidden/deleted state; they do not serialize undo stacks.
+
+Placement is outside authored node transforms and General's model rotation. Model
+units are not converted automatically. Rotation in the SDK is XYZ Euler radians;
+the editor displays degrees. Scale components must be finite and nonzero, and may
+be negative for mirroring. Ground placement uses geometry bounds, not collisions
+or a physics simulation. Pause animation before using it. Anchored measurements
+and annotations follow their asset; legacy world-space markers remain fixed.
+Cross-asset object selection and collision-aware placement are outside this feature.
+
+## Save and load the complete scene
+
+Use the **Import** and **Export** menus in the top bar:
+
+- **Complete scene ZIP** includes all assets and edits.
+- **Scene settings JSON / TypeScript** includes scene settings without model files or object bindings.
+- **Object bindings JSON / TypeScript** includes the active model's bindings and available uploaded binding textures.
+
+Import accepts JSON for settings/bindings and ZIP for a complete scene; TypeScript
+is an export format. **Import → Complete scene ZIP** is also available before any
+model is loaded. The Assets tab contains placement controls.
+
+- **Export → Complete scene ZIP** downloads `scene.ri.zip` with a versioned manifest, original
+  uploaded model files (including uploaded ZIPs), added sources, uploaded textures,
+  bindings, placements, model ordering and scene settings.
+- **Import → Complete scene ZIP** validates the bundle and replaces the current session. It uses
+  fresh resolver URLs while keeping persistent instance identities. Imported files
+  are included in subsequent browser autosaves.
+
+Remote model and texture URLs remain references. A bundle is self-contained when
+all its dependencies were uploaded or embedded in those uploads; it does not
+crawl remote models or their sidecars. Remote assets must remain accessible at their
+original URLs. Local uploaded images are included; a missing uploaded model file
+fails the save instead of silently producing an incomplete archive.
+
+Limits are 512 MiB compressed/expanded bundle data, 5 MiB manifest JSON, 1,024 ZIP
+entries and 256 independent instances. Existing format-specific model ZIP limits
+still apply when the files are loaded. Bundles are editable scene snapshots;
+**Download → GLB** remains the flattened geometry export with visible placements.
+Scene settings JSON and object-bindings exports retain their existing narrow scope.
+
+## Reuse one model URL through the SDK
+
+```tsx filename="ComposedRoom.tsx"
+"use client";
+import {
+  ModelViewer,
+  useViewerModels,
+  snapAssetToGrid,
+  type ModelViewerModelEntry,
+} from "@liveroom-tech/react-immersive";
+
+const initial: ModelViewerModelEntry[] = [
+  {
+    id: "table-a",
+    url: "/table.glb",
+    label: "Table A",
+    objectBindings: {},
+    transform: { position: [-2, 0, 0] },
+  },
+  {
+    id: "table-b",
+    url: "/table.glb",
+    label: "Table B",
+    objectBindings: {},
+    transform: { position: [2, 0, 0], rotation: [0, Math.PI / 2, 0] },
+  },
+];
+
+export function ComposedRoom({ licenseKey }: { licenseKey: string }) {
+  const viewer = useViewerModels(initial);
+  const active = viewer.models.find(
+    (entry) => entry.id === viewer.activeModelId,
+  );
+  return (
+    <>
+      <div style={{ height: 600 }}>
+        <ModelViewer {...viewer} licenseKey={licenseKey} />
+      </div>
+      <button onClick={() => viewer.duplicateModel(viewer.activeModelId)}>
+        Duplicate
+      </button>
+      <button onClick={() => viewer.removeModel(viewer.activeModelId)}>
+        Remove
+      </button>
+      <button
+        disabled={!active}
+        onClick={() => {
+          if (active)
+            viewer.updateModelTransform(
+              viewer.activeModelId,
+              snapAssetToGrid(active.transform ?? {}, 0.5),
+            );
+        }}
+      >
+        Snap to grid
+      </button>
+    </>
+  );
+}
+```
+
+`ModelViewerModelEntry` adds optional `id`, `transform: AssetTransform` and `visible`.
+Every entry needs a unique identity (`id ?? url`). Explicit IDs allow repeated URLs.
+Pass the active source as `modelUrl` and its ID as `activeModelId`; handle
+`onActiveModelChange(id)` for the switcher. Without explicit IDs, existing unique-URL
+integrations and `onModelChange(url)` keep working. Per-model callbacks
+`onExtraModelLoaded`, `onExtraModelError` and `onModelAnimationsReady` identify an
+entry by `id ?? url` in this mode. Merged-source callbacks still identify source URLs.
+Node IDs stay local to an instance: qualify external references by instance ID and
+node ID together. Loaded scenes, materials, animation mixers, bindings and camera
+homes remain isolated between instances sharing a source URL.
+
+`useViewerModels` owns the active instance's bindings and scene configuration.
+It adds `addModel(entry): string`, `duplicateModel(id): string | null`,
+`removeModel(id)` and `updateModelTransform(id, transform)`. Duplicating returns the
+new ID without changing the active selection. Removing the active instance selects
+a surviving entry, or empties the viewer when none remain. Applications own undo
+and persistence for this hook. Do not mutate a returned entry directly.
+
+Full configuration JSON/sharing retains IDs, active ID, transforms and visibility.
+Uploaded model bytes still require the editor's scene bundle or durable model URLs
+when using the configuration-sharing API.
+
+`AssetTransform` is exported from the main package and `/utils`, with optional
+`position`, `rotation`, `scale` three-number tuples. Both entries also export
+`parseAssetTransform`, `snapAssetToGrid` and `groundAsset`. The latter accepts a
+transform plus `{ min: [x,y,z], max: [x,y,z] }` bounds in coordinates before the
+instance placement, and returns a transform whose lowest bound is on Y=0.

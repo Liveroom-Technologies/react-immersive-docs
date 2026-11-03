@@ -12,12 +12,12 @@ The primary exported component. Renders a GLB, GLTF, OBJ, FBX, USDZ, STL, or PLY
 
 `preset` sets `ModelViewer` up for a common kind of page:
 
-| Preset | For | What it sets |
-| --- | --- | --- |
-| `minimal` | Just the model | Hides both panels, the download and reset buttons, tour controls, and the material variant buttons |
-| `showcase` | A product on display | Everything `minimal` does, plus auto-rotation |
+| Preset         | For                      | What it sets                                                                                                                      |
+| -------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `minimal`      | Just the model           | Hides both panels, the download and reset buttons, tour controls, and the material variant buttons                                |
+| `showcase`     | A product on display     | Everything `minimal` does, plus auto-rotation                                                                                     |
 | `configurator` | Customers changing parts | Shows the selected object's panel, the reset button, and the material variant buttons; hides the scene objects panel and download |
-| `inspector` | Checking a model | Every panel, the view gizmo, the measure, UV checker, exploded-view, section-cut, and isolate tools, and keyboard navigation |
+| `inspector`    | Checking a model         | Every panel, the view gizmo, the measure, UV checker, exploded-view, section-cut, and isolate tools, and keyboard navigation      |
 
 `MODEL_VIEWER_PRESETS` lists exactly which props each preset sets.
 
@@ -37,15 +37,15 @@ readable:
 />
 ```
 
-| Group | Fields, and the flat prop each one sets |
-| --- | --- |
-| `ui` | `objectPanel` (`showObjectBindingDataPanel`), `sceneObjects` (`showSceneObjectsPanel`), `download` (`showDownloadButton`; a string also sets `downloadFilename`), `reset` (`showResetButton`), `fullscreen` (`showFullscreenButton`), `loadingOverlay` (`showLoadingOverlay`), `viewGizmo` (`showViewGizmo`), `mouseController` (`showMouseController`; `{ position, opacity }` also sets `mouseControllerPosition` and `mouseControllerOpacity`), `annotationNavigation` (`showAnnotationNavigation`), `annotationOnHover` (`showAnnotationOnHover`), `annotationFilters` (`showAnnotationFilters`), `highlightOnHover`, `materialVariants` (`showMaterialVariants`), `objectNavigator` (`showObjectNavigator`) |
-| `tools` | `measure` (`showMeasureTools`; `{ unit }` also sets `measurementUnit`), `uvChecker` (`showUvCheckerButton`), `explode` (`showExplodeControls`), `section` (`showSectionTools`), `isolate` (`showIsolateControls`), `texturePositioning` (`texturePositioning`) |
-| `controls` | `enabled` (`enableCameraControls`), `keyboard` (`enableKeyboardNavigation`), `zoom` (the opposite of `disableZoom`), `zoomOnSelect` (`zoomOnSelected`), `autoRotate` (a number also sets `autoRotateSpeed`), `refitOnResize`, `limits` (`cameraLimits`), `moveSensitivity`, `zoomSensitivity`, `reducedMotion` |
-| `perf` | `renderMode`, `maxDpr`, `profile` (`performanceProfile`), `preserveDrawingBuffer`, `webgpu` |
-| `tiles` | `url` (`tilesetUrl`), `errorTarget` (`tilesErrorTarget`), `cacheSize` (`tilesCacheSize`) |
-| `xr` | `enabled` (`enableXR`), `usdzUrl`, `scaleMode` (`arScaleMode`), `mobileHandoffUrl` |
-| `decoders` | `draco` (`dracoDecoderPath`), `ktx2` (`ktx2TranscoderPath`), `meshopt` |
+| Group      | Fields, and the flat prop each one sets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ui`       | `objectPanel` (`showObjectBindingDataPanel`), `sceneObjects` (`showSceneObjectsPanel`), `download` (`showDownloadButton`; a string also sets `downloadFilename`), `reset` (`showResetButton`), `fullscreen` (`showFullscreenButton`), `loadingOverlay` (`showLoadingOverlay`), `viewGizmo` (`showViewGizmo`), `mouseController` (`showMouseController`; `{ position, opacity }` also sets `mouseControllerPosition` and `mouseControllerOpacity`), `annotationNavigation` (`showAnnotationNavigation`), `annotationOnHover` (`showAnnotationOnHover`), `annotationFilters` (`showAnnotationFilters`), `highlightOnHover`, `materialVariants` (`showMaterialVariants`), `objectNavigator` (`showObjectNavigator`) |
+| `tools`    | `measure` (`showMeasureTools`; `{ unit }` also sets `measurementUnit`), `uvChecker` (`showUvCheckerButton`), `explode` (`showExplodeControls`), `section` (`showSectionTools`), `sequences` (`showSequenceControls`), `isolate` (`showIsolateControls`), `texturePositioning` (`texturePositioning`)                                                                                                                                                                                                                                                                                                                                                                                            |
+| `controls` | `enabled` (`enableCameraControls`), `keyboard` (`enableKeyboardNavigation`), `zoom` (the opposite of `disableZoom`), `zoomOnSelect` (`zoomOnSelected`), `autoRotate` (a number also sets `autoRotateSpeed`), `refitOnResize`, `limits` (`cameraLimits`), `moveSensitivity`, `zoomSensitivity`, `reducedMotion`                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `perf`     | `renderMode`, `maxDpr`, `profile` (`performanceProfile`), `preserveDrawingBuffer`, `webgpu`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `tiles`    | `url` (`tilesetUrl`), `errorTarget` (`tilesErrorTarget`), `cacheSize` (`tilesCacheSize`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `xr`       | `enabled` (`enableXR`), `usdzUrl`, `scaleMode` (`arScaleMode`), `mobileHandoffUrl`, `arHandoff`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `decoders` | `draco` (`dracoDecoderPath`), `ktx2` (`ktx2TranscoderPath`), `meshopt`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 A preset only fills in defaults: a flat prop overrides it, and a grouped prop
 overrides both. The flat props keep working exactly as before.
@@ -66,11 +66,14 @@ type Props = {
   models?: ModelViewerModelEntry[];
   onModelChange?: (url: string) => void;
   mergeModels?: ModelMergeSource[];
-  originalNodePoses?: Record<string, {
-    position: [number, number, number];
-    rotation?: [number, number, number];
-    scale?: [number, number, number];
-  }>;
+  originalNodePoses?: Record<
+    string,
+    {
+      position: [number, number, number];
+      rotation?: [number, number, number];
+      scale?: [number, number, number];
+    }
+  >;
   extraModelUrls?: string[];
   onExtraModelLoaded?: (url: string, scene: Object3D) => void;
   onExtraModelError?: (url: string, error: unknown) => void;
@@ -97,7 +100,8 @@ type Props = {
   onObjectHover?: (binding: ObjectBinding | null) => void;
   onObjectDoubleClick?: (event: ObjectPointerEvent) => boolean | void;
   onDecalDoubleClick?: (binding: ObjectBinding, decalId: string) => void;
-  decalMove?: { // controlled surface drag
+  decalMove?: {
+    // controlled surface drag
     objectId: string;
     decal: ObjectBindingDecal;
     onCommit: (surface: ObjectSurfacePoint) => void;
@@ -108,9 +112,7 @@ type Props = {
   onLoadError?: (error: unknown) => void;
   onProgress?: (event: ProgressEvent) => void;
   cameraControllerType?: "orbit" | "pointerLock";
-  onCameraControllerChange?: (
-    controller: "orbit" | "pointerLock",
-  ) => void;
+  onCameraControllerChange?: (controller: "orbit" | "pointerLock") => void;
   onAction?: (event: ObjectActionEvent) => void;
   onEngagement?: (event: ViewerEngagementEvent) => void | Promise<void>;
   debugEngagement?: boolean;
@@ -120,6 +122,9 @@ type Props = {
   onTextureUpload?: (file: File, objectId: string) => Promise<string>;
   texturePositioning?: boolean | TexturePositioningControls;
   onAnimationsReady?: (controls: AnimationControls) => void;
+  onSequencesReady?: (controls: SequenceControls | null) => void;
+  showSequenceControls?: boolean;
+  sequenceAutoPlay?: boolean;
   onModelAnimationsReady?: (url: string, controls: AnimationControls) => void;
   onAnnotationsChange?: (annotations: AnnotationMarker[]) => void;
   activeAnnotation?: AnnotationMarker | null;
@@ -184,13 +189,20 @@ type Props = {
   isolation?: ViewerIsolation | null;
   onIsolationChange?: (isolation: ViewerIsolation | null) => void;
   showIsolateControls?: boolean;
+  productOptions?: boolean | ViewerProductOptions;
   showMaterialVariants?: boolean;
   cinematic?: boolean | CinematicConfig;
   measurementUnit?: string;
+  measurementSettings?: MeasurementSettings;
+  onMeasurementSettingsChange?: (settings: MeasurementSettings) => void;
+  measurements?: SavedMeasurement[];
+  onMeasurementsChange?: (items: SavedMeasurement[]) => void;
+  measurementModelId?: string;
   enableXR?: boolean;
   usdzUrl?: string;
   arScaleMode?: "normalized" | "real-world";
   mobileHandoffUrl?: string;
+  arHandoff?: boolean | ARHandoffOptions;
   showAnnotationNavigation?: boolean;
   showAnnotationOnHover?: boolean;
   onSceneConfigChange?: (config: SceneConfig) => void;
@@ -316,8 +328,8 @@ animations.
 - **Units and orientation:** STL files are usually in millimetres with Z up, so a
   part can load lying on its back. Turn it upright with
   [`sceneConfig.model.rotation`](#sceneconfig) (BindingBuilder: **Scene** →
-  model rotation, −90° on X), and set [`measurementUnit`](#measurementunit) to
-  `"mm"`. In AR, the default `"normalized"` [`arScaleMode`](#arscalemode) fits the
+  model rotation, −90° on X), and set `measurementSettings` to
+  `{ sourceUnit: "mm", displayUnit: "mm" }`. In AR, the default `"normalized"` [`arScaleMode`](#arscalemode) fits the
   model to a metre; `"real-world"` would read millimetres as metres.
 - **PLY point clouds** (points with no faces) can't be shown; the viewer
   explains why instead of loading them.
@@ -394,7 +406,7 @@ and the viewer logs the duplicate-name mapping to the console.
 | `visible`                                     | Controls mesh visibility                                                      |
 | `style.material.baseColor`                    | Sets mesh color (committed by the built-in color picker on close)             |
 | `style.material.texture.path`                 | Sets the base color (albedo) texture                                          |
-| `style.material.*`                            | Per-object `MeshPhysicalMaterial` overrides, see below                       |
+| `style.material.*`                            | Per-object `MeshPhysicalMaterial` overrides, see below                        |
 | `cameraState.position` / `cameraState.target` | Camera view to use when this object is focused or selected from the viewer UI |
 
 All visual overrides live under `style.material` (an `ObjectBindingMaterial`).
@@ -526,7 +538,10 @@ import {
 } from "@liveroom-tech/react-immersive";
 import "@liveroom-tech/react-immersive/styles.css";
 
-export default function MultiModelViewer({ licenseKey, initialModels }: {
+export default function MultiModelViewer({
+  licenseKey,
+  initialModels,
+}: {
   licenseKey: string;
   initialModels: ModelViewerModelEntry[];
 }) {
@@ -534,35 +549,53 @@ export default function MultiModelViewer({ licenseKey, initialModels }: {
   const [keys, setKeys] = useState<string[]>([]);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const controls = useRef(new Map<string, AnimationControls>());
-  const registerAnimations = useCallback((url: string, next: AnimationControls) => {
-    controls.current.set(url, next);
-  }, []);
+  const registerAnimations = useCallback(
+    (url: string, next: AnimationControls) => {
+      controls.current.set(url, next);
+    },
+    [],
+  );
   const active = viewer.models.find((model) => model.url === viewer.modelUrl);
   const bindings = active?.objectBindings ?? {};
 
   const select = (binding: ObjectBinding | null) => {
-    if (!binding) { setKeys([]); setActiveKey(null); return; }
+    if (!binding) {
+      setKeys([]);
+      setActiveKey(null);
+      return;
+    }
     const key = Object.keys(bindings).find(
-      (candidate) => bindings[candidate].modelObjectId === binding.modelObjectId,
+      (candidate) =>
+        bindings[candidate].modelObjectId === binding.modelObjectId,
     );
     if (!key) return;
-    const next = keys.includes(key) ? keys.filter((item) => item !== key) : [...keys, key];
+    const next = keys.includes(key)
+      ? keys.filter((item) => item !== key)
+      : [...keys, key];
     setKeys(next);
     setActiveKey(next.includes(key) ? key : (next.at(-1) ?? null));
   };
 
   return (
     <div>
-      <button onClick={() => {
-        for (const model of viewer.models) {
-          const animation = controls.current.get(model.url);
-          const clip = animation?.clips[0];
-          if (clip) animation?.play(clip);
-        }
-      }}>Play first clip on each model</button>
-      <button onClick={() => {
-        for (const animation of controls.current.values()) animation.pause();
-      }}>Pause all</button>
+      <button
+        onClick={() => {
+          for (const model of viewer.models) {
+            const animation = controls.current.get(model.url);
+            const clip = animation?.clips[0];
+            if (clip) animation?.play(clip);
+          }
+        }}
+      >
+        Play first clip on each model
+      </button>
+      <button
+        onClick={() => {
+          for (const animation of controls.current.values()) animation.pause();
+        }}
+      >
+        Pause all
+      </button>
       <button onClick={() => select(null)}>Clear selection</button>
       <div style={{ height: 600 }}>
         <ModelViewer
@@ -574,7 +607,7 @@ export default function MultiModelViewer({ licenseKey, initialModels }: {
             setActiveKey(null);
             viewer.onModelChange(url);
           }}
-          selectedObject={activeKey ? bindings[activeKey] ?? null : null}
+          selectedObject={activeKey ? (bindings[activeKey] ?? null) : null}
           multiSelectedKeys={keys}
           onObjectSelect={select}
           onModelAnimationsReady={registerAnimations}
@@ -817,7 +850,10 @@ Both are disabled by default. The viewer does not send telemetry or persist
 analytics identifiers; your callback decides where events go.
 
 ```tsx
-import { ModelViewer, type ViewerEngagementEvent } from "@liveroom-tech/react-immersive";
+import {
+  ModelViewer,
+  type ViewerEngagementEvent,
+} from "@liveroom-tech/react-immersive";
 
 function handleEngagement(event: ViewerEngagementEvent) {
   if (event.type === "part-viewed") {
@@ -834,7 +870,7 @@ function handleEngagement(event: ViewerEngagementEvent) {
   licenseKey={licenseKey}
   onEngagement={handleEngagement}
   debugEngagement
-/>
+/>;
 ```
 
 Every event includes `sessionId` (an ephemeral ID for this viewer/model),
@@ -842,16 +878,16 @@ Every event includes `sessionId` (an ephemeral ID for this viewer/model),
 Durations use a monotonic clock and are expressed in milliseconds. Session
 elapsed time includes loading and background time; it is not an attention metric.
 
-| Event `type` | Details and trigger |
-| --- | --- |
-| `part-viewed` | `objectId`, `objectKey`, optional `label`, and `source` (`"canvas"`, `"panel"`, or `"keyboard"`). Selecting/focusing a different part; reselecting the current part is ignored. |
-| `variant-chosen` | `variant`, `previousVariant` (names, or `null` for the default), and `group` (the option group's name, or `null`). Choosing or clearing a built-in material variant; `previousVariant` is the earlier choice in the same group. |
-| `ar-started` | A confirmed immersive WebXR AR session begins. |
-| `ar-ended` | `durationMs` and `reason` (`"session-ended"` or `"interrupted"`). A confirmed AR session ends, or tracking stops on model change, unmount, or context loss. |
-| `ar-launch-requested` | `channel` (`"quick-look"` or `"mobile-handoff"`). Opening external AR or its QR handoff; this does not claim an AR session started. |
-| `tour-started` | `annotationCount`. Starting the guided tour. |
-| `tour-completed` | `annotationCount` and `durationMs`. Advancing past its final annotation; emitted once per completed tour. |
-| `tour-stopped` | `annotationCount`, `durationMs`, and `reason` (`"stopped"`, `"restarted"`, `"annotations-changed"`, or `"interrupted"`). Leaving a tour before completion. |
+| Event `type`          | Details and trigger                                                                                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `part-viewed`         | `objectId`, `objectKey`, optional `label`, and `source` (`"canvas"`, `"panel"`, or `"keyboard"`). Selecting/focusing a different part; reselecting the current part is ignored.                                                 |
+| `variant-chosen`      | `variant`, `previousVariant` (names, or `null` for the default), and `group` (the option group's name, or `null`). Choosing or clearing a built-in material variant; `previousVariant` is the earlier choice in the same group. |
+| `ar-started`          | A confirmed immersive WebXR AR session begins.                                                                                                                                                                                  |
+| `ar-ended`            | `durationMs` and `reason` (`"session-ended"` or `"interrupted"`). A confirmed AR session ends, or tracking stops on model change, unmount, or context loss.                                                                     |
+| `ar-launch-requested` | `channel` (`"quick-look"` or `"mobile-handoff"`). Opening external AR or its QR handoff; this does not claim an AR session started.                                                                                             |
+| `tour-started`        | `annotationCount`. Starting the guided tour.                                                                                                                                                                                    |
+| `tour-completed`      | `annotationCount` and `durationMs`. Advancing past its final annotation; emitted once per completed tour.                                                                                                                       |
+| `tour-stopped`        | `annotationCount`, `durationMs`, and `reason` (`"stopped"`, `"restarted"`, `"annotations-changed"`, or `"interrupted"`). Leaving a tour before completion.                                                                      |
 
 Hover, camera motion, renders, and externally supplied selection/variant updates
 do not create engagement events. WebXR duration measures the session interval;
@@ -877,6 +913,7 @@ type ViewerReadyState = {
   objectBindings: Record<string, ObjectBinding>;
   homeCameraState: { position: Vec3; target: Vec3 } | null;
   captureImage: (options?: CaptureImageOptions) => Promise<string>;
+  isLoadingTiles: () => boolean;
   captureVideo: (options?: CaptureVideoOptions) => Promise<Blob>;
   invalidate: () => void;
   rendererBackend: "webgl" | "webgpu"; // which renderer draws; see `webgpu`
@@ -891,15 +928,21 @@ type CaptureImageOptions = {
   width?: number;
   height?: number;
   transparent?: boolean;
+  type?: "image/png" | "image/jpeg";
+  quality?: number;
 };
 ```
+
+`isLoadingTiles` says whether a streamed model is still fetching tiles for the current view.
 
 `raw` holds the live three.js scene, the camera-controls instance, and the
 model's nodes, for integrations the rest of the API doesn't cover. You don't
 need it for anything the hooks and props already do, and its shapes are those
 libraries' own, so they can change when those libraries do.
 
-`captureImage` requires the opt-in `preserveDrawingBuffer` prop (not needed with [`webgpu`](#webgpu)), forces a render, and resolves with a `data:image/png` URL of the canvas. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG has an alpha channel. It rejects if called before the viewer is ready or when framebuffer preservation is disabled.
+Captured images leave out the view gizmo, and any other on-screen helpers.
+
+`captureImage` requires the opt-in `preserveDrawingBuffer` prop (not needed with [`webgpu`](#webgpu)), forces a render, and resolves with an image data URL of the canvas, PNG by default. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG has an alpha channel. Pass `type: "image/jpeg"` and a `quality` from 0 to 1 for a faster encode with no alpha channel. It rejects if called before the viewer is ready or when framebuffer preservation is disabled.
 
 ```tsx
 <ModelViewer
@@ -911,7 +954,7 @@ libraries' own, so they can change when those libraries do.
         // upload, preview, etc.
       });
   }}
-/>;
+/>
 ```
 
 For turning the current camera/visibility/selection into a shareable link, see [`useShareableViewerState`](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state).
@@ -927,7 +970,10 @@ finished loading and framing; ready-state callbacks run repeatedly as the camera
 moves and should not start recordings automatically.
 
 ```tsx
-import { ModelViewer, useViewerConnection } from "@liveroom-tech/react-immersive";
+import {
+  ModelViewer,
+  useViewerConnection,
+} from "@liveroom-tech/react-immersive";
 
 const connection = useViewerConnection();
 const abort = new AbortController();
@@ -942,8 +988,8 @@ const abort = new AbortController();
 // Run in a button handler after loading and framing have finished.
 const clip = await connection.captureVideo({
   mode: "turntable", // or "cinematic" to record the enabled camera path
-  format: "auto",    // prefers WebM; falls back to MP4. "gif" for an animated GIF
-  duration: 12,      // seconds; defaults to path timing or a 24-second orbit
+  format: "auto", // prefers WebM; falls back to MP4. "gif" for an animated GIF
+  duration: 12, // seconds; defaults to path timing or a 24-second orbit
   fps: 30,
   videoBitsPerSecond: 8_000_000,
   signal: abort.signal,
@@ -1052,7 +1098,11 @@ drag to move the texture, scroll to scale it, and click the canvas or
 **Done positioning** to finish.
 
 ```tsx
-<ModelViewer modelUrl="/sofa.glb" licenseKey="your-license-key" texturePositioning />
+<ModelViewer
+  modelUrl="/sofa.glb"
+  licenseKey="your-license-key"
+  texturePositioning
+/>
 ```
 
 Changes are written to the binding's `style.material.texture` (`offset`,
@@ -1075,6 +1125,19 @@ type TexturePositioningControls = {
 
 `onOffsetChange` and `onRotationChange` replace the viewer's writes from the
 panel fields; dragging and scrolling on the canvas still write to the binding.
+
+---
+
+### `onSequencesReady`, `showSequenceControls`, `sequenceAutoPlay`
+
+`sceneConfig.sequences` contains authored object, appearance,
+visibility, camera and clip keyframes. `onSequencesReady` receives their
+`SequenceControls`, or null when the model disconnects. `showSequenceControls`
+defaults true and shows a compact player when sequences exist;
+`tools={{ sequences: false }}` hides it. `sequenceAutoPlay` defaults true and
+honors a sequence's autoplay flag after loading, unless reduced motion is active.
+See [Visual sequence authoring](https://react-immersive.liveroom.dev/docs/reference/visual-sequences)
+and [useViewerSequences](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-sequences).
 
 ---
 
@@ -1134,8 +1197,19 @@ const sceneConfig = patchSceneConfig(DEFAULT_SCENE_CONFIG, {
   lighting: {
     ambient: { intensity: 0.5 },
     lights: [
-      sceneLight({ id: "key", type: "directional", position: [4, 8, 4], intensity: 1.6, castShadow: true }),
-      sceneLight({ id: "fill", type: "point", position: [-3, 3, 2], intensity: 0.8 }),
+      sceneLight({
+        id: "key",
+        type: "directional",
+        position: [4, 8, 4],
+        intensity: 1.6,
+        castShadow: true,
+      }),
+      sceneLight({
+        id: "fill",
+        type: "point",
+        position: [-3, 3, 2],
+        intensity: 0.8,
+      }),
     ],
   },
 });
@@ -1155,13 +1229,18 @@ const viewer = useViewer({ sceneConfig });
 
 viewer.scene.lights.setIntensity("key", 2.2);
 viewer.scene.lights.toggle("fill");
-viewer.scene.lights.add({ id: "bulb", type: "point", color: "#ffd27d", intensity: 4 });
+viewer.scene.lights.add({
+  id: "bulb",
+  type: "point",
+  color: "#ffd27d",
+  intensity: 4,
+});
 viewer.scene.lights.attach("bulb", { objectId: "Lamp", offset: [0, 1.4, 0] });
 ```
 
 An attached light follows the object, offset from the object's origin in its
 local space (the origin is often at its base, not its center). Lighting set up
-in `BindingBuilder`'s Scene tab exports as the same `sceneConfig`.
+in `BindingBuilder`'s scene inspector exports as the same `sceneConfig`.
 
 ---
 
@@ -1183,7 +1262,11 @@ const viewer = useViewer({
         target: { group: "pumps" },
         colorScale: {
           metric: "temperature",
-          stops: [[18, "#3b82f6"], [24, "#22c55e"], [32, "#ef4444"]],
+          stops: [
+            [18, "#3b82f6"],
+            [24, "#22c55e"],
+            [32, "#ef4444"],
+          ],
         },
       },
       {
@@ -1193,17 +1276,26 @@ const viewer = useViewer({
       },
       {
         id: "alarm",
-        when: [{ metric: "temperature", above: 32 }, { metadata: "alarm.acknowledged", equals: false }],
+        when: [
+          { metric: "temperature", above: 32 },
+          { metadata: "alarm.acknowledged", equals: false },
+        ],
         pulse: { color: "#ff3b30", speed: 1.5 },
       },
     ],
   },
 });
 
-<ModelViewer modelUrl="/plant.glb" licenseKey="your-license-key" {...viewer.props} />;
+<ModelViewer
+  modelUrl="/plant.glb"
+  licenseKey="your-license-key"
+  {...viewer.props}
+/>;
 
 // Live data: update the bindings and the looks follow.
-viewer.bindings.updateObjectBindings("pump-3", { metrics: { temperature: 34 } });
+viewer.bindings.updateObjectBindings("pump-3", {
+  metrics: { temperature: 34 },
+});
 viewer.bindings.updateObjectBindings("valve-1", { status: "disabled" });
 ```
 
@@ -1230,7 +1322,7 @@ viewer.bindings.updateObjectBindings("valve-1", { status: "disabled" });
 - The pulse isn't drawn on streamed 3D Tiles models (`tilesetUrl`); the other
   looks are.
 
-BindingBuilder's Scene tab has a **Rules** sub-tab for building these rules
+BindingBuilder has a **Scene → Rules** tab for building these rules
 visually. It suggests your groups, tags, types, metric names, and metadata
 keys, shows how many objects each rule matches right now, and previews the
 result live. Rules export and import with the rest of `sceneConfig`.
@@ -1296,8 +1388,8 @@ When `true`, the canvas renders soft shadows: the default light rig casts a dire
   excluded from **casting** shadows (it still **receives** them). Without this,
   a closed shell would block a top-down light and seal the interior in darkness.
   Furniture and decor then cast realistic contact shadows onto the floor. Pass a
-  your own lights in `sceneConfig.lighting` (see [Lighting](#lighting)) to replace
-  the default rig.
+  your own lights in `sceneConfig.lighting` (see [Lighting](#lighting)) to
+  replace the default rig.
 </Callout>
 
 ---
@@ -1511,10 +1603,7 @@ type CameraLimits = {
   maxPolarAngle?: number; // degrees, default 180
   minAzimuthAngle?: number; // degrees, default -Infinity
   maxAzimuthAngle?: number; // degrees, default Infinity
-  panBoundary?: [
-    min: [number, number, number],
-    max: [number, number, number],
-  ];
+  panBoundary?: [min: [number, number, number], max: [number, number, number]];
   boundaryEnclosesCamera?: boolean; // default false
   boundaryFriction?: number; // default 0
 };
@@ -1731,7 +1820,7 @@ const [controller, setController] = useState<"orbit" | "pointerLock">("orbit");
   {...props}
   cameraControllerType={controller}
   onCameraControllerChange={setController}
-/>
+/>;
 ```
 
 Auto-rotation pauses while pointer-lock mode is active.
@@ -1924,7 +2013,6 @@ type AnnotationMarker = SceneAnnotationMarker;
 
 ---
 
-
 ### Rich annotations
 
 Annotations can include a saved camera view, images, links, a category, and
@@ -1938,26 +2026,32 @@ views stay fixed while the model animates. Clearing the saved view in
 BindingBuilder restores automatic framing.
 
 ```tsx
-import { ModelViewer, DEFAULT_SCENE_CONFIG, type SceneConfig } from "@liveroom-tech/react-immersive";
+import {
+  ModelViewer,
+  DEFAULT_SCENE_CONFIG,
+  type SceneConfig,
+} from "@liveroom-tech/react-immersive";
 
 const sceneConfig: SceneConfig = {
   ...DEFAULT_SCENE_CONFIG,
-  annotations: [{
-    id: 1,
-    title: "Replaceable filter",
-    description: "Open this panel to access the filter.",
-    worldPosition: [0, 1, 0],
-    localPosition: [0, 1, 0],
-    cameraView: { position: [2, 2, 4], target: [0, 1, 0], fov: 45, zoom: 1 },
-    images: [{ src: "/images/filter.jpg", alt: "Filter compartment" }],
-    links: [{ href: "https://example.com/manual", label: "Read the manual" }],
-    category: "Maintenance",
-    minDistance: 0.5,
-    maxDistance: 12,
-  }],
+  annotations: [
+    {
+      id: 1,
+      title: "Replaceable filter",
+      description: "Open this panel to access the filter.",
+      worldPosition: [0, 1, 0],
+      localPosition: [0, 1, 0],
+      cameraView: { position: [2, 2, 4], target: [0, 1, 0], fov: 45, zoom: 1 },
+      images: [{ src: "/images/filter.jpg", alt: "Filter compartment" }],
+      links: [{ href: "https://example.com/manual", label: "Read the manual" }],
+      category: "Maintenance",
+      minDistance: 0.5,
+      maxDistance: 12,
+    },
+  ],
 };
 
-<ModelViewer {...props} sceneConfig={sceneConfig} />
+<ModelViewer {...props} sceneConfig={sceneConfig} />;
 ```
 
 Images and links accept HTTP(S) URLs and relative paths. Executable URL schemes
@@ -1986,7 +2080,7 @@ const [categories, setCategories] = useState<string[] | null>(null);
   annotationCategories={categories}
   onAnnotationCategoriesChange={setCategories}
   ui={{ annotationFilters: true }}
-/>
+/>;
 ```
 
 - `null` shows all categories. An empty array hides all annotations.
@@ -2246,6 +2340,8 @@ dimensions overlay. Start measuring, then choose a tool:
 - **Point to plane:** pick a reference face, then a point. The tool highlights
   the picked triangle and shows the shortest distance to its infinite plane,
   with a perpendicular segment to the projected point.
+- **Circumference (Edge) / Circumference (Horizontal):** trace a closed cross-section around a surface
+  and read its perimeter. The horizontal variant uses a horizontal plane.
 
 **No snapping** keeps picks on the surface. **Snap: vertex**, **Snap: edge**,
 and **Snap: auto** snap within 12 CSS pixels to vertices or triangle edges on
@@ -2256,8 +2352,9 @@ edges can also be snap targets.
 
 Undo removes the last pick; Clear removes the current measurement. Switching
 tools clears picks. A new pick after a completed angle, area, or point-to-plane
-measurement starts another measurement. Picks are snapshots in world space;
-model changes, display rotation, and binding transforms clear them. Pause
+measurement starts another measurement. Unsaved picks are snapshots in world
+space; model changes, display rotation, and binding transforms clear them. Saved
+measurements retain their anchors as described below. Pause
 animated models before measuring a pose. Hidden objects, decals, and editor
 helpers are excluded from picking.
 
@@ -2275,10 +2372,97 @@ Default: `false`.
 
 ### `measurementUnit`
 
-Unit suffix for distance and dimension readouts; area uses its squared form
-(for example `m²`). Angles always use degrees. This only changes the label:
-values are not converted. glTF models use meters by specification.
-Default: `"m"`.
+Default display unit for distance and dimension readouts; area uses its squared
+form (for example `m²`). `m`, `cm`, `mm`, `in`, and `ft`
+convert from the configured source units or calibration. A custom suffix keeps
+legacy raw-value behavior. Angles always use degrees. Default: `"m"`.
+
+### Calibrated and saved measurements
+
+Open **Saved measurements** or start measuring to configure **Model units** and
+**Display units**. Supported units are meters, centimeters, millimeters, inches,
+and feet. Source units default to meters, as specified by glTF. For a model
+authored in millimeters, set `sourceUnit: "mm"`; changing only its label no
+longer describes its scale correctly. Lengths convert linearly, areas use the
+squared conversion, and angles remain in degrees.
+
+To calibrate a model with unknown scale, use Distance to pick exactly two
+points whose real separation you know. Enter that distance and its unit, then
+click **Calibrate**. The resulting `metersPerUnit` overrides the source unit for
+all measurements and bounding dimensions. **Reset calibration** returns to the
+source unit. Selecting another source unit also clears calibration.
+
+Enter a name and click **Save measurement** after completing a measurement.
+The library supports multiple records with visibility, rename, and delete
+controls. Starting another measurement or clearing its draft keeps saved
+records. Calibration and records are stored in `sceneConfig.measurements`:
+
+```tsx filename="MeasuredViewer.tsx"
+"use client";
+
+import {
+  DEFAULT_SCENE_CONFIG,
+  ModelViewer,
+  useViewer,
+} from "@liveroom-tech/react-immersive";
+
+export function MeasuredViewer({ licenseKey }: { licenseKey: string }) {
+  const viewer = useViewer({
+    sceneConfig: {
+      ...DEFAULT_SCENE_CONFIG,
+      measurements: {
+        settings: { sourceUnit: "mm", displayUnit: "m" },
+        items: [],
+      },
+    },
+  });
+
+  return (
+    <ModelViewer
+      {...viewer.props}
+      modelUrl="/assembly.glb"
+      measurementModelId="assembly-v1"
+      licenseKey={licenseKey}
+      showMeasureTools
+    />
+  );
+}
+```
+
+`useViewer` captures edits through `onSceneConfigChange`. Save its scene config
+in your application or include it in a
+[shareable configuration](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state).
+Without a callback, edits remain local to the mounted viewer. To own the
+collection separately, supply `measurements` with `onMeasurementsChange` and
+`measurementSettings` with `onMeasurementSettingsChange`; these override the
+corresponding scene-config fields. Controlled fields without callbacks are
+read-only in the toolbar.
+
+`measurementModelId` identifies the geometry revision. It defaults to the
+canonical model URL. Set a stable ID when re-creating `blob:` URLs or rotating
+signed URLs, and change it when replacing the model. BindingBuilder assigns a
+stable identity to uploaded files automatically.
+
+Saved picks reference mesh-local coordinates and deterministic geometry
+fingerprints. They follow rigid transforms and scale changes. Missing or
+hidden objects, changed geometry, another model identity, and changed
+skeletal/morph poses receive an explicit status and no numeric overlay. Pause
+animation before saving a pose measurement. Streamed tileset measurements are
+marked **Approximate**; unloaded or replaced tiles may invalidate their anchors.
+The UI requires stable mesh anchors before saving. Programmatically supplied
+points without anchors remain fixed in world space.
+
+In BindingBuilder, the library and calibration controls live under
+**Scene → General → Measurements**, and the preview's ruler opens that section.
+Standalone ModelViewer instances keep the floating library. File controls are
+grouped under **Import / export**.
+
+**Export JSON** saves the collection and calibration; **Import JSON** validates
+and replaces that collection. **Export CSV** includes each name, type, current
+status, converted value, and unit. Invalid or stale records have an empty value.
+Imports allow up to 256 records and 8,192 points per record, with a 5 MiB toolbar
+file limit. Utilities and types are documented under
+[Measurements](https://react-immersive.liveroom.dev/docs/reference/types#measurements).
 
 ---
 
@@ -2297,6 +2481,35 @@ animation. Default: `false`.
 See the [`Exploded View`](https://react-immersive.liveroom.dev/examples/exploded-view) example.
 
 ---
+
+### `productOptions`
+
+Lets visitors choose from `sceneConfig.product`, in a panel beside the model. The
+model refits to the space left, and on phones the panel opens as a sheet from a
+button. Author the options in [BindingBuilder](https://react-immersive.liveroom.dev/docs/reference/binding-builder#product-options)
+or by hand. Without this prop, the viewer shows the saved choices with no panel.
+
+```tsx
+<ModelViewer
+  modelUrl="/chair.glb"
+  licenseKey={licenseKey}
+  sceneConfig={sceneConfig}
+  productOptions={{
+    urlParam: "options",
+    onConfigurationChange: (configuration, checkoutUrl) => track(configuration.sku),
+  }}
+/>
+```
+
+| Option                  | What it does                                                         |
+| ----------------------- | -------------------------------------------------------------------- |
+| `adapter`               | Connects your pricing, stock, cart and quote services                |
+| `urlParam`              | Keeps the choices in this URL parameter, and adds a **Copy link** button |
+| `defaultClosed`         | Starts with the panel closed                                         |
+| `onConfigurationChange` | Called with the configuration and buy link when a choice changes     |
+
+`true` uses the defaults. For controls in your own layout, use
+[`useProductConfigurator`](https://react-immersive.liveroom.dev/docs/hooks/use-product-configurator) instead.
 
 ### `showMaterialVariants`
 
@@ -2322,11 +2535,18 @@ The variants shown are `sceneConfig.model.activeVariants`, at most one from
 each group, which is also how you choose them yourself:
 
 ```tsx
-import { chooseMaterialVariant, useViewer } from "@liveroom-tech/react-immersive";
+import {
+  chooseMaterialVariant,
+  useViewer,
+} from "@liveroom-tech/react-immersive";
 
 const viewer = useViewer();
 
-<ModelViewer modelUrl="/car.glb" licenseKey="your-license-key" {...viewer.props} />;
+<ModelViewer
+  modelUrl="/car.glb"
+  licenseKey="your-license-key"
+  {...viewer.props}
+/>;
 
 // Once the model has loaded
 viewer.model.materialVariants; // ["Paint: Red", "Paint: Blue", "Wheels: Sport", "Wheels: Classic"]
@@ -2336,14 +2556,20 @@ viewer.model.materialVariantGroups;
 //   { name: "Wheels", variants: [{ name: "Wheels: Sport", label: "Sport" }, ...] },
 // ]
 
-viewer.scene.updateSceneConfig({ model: { activeVariants: ["Paint: Red", "Wheels: Sport"] } });
+viewer.scene.updateSceneConfig({
+  model: { activeVariants: ["Paint: Red", "Wheels: Sport"] },
+});
 viewer.scene.updateSceneConfig({ model: { activeVariants: [] } }); // the defaults
 
 // Your own swatches: swap a choice within its group, keeping the others.
 const active = viewer.scene.sceneConfig.model.activeVariants ?? [];
 viewer.scene.updateSceneConfig({
   model: {
-    activeVariants: chooseMaterialVariant(active, "Paint: Blue", viewer.model.materialVariantGroups),
+    activeVariants: chooseMaterialVariant(
+      active,
+      "Paint: Blue",
+      viewer.model.materialVariantGroups,
+    ),
   },
 });
 ```
@@ -2407,7 +2633,12 @@ const viewer = useViewer();
   }}
 />;
 
-const id = viewer.bindings.addDecal("mug", { image: "/logos/acme.png", position, normal, size: 0.05 });
+const id = viewer.bindings.addDecal("mug", {
+  image: "/logos/acme.png",
+  position,
+  normal,
+  size: 0.05,
+});
 viewer.bindings.updateDecal("mug", id, { size: 0.08, rotation: Math.PI / 12 });
 viewer.bindings.removeDecal("mug", id);
 ```
@@ -2447,7 +2678,7 @@ type ObjectBindingDecal = {
   actions: [
     { id: "add-text", label: "Add Text", type: "command" },
     { id: "add-image", label: "Add Image", type: "command" },
-  ]
+  ];
   ```
 
   Each opens a control under its button in the object panel. **Add Text**
@@ -2463,6 +2694,7 @@ type ObjectBindingDecal = {
   binding's `decals` and reported through `onObjectBindingsChange`. While a
   decal is in Move mode, a hint shows over the viewer and Escape cancels
   the current drag without removing the centred decal.
+
 - On a rigged (skinned) mesh a decal bends with the animation: it takes on
   the bone weights of the surface under it and is driven by the same skeleton.
   A click on a posed mesh is stored at the matching point of its rest shape, so
@@ -2570,6 +2802,84 @@ Default:
 false;
 ```
 
+#### Advanced sections
+
+**Scene → General → Section Cut** in BindingBuilder offers three cut types:
+
+- **Single plane**: axis aligned or an angled plane with a finite nonzero normal.
+- **Multiple planes**: up to six named, independently enabled planes. The visible
+  part is the common region retained by all enabled planes. Select an active
+  plane to drag it in the preview. Turn all planes off to show the whole asset.
+- **Section box**: six faces with normalized minimum/maximum values on X/Y/Z.
+  Choose the face to drag. **Keep outside box** removes its interior instead.
+
+The viewer's section button enables/disables the cut; the adjacent **Section
+settings** button opens these controls. A normal is in world coordinates and is
+normalized when used. Position is a share of the model bounds projected onto that
+normal. Flipping keeps the opposite side. Box bounds are relative to the active
+asset's world bounds, and each minimum must stay below its maximum.
+
+```ts
+viewer.scene.updateSceneConfig({
+  section: {
+    enabled: true,
+    axis: "y",
+    position: 0.5,
+    flip: false,
+    mode: "planes",
+    activePlaneId: "angled",
+    planes: [
+      {
+        id: "floor",
+        name: "Floor cut",
+        enabled: true,
+        axis: "y",
+        position: 0.6,
+        flip: false,
+      },
+      {
+        id: "angled",
+        name: "Angled cut",
+        enabled: true,
+        axis: "x",
+        normal: [1, 0, 1],
+        position: 0.5,
+        flip: false,
+      },
+    ],
+  },
+});
+```
+
+```ts
+viewer.scene.updateSceneConfig({
+  section: {
+    enabled: true,
+    axis: "y",
+    position: 0.5,
+    flip: false,
+    mode: "box",
+    activePlaneId: "x-max",
+    invertBox: false,
+    box: { min: [0.1, 0, 0.1], max: [0.8, 0.7, 0.9] },
+  },
+});
+```
+
+**Saved section presets** stores up to 32 named snapshots in
+`sceneConfig.section.presets`. Save the current cut, click a preset name to
+restore it, or delete it. These changes use normal editor undo/redo and persist
+through autosave, scene settings export/import, scene ZIPs, and complete viewer
+configuration saving. A snapshot excludes the preset library itself.
+`parseSectionConfig` and `sectionSnapshot` are available from both the main and
+`/utils` entries for validating or creating snapshots in an integration.
+
+These are visual WebGL clipping cuts of the active asset. Other composition
+instances and editor helpers remain whole. Cut surfaces are double-sided but
+have no generated solid caps; cuts do not modify exported mesh geometry.
+Disabling a cut restores the material's clipping, side, shadow, and intersection
+settings. WebGPU does not expose section controls.
+
 ### `cinematic`
 
 Enables the cinematic auto-camera: the camera glides along a path on its own,
@@ -2644,9 +2954,20 @@ Optional boolean that enables XR entry points. On WebXR-capable browsers, the
 viewer shows an AR and/or VR button once the relevant immersive session support
 is confirmed. On iPhone/iPad, WebXR AR is not available, but if you also pass
 [`usdzUrl`](#usdzurl), the viewer shows a **"View in AR"**
-button that launches Apple Quick Look instead.
+button that launches Apple Quick Look instead. You can also use
+[`arHandoff`](#arhandoff), which generates a USDZ from the current edits without a static `usdzUrl`.
 
 Default: `false`.
+
+---
+
+### `arHandoff`
+
+Opt into configuration-preserving AR preparation with
+`enableXR arHandoff` or `xr={{ enabled: true, arHandoff: true }}`. The AR dialog
+prepares a USDZ snapshot and a phone link from the current configuration.
+See [Configuration-preserving AR](https://react-immersive.liveroom.dev/docs/reference/configured-ar)
+for adapters, restoration, supported appearance and format limits.
 
 ---
 
@@ -2669,7 +2990,7 @@ usdzUrl?: string;
 
 ### `arScaleMode`
 
-Controls the initial model size in WebXR AR and VR sessions.
+Controls the initial model size in WebXR AR and VR sessions, and configured USDZ exports.
 
 ```ts
 arScaleMode?: "normalized" | "real-world";
@@ -2685,6 +3006,8 @@ Users can still pinch to resize after placement in either mode.
 ---
 
 ### `mobileHandoffUrl`
+
+With `arHandoff`, this is the receiving page for a validated configuration link; both pages need AR restoration enabled. Otherwise, the following legacy behavior applies.
 
 Optional public URL used for the desktop-to-phone AR handoff. When `enableXR`
 is `true`, desktop viewers show an **"Open on phone"** QR-code control. Scan it
@@ -2844,3 +3167,19 @@ you only need to set the ones you actually want to change.
 | `toggle-visibility` | Hides or shows the selected mesh via `binding.visible` + `onObjectBindingsChange`                            |
 | `change-color`      | Opens the color picker inline under the action; hex committed to `binding.style.material.baseColor` on close |
 | `change-material`   | Opens the texture upload panel inline under the action; URL stored in `binding.style.material.texture.path`  |
+
+## Asset diagnostics and runtime statistics
+
+ModelViewer also offers `onAssetDiagnostics`, `onRuntimeStats`, and
+`runtimeStatsIntervalMs`. These opt-in callbacks report the active asset's health
+and this canvas's renderer/quality/frame statistics without sending telemetry or
+forcing frames. See [Asset Diagnostics](https://react-immersive.liveroom.dev/docs/reference/asset-diagnostics)
+for complete examples, field definitions and measurement limits.
+
+## Instance IDs and asset placement
+
+`models` entries accept `id`, `transform`, and `visible`.
+`activeModelId` and `onActiveModelChange` select independent instances sharing a
+model URL. Existing unique-URL integrations remain supported.
+See [Multi-asset composition](https://react-immersive.liveroom.dev/docs/reference/multi-asset-composition)
+for the `AssetTransform` contract, callback identities and `useViewerModels` helpers.

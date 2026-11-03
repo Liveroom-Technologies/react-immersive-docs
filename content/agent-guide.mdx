@@ -4,8 +4,7 @@ title: AI Agent Guide
 
 # Build with React Immersive
 
-This guide targets `@liveroom-tech/react-immersive` **5.2.0**. Use React and
-React DOM **19**, Three.js **0.184**, and React Three Fiber **9.6.1 or a compatible
+Use React and React DOM **19**, Three.js **0.184**, and React Three Fiber **9.6.1 or a compatible
 9.x release**.
 
 ## Read only what the task needs
@@ -57,18 +56,18 @@ When using `defineObjectBindings`, preserve literal IDs for authoring but widen
 mutable React state to `Record<string, ObjectBinding>`. Bindings are indexed by
 model node identifiers; `binding.id` is application metadata and can differ.
 
-| Task                                          | Read                                                                                            |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Wire app state and controllers                | [useViewer](https://react-immersive.liveroom.dev/docs/hooks/use-viewer.md)                      |
-| Multiple models and multi-select | [ModelViewer](https://react-immersive.liveroom.dev/docs/reference/model-viewer.md#multiple-models), [per-model exports](https://react-immersive.liveroom.dev/docs/reference/binding-builder.md#reusing-multiple-models) |
-| Materials, visibility, grouped edits          | [useObjectBindings](https://react-immersive.liveroom.dev/docs/hooks/use-object-bindings.md)     |
-| Camera focus and saved views                  | [useViewerCamera](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera.md)         |
-| Lighting, environment and scene configuration | [useSceneConfig](https://react-immersive.liveroom.dev/docs/hooks/use-scene-config.md)           |
-| Animations                                    | [useViewerAnimations](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-animations.md) |
-| Annotation tours, exports, XR or performance  | [ModelViewer section index](https://react-immersive.liveroom.dev/docs/manifest.json)            |
-| Export/import scene files                     | [BindingBuilder](https://react-immersive.liveroom.dev/docs/reference/binding-builder.md)        |
-| API shapes                                    | [Types](https://react-immersive.liveroom.dev/docs/reference/types.md)                           |
-| A complete feature implementation             | [Examples](https://react-immersive.liveroom.dev/docs/examples.md)                               |
+| Task                                          | Read                                                                                                                                                                                                                    |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wire app state and controllers                | [useViewer](https://react-immersive.liveroom.dev/docs/hooks/use-viewer.md)                                                                                                                                              |
+| Multiple models and multi-select              | [ModelViewer](https://react-immersive.liveroom.dev/docs/reference/model-viewer.md#multiple-models), [per-model exports](https://react-immersive.liveroom.dev/docs/reference/binding-builder.md#reusing-multiple-models) |
+| Materials, visibility, grouped edits          | [useObjectBindings](https://react-immersive.liveroom.dev/docs/hooks/use-object-bindings.md)                                                                                                                             |
+| Camera focus and saved views                  | [useViewerCamera](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-camera.md)                                                                                                                                 |
+| Lighting, environment and scene configuration | [useSceneConfig](https://react-immersive.liveroom.dev/docs/hooks/use-scene-config.md)                                                                                                                                   |
+| Animations                                    | [useViewerAnimations](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-animations.md)                                                                                                                         |
+| Annotation tours, exports, XR or performance  | [ModelViewer section index](https://react-immersive.liveroom.dev/docs/manifest.json)                                                                                                                                    |
+| Export/import scene files                     | [BindingBuilder](https://react-immersive.liveroom.dev/docs/reference/binding-builder.md)                                                                                                                                |
+| API shapes                                    | [Types](https://react-immersive.liveroom.dev/docs/reference/types.md)                                                                                                                                                   |
+| A complete feature implementation             | [Examples](https://react-immersive.liveroom.dev/docs/examples.md)                                                                                                                                                       |
 
 ## Verify the result
 
@@ -80,4 +79,4 @@ model node identifiers; `binding.id` is application metadata and can differ.
 6. For licensed components, check the key and the deployed domain against the plan.
 
 If any step fails, use [Troubleshooting](https://react-immersive.liveroom.dev/docs/troubleshooting.md).
-For existing projects, read the [version and migration notes](https://react-immersive.liveroom.dev/docs/releases.md).
+For existing projects, read the [compatibility and upgrade notes](https://react-immersive.liveroom.dev/docs/releases.md).

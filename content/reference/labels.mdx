@@ -93,6 +93,28 @@ Only labels for enabled controls appear in a viewer. The following list is share
 | `autoRotate` | `Auto Rotate` |
 | `background` | `Background` |
 | `backgroundColor` | `Background Color` |
+| `showEnvironmentAsBackground` | `Show as background` |
+| `backgroundBlur` | `Background Blur` |
+| `environmentPreset` | `Preset` |
+| `environmentIntensity` | `Intensity` |
+| `toneMapping` | `Tone Mapping` |
+| `toneMappingAces` | `ACES Filmic` |
+| `toneMappingAgx` | `AgX` |
+| `toneMappingNeutral` | `Neutral` |
+| `toneMappingNone` | `None` |
+| `ground` | `Ground` |
+| `groundShadow` | `Ground Shadow` |
+| `groundShadowOpacity` | `Shadow Opacity` |
+| `floorGrid` | `Floor Grid` |
+| `display` | `Display` |
+| `wireframe` | `Wireframe` |
+| `autoRotateSpeed` | `Rotation Speed` |
+| `fieldOfView` | `Field of View` |
+| `modelInfo` | `Model` |
+| `modelInfoObjects` | `Objects` |
+| `modelInfoTriangles` | `Triangles` |
+| `modelInfoMaterials` | `Materials` |
+| `resetSettings` | `Reset Settings` |
 | `bindingMismatchMany` | `{count} object bindings don't match this model` |
 | `bindingMismatchOne` | `1 object binding doesn't match this model` |
 | `cameraController` | `Camera controller` |
@@ -254,7 +276,30 @@ Only labels for enabled controls appear in a viewer. The following list is share
 | `resetCameraView` | `Reset camera view` |
 | `right` | `right` |
 | `rotation` | `Rotation` |
-| `sceneObjects` | `SCENE OBJECTS` |
+| `sceneObjects` | `Scene Objects` |
+| `productOptions` | `Options` |
+| `productOptionsFor` | `{product} options` |
+| `productReset` | `Reset` |
+| `productOptional` | `optional` |
+| `productNone` | `None` |
+| `productAlsoChanges` | `Also changes: {changes}` |
+| `productUnavailable` | `Currently unavailable.` |
+| `productQuantity` | `Quantity` |
+| `productCheckingPrice` | `Checking price and availability…` |
+| `productTotal` | `Total` |
+| `productAddToCart` | `Add to cart` |
+| `productAddingToCart` | `Adding…` |
+| `productRequestQuote` | `Request quote` |
+| `productRequestingQuote` | `Requesting…` |
+| `productRefresh` | `Refresh` |
+| `productBuy` | `Buy now` |
+| `productCopyLink` | `Copy link` |
+| `productLinkCopied` | `Link copied` |
+| `productShowOptions` | `Show options` |
+| `productHideOptions` | `Hide options` |
+| `productIssues` | `Configuration issues` |
+| `productRequestDone` | `Request completed.` |
+| `productSaved` | `Saved: {id}` |
 | `sceneSettings` | `Scene Settings` |
 | `searchNodesLabels` | `Search nodes, labels` |
 | `searchObjects` | `Search objects` |
@@ -315,9 +360,64 @@ Only labels for enabled controls appear in a viewer. The following list is share
 | `videoUnsupported` | `Video recording is not supported in this browser.` |
 | `videoWebMUnsupported` | `Video recording as WEBM is not supported in this browser.` |
 | `viewIn3D` | `View in 3D` |
+| `sequencePlayer` | `Sequence player` |
+| `sequenceSelect` | `Sequence` |
+| `sequencePlay` | `Play sequence` |
+| `sequencePause` | `Pause sequence` |
+| `sequenceStop` | `Stop and restore scene` |
+| `sequencePlayhead` | `Sequence playhead` |
+| `sequenceTime` | `Sequence time` |
+| `sequenceIssues` | `Unavailable sequence targets` |
+| `arConfiguredButton` | `AR handoff` |
+| `arConfiguredTitle` | `Take this configuration to AR` |
+| `arConfiguredDescription` | `Your current materials, visible models and placements are included.` |
+| `arSnapshotStale` | `Updating AR to include your latest changes…` |
+| `arPreparing` | `Preparing your scene…` |
+| `arRefresh` | `Refresh AR` |
+| `arRetry` | `Try again` |
+| `arExportDetails` | `Export details` |
+| `arPrepare` | `Prepare AR` |
+| `arPrepareAgain` | `Prepare again` |
+| `arDownloadUSDZ` | `Download USDZ` |
+| `arScanConfigured` | `Scan to open this configuration on your phone.` |
+| `arOpenConfiguredLink` | `Open configuration link` |
 | `viewInAR` | `View in AR` |
 | `viewThisModelInARWithAppleQuickLook` | `View this model in AR with Apple Quick Look` |
 | `viewThisModelInVR` | `View this model in VR` |
 | `viewThisModelInYourSpace` | `View this model in your space` |
 | `visibleEntries` | `{count} visible entries` |
 | `yourText` | `Your text` |
+
+### Measurement library
+
+| Key | English default |
+| --- | --- |
+| `savedMeasurements` | `Saved measurements ({count})` |
+| `noSavedMeasurements` | No saved measurements yet. Pick points in the preview, then save a measurement here. |
+| `measurementFiles` | Import / export |
+| `measurementSourceUnit` | Model units |
+| `measurementDisplayUnit` | Display units |
+| `measurementName` | Measurement name |
+| `measurementNamePlaceholder` | e.g. Door width |
+| `saveMeasurement` | Save measurement |
+| `knownMeasurementDistance` | Known distance |
+| `calibrationUnit` | Calibration unit |
+| `calibrateMeasurement` | Calibrate |
+| `measurementCalibrationHint` | Pick two distance points, enter their known length, then calibrate. |
+| `measurementCalibratedScale` | `Calibrated: 1 model unit = {scale} m` |
+| `resetMeasurementCalibration` | Reset calibration |
+| `showSavedMeasurement` | `Show {name}` |
+| `renameSavedMeasurement` | `Rename {name}` |
+| `deleteSavedMeasurement` | `Delete {name}` |
+| `exportMeasurementJson` | Export JSON |
+| `exportMeasurementCsv` | Export CSV |
+| `importMeasurementJson` | Import JSON |
+| `measurementReady` | Ready |
+| `measurementApproximate` | Approximate LOD |
+| `measurementModelChanged` | Different model |
+| `measurementObjectMissing` | Object unavailable |
+| `measurementGeometryChanged` | Geometry changed — measure again |
+| `measurementPoseChanged` | Pose changed — measure again |
+| `measurementObjectHidden` | Object hidden |
+| `measurementInvalid` | Invalid measurement |
+| `measurementWaiting` | Waiting for model |

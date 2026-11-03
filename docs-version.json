@@ -1,6 +1,5 @@
 {
   "package": "@liveroom-tech/react-immersive",
-  "version": "5.2.0",
   "site": "https://react-immersive.liveroom.dev",
   "repository": "https://github.com/Liveroom-Technologies/react-immersive-docs",
   "peerDependencies": {

@@ -1,0 +1,269 @@
+---
+title: useProductConfigurator
+---
+
+# `useProductConfigurator`
+
+The development SDK adds typed product choices, compatibility rules, reversible
+model appearance, and adapters for application-owned commerce services.
+`useProductConfigurator` owns the choices and asynchronous service lifecycle;
+`ProductOptions` is an optional accessible UI. These APIs require the development
+SDK until its next release. `ModelViewer` still requires a valid license key.
+
+## Choose how much code you need
+
+| You want                                      | Use                                                                 |
+| --------------------------------------------- | ------------------------------------------------------------------- |
+| No code on your site                          | [Author it in the editor](https://react-immersive.liveroom.dev/docs/reference/binding-builder#product-options) and [embed the project](https://react-immersive.liveroom.dev/docs/embedding) |
+| A panel beside your viewer                    | [`ModelViewer` with `productOptions`](https://react-immersive.liveroom.dev/docs/reference/model-viewer#productoptions) |
+| Your own layout, or your own commerce backend | This hook, with `ProductOptions` or your own controls               |
+
+## Furniture example
+
+```tsx filename="product-configurator.tsx"
+"use client";
+import {
+  ModelViewer,
+  ProductOptions,
+  useProductConfigurator,
+  type ProductCommerceAdapter,
+  type ProductDefinition,
+  type ObjectBinding,
+} from "@liveroom-tech/react-immersive";
+import "@liveroom-tech/react-immersive/styles.css";
+
+const product: ProductDefinition = {
+  id: "studio-chair", label: "Studio chair", revision: "1",
+  groups: [
+    { id: "finish", label: "Finish", required: true, defaultOptionId: "oak",
+      options: [
+        { id: "oak", label: "Natural oak", appearance: [
+          { target: { group: "frame" }, material: { baseColor: "#b89063" } },
+        ] },
+        { id: "walnut", label: "Dark walnut", appearance: [
+          { target: { group: "frame" }, material: { baseColor: "#453025" } },
+        ] },
+      ] },
+    { id: "seat", label: "Upholstery", required: true, defaultOptionId: "linen",
+      options: [
+        { id: "linen", label: "Linen" },
+        { id: "leather", label: "Leather", appearance: [
+          { target: "Seat", material: { baseColor: "#99512b" } },
+        ] },
+      ] },
+  ],
+  rules: [{ id: "leather-frame", when: { groupId: "seat", optionId: "leather" },
+    requires: [{ groupId: "finish", optionId: "walnut" }],
+    message: "Leather requires the walnut frame." }],
+};
+const bindings: Record<string, ObjectBinding> = {
+  Frame: { id: "frame", modelObjectId: "Frame", type: "furniture", group: "frame" },
+  Seat: { id: "seat", modelObjectId: "Seat", type: "furniture" },
+};
+
+export function ChairConfigurator({ licenseKey, adapter }: {
+  licenseKey: string; adapter: ProductCommerceAdapter;
+}) {
+  const c = useProductConfigurator({ product, adapter, objectBindings: bindings });
+  return <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
+    <div style={{ height: 600 }}>
+      <ModelViewer modelUrl="/chair.glb" licenseKey={licenseKey} {...c.viewerProps} />
+    </div>
+    <ProductOptions configurator={c} />
+  </div>;
+}
+```
+
+Use binding keys, IDs, or the existing `{ group }`, `{ tag }`, and `{ type }`
+selectors in `appearance.target`. Edits support `material` and `visible`.
+Each option can also select glTF material `variants: ["Walnut"]`. Start from
+base bindings on every render: switching choices or removing `sceneConfig.product`
+restores the authored appearance. Existing style rules apply after product options.
+When multiple groups edit the same property, later groups in the definition win.
+Variants use the existing glTF variant-group conflict handling.
+
+The SDK source includes a runnable example at
+`examples/product-configurator/`. It provides original chair geometry, finishes,
+upholstery, armrests, local demo pricing, cart/quote callbacks, and choice saving.
+From the SDK's Vite server, open `/examples/product-configurator/`.
+
+## Rules and SKU mappings
+
+Each group selects one option. A required group must have a choice; optional
+groups allow `null`. Explicit `defaultOptionId` values seed initial choices.
+`requires` and `excludes` contain option references, activated when `when` is
+selected. Both sides are checked: changing a prerequisite is blocked if it would
+invalidate a selected dependent option. Unavailable choices explain why.
+
+`selectOption(groupId, optionId)` never changes another choice: it returns `false`
+for a blocked choice and explains why in `error`. `selectOptionWithFix(groupId,
+optionId)` also changes whatever a rule needs, with as few changes as possible.
+`optionStates[n].fix` lists those changes in advance so you can tell the shopper;
+`ProductOptions` does this for you. A choice no combination allows has no `fix`.
+Use `setSelections(record)` to change several choices at once. Logical conflicts
+restored from a saved file remain visible for repair; they cannot be submitted to
+commerce services.
+
+Optional `skus: [{ sku, selections }]` entries map exact combinations to a SKU.
+Include every group, using `null` for unselected optional groups. When the table
+is nonempty, a combination without a mapping is invalid. Unmapped intermediate
+choices remain selectable so users can reach a mapped combination. An option's
+own `sku` is listed in `configuration.items`. With no table, the chosen options'
+SKUs are joined in group order, such as `WALNUT-LEATHER`, if they all have one.
+`generateProductSkus(product)` builds a table of every allowed combination this way.
+A `resolveSku` adapter can resolve or override the final SKU on the server.
+
+## Application-owned commerce adapter
+
+```ts filename="chair-commerce-adapter.ts"
+import type {
+  ProductCommerceAdapter, ProductConfiguration, ProductAvailability,
+  ProductPrice, ProductCommerceResult,
+} from "@liveroom-tech/react-immersive";
+
+async function post<T>(url: string, body: unknown, signal: AbortSignal): Promise<T> {
+  const response = await fetch(url, {
+    method: "POST", signal, headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`Commerce service failed (${response.status}).`);
+  return response.json() as Promise<T>;
+}
+
+// Implement these routes in your application. No service credentials belong here.
+export const chairCommerce: ProductCommerceAdapter = {
+  key: "store-usd-retail-v1",
+  resolveSku: async (configuration, { signal }) =>
+    (await post<{ sku: string | null }>("/api/commerce/sku", configuration, signal)).sku,
+  getAvailability: (configuration, { signal }) =>
+    post<ProductAvailability>("/api/commerce/availability", configuration, signal),
+  getPrice: (configuration, { signal }) =>
+    post<ProductPrice>("/api/commerce/price", configuration, signal),
+  addToCart: (configuration, { signal, idempotencyKey }) =>
+    post<ProductCommerceResult>("/api/commerce/cart", { configuration, idempotencyKey }, signal),
+  requestQuote: (configuration, { signal, idempotencyKey }) =>
+    post<ProductCommerceResult>("/api/commerce/quote", { configuration, idempotencyKey }, signal),
+};
+```
+
+| Method | Returns |
+| --- | --- |
+| `resolveSku(configuration, context)` | Nonempty SKU string or `null` |
+| `getAvailability(configuration, context)` | `{ available, message?, options?: [{ groupId, optionId, available, reason? }] }` |
+| `getPrice(configuration, context)` | `{ amountMinor, currency, expiresAt?, label? }` |
+| `addToCart(configuration, context)` | `{ id?, message? }` |
+| `requestQuote(configuration, context)` | `{ id?, message? }` |
+
+Methods may be synchronous or asynchronous. All are optional. The adapter's
+stable `key` identifies its backend and pricing context; change it when store,
+currency, customer, or pricing context changes. Inline adapter objects with the
+same key do not restart requests on every render. Call `refresh()` when stock
+or pricing changes within the same context.
+
+SKU resolution precedes price and availability reads. Each service receives a
+detached configuration snapshot and an `AbortSignal`. Old responses are ignored
+after choices/context changes. Errors clear the old price and prevent submission.
+`ProductPrice.amountMinor` is a nonnegative safe integer in the currency's minor
+unit; `currency` is a three-letter uppercase currency code. Prices are configuration
+totals for the current quantity. Optional ISO `expiresAt` disables submission
+when the price expires. The hook validates service result shapes.
+
+Cart/quote callbacks receive an additional `idempotencyKey` and the displayed
+`price` (or `null`); persist/deduplicate that key in your own service. Duplicate
+clicks share an in-flight request. Failed retries reuse the key; a successful
+submission gets a new key on the next action. Choice/quantity edits wait while
+a cart or quote request runs. Unmount aborts in-flight work.
+
+The hook gates actions on valid choices, current reads, stock and price expiry.
+A configured SKU resolver returning `null` blocks cart actions while permitting
+quotes. If you omit price, stock or SKU services, your action callback handles
+those checks itself. Server-side validation must recheck product revision,
+choices, SKU, stock, quantity, taxes and final price before placing any order.
+Rendering and a browser price do not authorize payment. The SDK ships no vendor
+credentials, payment processing, or hosted checkout backend.
+
+## Hook options and result
+
+| Option | Meaning |
+| --- | --- |
+| `product` | Required `ProductDefinition`; new product ID/revision resets uncontrolled choices |
+| `initialSelections` | Initial uncontrolled choices, otherwise explicit product defaults |
+| `selections`, `onSelectionsChange` | Controlled choices; without a callback, controls are read-only |
+| `initialQuantity` | Integer from 1 to 9999, default 1 |
+| `adapter` | Application-owned commerce services |
+| `objectBindings`, `sceneConfig` | Base viewer data included in `viewerProps` |
+
+The result includes `configuration`, `optionStates`, `selectOption`, `setSelections`,
+`reset`, `setQuantity`, `viewerProps`, `status`, `price`, `availability`, `error`,
+`pendingAction`, `result`, `canAddToCart`, `canRequestQuote`, `hasCommerce`, `hasCart`, `hasQuote`,
+`readOnly`, `addToCart`, `requestQuote`, `refresh`, `exportConfiguration` and
+`importConfiguration`. `status` is `idle` for invalid choices, `loading` during
+reads, `ready` after reads, or `error` after a service failure. Without an adapter,
+use the same hook for option selection and preview.
+
+`ProductOptions` accepts `{ configurator, className?, showCommerce? }`. Set
+`showCommerce={false}` for an authoring preview. The component uses fieldsets,
+radio groups and accessible reasons/status messages. Import the SDK stylesheet,
+or build controls using the hook. Colors can be themed through
+`--ri-product-text`, `--ri-product-muted`, `--ri-product-warning`,
+`--ri-product-error` and `--ri-product-success`.
+
+## Prices and buy links without a backend
+
+A definition can price itself and link to checkout, with no adapter:
+
+```ts
+const product: ProductDefinition = {
+  id: "studio-chair", label: "Studio chair", revision: "1",
+  pricing: { currency: "USD", basePriceMinor: 24900 },
+  checkout: { urlTemplate: "https://shop.example.com/cart/add?sku={sku}&qty={quantity}", label: "Add to cart" },
+  groups: [{
+    id: "finish", label: "Finish", required: true, defaultOptionId: "oak", display: "swatches",
+    options: [
+      { id: "oak", label: "Oak", sku: "OAK", swatch: "#b89063" },
+      { id: "walnut", label: "Walnut", sku: "WALNUT", swatch: "#453025", priceDeltaMinor: 4000 },
+    ],
+  }],
+};
+```
+
+Amounts are in the currency's smallest unit, so `24900` is $249.00. `c.price` and
+`c.checkoutUrl` follow the choices. An adapter's `getPrice` replaces the definition's
+price. A template can use `{sku}`, `{quantity}`, `{productId}`, `{revision}` and
+`{selections}`, each URL-encoded, and must be http or https. `checkoutUrl` is `null`
+until the configuration is valid, and until there's an SKU if the template uses
+`{sku}`. These prices are for display: validate and charge on your server.
+
+Group `display` is `"list"` (the default), `"chips"` or `"swatches"`. Options can
+have a `description` and a `swatch` hex color.
+
+## Persistence and pure helpers
+
+`exportConfiguration()` produces portable JSON containing version, product ID,
+revision, quantity and canonical sorted selections. `importConfiguration(input)`
+rejects another product/revision or unknown references and reevaluates rules;
+SKU and validity are regenerated rather than trusted from the file. Commerce
+reads run again. Prices, adapter methods and credentials are never serialized.
+
+`viewerProps.sceneConfig.product` contains the definition and selections. Full
+viewer configuration saving/sharing, Scene JSON/TypeScript exports, model
+switching and editor autosave retain that data, including option textures.
+Quantity belongs to the commerce hook's portable configuration, not scene settings.
+Short links still use your existing application-owned storage adapter.
+
+To put choices in a link, use `encodeProductSelections(selections)` and
+`decodeProductSelections(text, product)`, which ignores anything the product doesn't
+have. `productDefinitionWarnings(product, bindings, variantNames)` reports authoring
+problems, such as a change targeting objects the model doesn't have.
+
+The main package and React-free `/utils` entry export `parseProductDefinition`,
+`defaultProductSelections`, `evaluateProductConfiguration`, `productOptionStates`,
+`parseSceneProduct`, `serializeProductConfiguration`, `parseProductConfiguration`,
+`applyProductOptions`, `resolveProductSelections`, `productPriceFromDefinition`,
+`formatProductPrice`, `productCheckoutUrl`, `encodeProductSelections`,
+`decodeProductSelections`, `generateProductSkus` and `productDefinitionWarnings`,
+plus the product data types. Validate untrusted definitions
+with `parseProductDefinition` before using pure evaluation/projection helpers.
+`configuration.key` is canonical JSON of product ID, revision, quantity and sorted
+choices; treat it as an identity, not a cryptographic signature. Increment the
+revision when the catalog or business rules change.

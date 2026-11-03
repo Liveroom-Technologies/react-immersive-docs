@@ -4,7 +4,7 @@
 
 [AI Agent Guide](https://react-immersive.liveroom.dev/docs/agent-guide) · [Markdown index](https://react-immersive.liveroom.dev/llms.txt) · [Website](https://react-immersive.liveroom.dev) · [Documentation](https://react-immersive.liveroom.dev/docs) · [Live editor](https://react-immersive.liveroom.dev/editor) · [npm](https://www.npmjs.com/package/@liveroom-tech/react-immersive) · [GitHub](https://github.com/Liveroom-Technologies/react-immersive-docs)
 
-Documentation baseline: **5.2.0 · React 19**. See the
+Requires **React 19**. See the
 [Vite](https://react-immersive.liveroom.dev/docs/frameworks/vite) and
 [Next.js](https://react-immersive.liveroom.dev/docs/frameworks/nextjs) setup guides
 for complete first-render files and the
@@ -69,7 +69,7 @@ It also exports types for `ObjectBinding`, `ObjectBindingMaterial`, `ObjectBindi
 - optional model export button through `showDownloadButton` and `downloadFilename`, opt-in PNG capture through `preserveDrawingBuffer`, plus an independent `showResetButton` toggle for the rest of that action bar
 - an optional UV Checker toolbar button through `showUvCheckerButton`, for inspecting UV scale, stretching, seams, orientation, and missing UV0 coordinates directly in `ModelViewer`
 - glTF material variants (`KHR_materials_variants`) as swatch rows, one per option group, through `showMaterialVariants`, selected by `sceneConfig.model.activeVariants`
-- distance, angle, polygon area, and point-to-plane measurements with vertex/edge snapping and bounding dimensions through `showMeasureTools` and `measurementUnit`
+- calibrated distance, angle, polygon area, point-to-plane, and circumference measurements with snapping, saved named collections, and JSON/CSV export
 - an exploded-view slider that slides each bound part outward from the model center to reveal interior/assembly structure through `showExplodeControls`
 - isolation that ghosts or hides everything but the objects you focus on, through `isolation` / `onIsolationChange` and `showIsolateControls`
 - a section cut that opens the model along an axis, with a draggable plane, through `showSectionTools` and `sceneConfig.section`
@@ -780,13 +780,59 @@ After the first upload, **Add Model** offers **Add as Separate Model** or
 activated in Scene Nodes; added nodes become part of the destination with
 prefixed identifiers. Each separate model has its own binding history.
 
-Enable **Multi-select** to toggle nodes through checkboxes or canvas clicks.
-**Select all** and **Clear** apply to the current search results; Escape clears
-the whole group. Empty-space clicks preserve it. Materials and the
+Enable **Multi-select** explicitly to toggle nodes through checkboxes or canvas
+clicks. Click **Done**, click the mode button again, or press Escape to leave
+checkbox mode. Done keeps the primary object selected; Escape clears the group.
+**Select matches** and **Clear matches** apply to the current search results.
+Empty-space clicks preserve the group while checkbox mode is enabled. Materials and the
 visible/selectable/hoverable flags apply across selected bindings, while
 individual identity, decals, and actions remain single-object edits.
 Multi-selection can span original and added nodes of one active model, but not
 independent models. Switching models clears multi-select mode.
+
+**Ctrl/Cmd-click** toggles objects into or out of the
+selection without enabling persistent checkbox mode. Releasing the modifier
+and clicking normally selects only that object. **Shift-click** selects a range
+in the displayed tree order; combine Ctrl/Cmd with Shift to add a range.
+Shift-click on the canvas adds an object to the selection. Saved selection sets
+and Select matches also create temporary selections: a plain click replaces
+them unless checkbox mode was explicitly enabled.
+
+### Hierarchy, saved selections, and style batches
+
+Scene Nodes displays the model's nested source groups. Expand/collapse branches,
+search names, labels, types, binding groups, or tags, and select a whole subtree
+through its checkbox in Multi-select mode. Search retains matching ancestors;
+matching a group includes its children. The list renders only rows near the
+viewport so a large assembly does not create thousands of DOM elements.
+Catalog-only objects without loaded hierarchy remain in a flat fallback.
+
+Focus the tree and use Up/Down, Home/End, Left/Right, Enter, and Space to browse,
+expand, and select. Ctrl/Cmd+A selects search matches while the tree has focus.
+Browsing preserves authored node names and parent relationships, including
+duplicate-name identifiers; it does not reparent a model or rewrite its rigs.
+
+Under **Saved selections**, enter a name and save the current objects. Click a
+saved name to restore that selection, or delete the set with its trash button.
+Sets use stable model object IDs and live in `sceneConfig.selectionSets`, so
+scene exports, shared configurations, standalone autosave, and model switching
+preserve them. Each model owns its sets. Unavailable objects are skipped when
+loading a set and its available/total count is shown. Up to 128 sets are allowed.
+Saving/deleting sets participates in the Scene tab's undo history.
+
+**Copy style** in the Object inspector snapshots the primary object's authored
+material overrides. **Paste style** applies that snapshot to the current object
+or selection as one undo step. The clipboard stays available when switching
+models. Pasting replaces style overrides while keeping identities, transforms,
+decals, actions, metadata, and visibility. Texture references and UV settings
+are copied; source assets still need to be present. A copied empty style resets
+targets to their authored model materials. Bulk flag changes are also discrete
+undo steps. Mixed flags are shown with an indeterminate checkbox; material
+controls identify the primary object whose values are displayed.
+
+The SDK exports `collectObjectHierarchy`, `copyBindingStyle`,
+`pasteBindingStyle`, and `parseSelectionSets` from the main and `/utils` entries.
+See [selection types and utilities](https://react-immersive.liveroom.dev/docs/reference/types#hierarchy-and-saved-selections).
 
 The shared move/rotate gizmo and uniform corner-scale handle transform a group
 around its combined bounds. Local axes follow the active object. Numeric fields
@@ -948,7 +994,7 @@ const {
 
 Pass `initialPosition`, `initialTarget`, and optional named `presets` to `useViewerCamera` to configure the first view without writing an `onViewerReady` wrapper.
 
-If you want a link that opens the viewer the way it looks now, the library also exports `useShareableViewerState`. It keeps camera, visibility and selection in the page URL's hash (`#view=…`) for existing callers. Pass controlled `configuration`/`onConfigurationChange` to save full bindings, models and scene state. The local 5.3.0 build also provides `getState`, `restoreState`, JSON serialization, and optional storage-backed short links; use `mode: "view"` for compact legacy behavior:
+If you want a link that opens the viewer the way it looks now, the library also exports `useShareableViewerState`. It keeps camera, visibility and selection in the page URL's hash (`#view=…`) for existing callers. Pass controlled `configuration`/`onConfigurationChange` to save full bindings, models and scene state. The local 5.3.0 build also provides `getState`, `getStateAsync` (including temporary texture images), `restoreState`, JSON serialization, and optional storage-backed short links; use `mode: "view"` for compact legacy behavior:
 
 ```tsx
 const viewer = useViewer();
@@ -1462,8 +1508,8 @@ animations.
 - **Units and orientation:** STL files are usually in millimetres with Z up, so a
   part can load lying on its back. Turn it upright with
   [`sceneConfig.model.rotation`](#sceneconfig) (BindingBuilder: **Scene** →
-  model rotation, −90° on X), and set [`measurementUnit`](#measurementunit) to
-  `"mm"`. In AR, the default `"normalized"` [`arScaleMode`](#arscalemode) fits the
+  model rotation, −90° on X), and set `measurementSettings` to
+  `{ sourceUnit: "mm", displayUnit: "mm" }`. In AR, the default `"normalized"` [`arScaleMode`](#arscalemode) fits the
   model to a metre; `"real-world"` would read millimetres as metres.
 - **PLY point clouds** (points with no faces) can't be shown; the viewer
   explains why instead of loading them.
@@ -1979,6 +2025,7 @@ type ViewerReadyState = {
   objectBindings: Record<string, ObjectBinding>;
   homeCameraState: { position: Vec3; target: Vec3 } | null;
   captureImage: (options?: CaptureImageOptions) => Promise<string>;
+  isLoadingTiles: () => boolean;
   captureVideo: (options?: CaptureVideoOptions) => Promise<Blob>;
   invalidate: () => void;
   rendererBackend: "webgl" | "webgpu"; // which renderer draws; see `webgpu`
@@ -1993,15 +2040,19 @@ type CaptureImageOptions = {
   width?: number;
   height?: number;
   transparent?: boolean;
+  type?: "image/png" | "image/jpeg";
+  quality?: number;
 };
 ```
+
+`isLoadingTiles` says whether a streamed model is still fetching tiles for the current view.
 
 `raw` holds the live three.js scene, the camera-controls instance, and the
 model's nodes, for integrations the rest of the API doesn't cover. You don't
 need it for anything the hooks and props already do, and its shapes are those
 libraries' own, so they can change when those libraries do.
 
-`captureImage` requires the opt-in `preserveDrawingBuffer` prop, forces a render, and resolves with a `data:image/png` URL. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG carries an alpha channel instead. It rejects if called before the viewer is ready or when framebuffer preservation is disabled. The Download PNG menu item is also shown only when this prop is enabled.
+`captureImage` requires the opt-in `preserveDrawingBuffer` prop, forces a render, and resolves with an image data URL, PNG by default. Pass `width`/`height` to render at a resolution other than the canvas's current size, and `transparent` to hide the configured background so the PNG carries an alpha channel instead. Pass `type: "image/jpeg"` and a `quality` from 0 to 1 for a faster encode with no alpha channel. It rejects if called before the viewer is ready or when framebuffer preservation is disabled. The Download PNG menu item is also shown only when this prop is enabled.
 
 ```tsx
 <ModelViewer
@@ -3254,6 +3305,8 @@ dimensions overlay. Start measuring, then choose a tool:
 - **Point to plane:** pick a reference face, then a point. The tool highlights
   the picked triangle and shows the shortest distance to its infinite plane,
   with a perpendicular segment to the projected point.
+- **Circumference (Edge) / Circumference (Horizontal):** trace a closed cross-section around a surface
+  and read its perimeter. The horizontal variant uses a horizontal plane.
 
 **No snapping** keeps picks on the surface. **Snap: vertex**, **Snap: edge**,
 and **Snap: auto** snap within 12 CSS pixels to vertices or triangle edges on
@@ -3264,29 +3317,119 @@ edges can also be snap targets.
 
 Undo removes the last pick; Clear removes the current measurement. Switching
 tools clears picks. A new pick after a completed angle, area, or point-to-plane
-measurement starts another measurement. Picks are snapshots in world space;
-model changes, display rotation, and binding transforms clear them. Pause
+measurement starts another measurement. Unsaved picks are snapshots in world
+space; model changes, display rotation, and binding transforms clear them. Saved
+measurements retain their anchors as described below. Pause
 animated models before measuring a pose. Hidden objects, decals, and editor
 helpers are excluded from picking.
 
-Default:
+Default: `false`.
 
-```ts
-false;
+```tsx
+<ModelViewer
+  modelUrl="/assembly.glb"
+  licenseKey={licenseKey}
+  tools={{ measure: { unit: "m" } }}
+/>
 ```
+
+---
 
 ### `measurementUnit`
 
-Optional unit suffix appended to distance and dimension readouts; area uses its
-squared form (for example `m²`). Angles always use degrees. glTF models are
-authored in meters by spec, so values are not converted; this only changes the
-displayed label.
+Default display unit for distance and dimension readouts; area uses its squared
+form (for example `m²`). `m`, `cm`, `mm`, `in`, and `ft`
+convert from the configured source units or calibration. A custom suffix keeps
+legacy raw-value behavior. Angles always use degrees. Default: `"m"`.
 
-Default:
+### Calibrated and saved measurements
 
-```ts
-"m";
+Open **Saved measurements** or start measuring to configure **Model units** and
+**Display units**. Supported units are meters, centimeters, millimeters, inches,
+and feet. Source units default to meters, as specified by glTF. For a model
+authored in millimeters, set `sourceUnit: "mm"`; changing only its label no
+longer describes its scale correctly. Lengths convert linearly, areas use the
+squared conversion, and angles remain in degrees.
+
+To calibrate a model with unknown scale, use Distance to pick exactly two
+points whose real separation you know. Enter that distance and its unit, then
+click **Calibrate**. The resulting `metersPerUnit` overrides the source unit for
+all measurements and bounding dimensions. **Reset calibration** returns to the
+source unit. Selecting another source unit also clears calibration.
+
+Enter a name and click **Save measurement** after completing a measurement.
+The library supports multiple records with visibility, rename, and delete
+controls. Starting another measurement or clearing its draft keeps saved
+records. Calibration and records are stored in `sceneConfig.measurements`:
+
+```tsx filename="MeasuredViewer.tsx"
+"use client";
+
+import {
+  DEFAULT_SCENE_CONFIG,
+  ModelViewer,
+  useViewer,
+} from "@liveroom-tech/react-immersive";
+
+export function MeasuredViewer({ licenseKey }: { licenseKey: string }) {
+  const viewer = useViewer({
+    sceneConfig: {
+      ...DEFAULT_SCENE_CONFIG,
+      measurements: {
+        settings: { sourceUnit: "mm", displayUnit: "m" },
+        items: [],
+      },
+    },
+  });
+
+  return (
+    <ModelViewer
+      {...viewer.props}
+      modelUrl="/assembly.glb"
+      measurementModelId="assembly-v1"
+      licenseKey={licenseKey}
+      showMeasureTools
+    />
+  );
+}
 ```
+
+`useViewer` captures edits through `onSceneConfigChange`. Save its scene config
+in your application or include it in a
+[shareable configuration](https://react-immersive.liveroom.dev/docs/hooks/use-shareable-viewer-state).
+Without a callback, edits remain local to the mounted viewer. To own the
+collection separately, supply `measurements` with `onMeasurementsChange` and
+`measurementSettings` with `onMeasurementSettingsChange`; these override the
+corresponding scene-config fields. Controlled fields without callbacks are
+read-only in the toolbar.
+
+`measurementModelId` identifies the geometry revision. It defaults to the
+canonical model URL. Set a stable ID when re-creating `blob:` URLs or rotating
+signed URLs, and change it when replacing the model. BindingBuilder assigns a
+stable identity to uploaded files automatically.
+
+Saved picks reference mesh-local coordinates and deterministic geometry
+fingerprints. They follow rigid transforms and scale changes. Missing or
+hidden objects, changed geometry, another model identity, and changed
+skeletal/morph poses receive an explicit status and no numeric overlay. Pause
+animation before saving a pose measurement. Streamed tileset measurements are
+marked **Approximate**; unloaded or replaced tiles may invalidate their anchors.
+The UI requires stable mesh anchors before saving. Programmatically supplied
+points without anchors remain fixed in world space.
+
+In BindingBuilder, the library and calibration controls live under
+**Scene → General → Measurements**, and the preview's ruler opens that section.
+Standalone ModelViewer instances keep the floating library. File controls are
+grouped under **Import / export**.
+
+**Export JSON** saves the collection and calibration; **Import JSON** validates
+and replaces that collection. **Export CSV** includes each name, type, current
+status, converted value, and unit. Invalid or stale records have an empty value.
+Imports allow up to 256 records and 8,192 points per record, with a 5 MiB toolbar
+file limit. Utilities and types are documented under
+[Measurements](https://react-immersive.liveroom.dev/docs/reference/types#measurements).
+
+---
 
 ### `showExplodeControls`
 
@@ -4143,3 +4286,33 @@ Both viewers accept a partial `labels` dictionary. Omitted keys use English; cha
 ```
 
 `ModelViewerLabels`, `ModelViewerLabelKey`, and `DEFAULT_MODEL_VIEWER_LABELS` are exported from the main package, `/simple-model-viewer`, and `/utils`. See the [full catalog](https://react-immersive.liveroom.dev/docs/reference/labels). Annotation content, metadata, and custom panels use your application's translations.
+
+## Development SDK: product option rules and commerce adapters
+
+`useProductConfigurator` evaluates typed option groups and requires/excludes rules,
+explains unavailable choices, produces canonical configurations and connects
+application-owned SKU/price/stock/cart/quote adapters. `ProductOptions` supplies
+optional accessible controls; spread `configurator.viewerProps` into ModelViewer.
+SceneConfig.product and the BindingBuilder Scene → Product tab preserve product
+choices through export, sharing, autosave and model switches. Pure product helpers
+and data types are also available from `/utils`. See
+https://react-immersive.liveroom.dev/docs/hooks/use-product-configurator for the
+complete schema and service lifecycle. Commerce remains application-owned.
+## asset diagnostics
+
+BindingBuilder's Scene → General → Asset diagnostics section provides an asset
+report, affected-object links, suggested fixes, rescan and local JSON download.
+`ModelViewer.onAssetDiagnostics` reports the active loaded asset;
+`onRuntimeStats` and `runtimeStatsIntervalMs` opt into canvas statistics without
+forcing frames. `AssetDiagnosticsPanel` renders the report, and `inspectAsset`
+(main or `/utils`) inspects an existing three.js scene. Resident tile counts are
+partial; memory and frame statistics have explicit measurement limits. See
+https://react-immersive.liveroom.dev/docs/reference/asset-diagnostics.
+
+## multi-asset composition
+
+Scene → Assets adds instance placement, grid/ground snapping, duplication,
+undoable deletion and complete scene ZIP save/load. ModelViewer entries accept
+IDs, transforms and visibility; useViewerModels manages reusable instances and
+their active configuration. See
+https://react-immersive.liveroom.dev/docs/reference/multi-asset-composition.

@@ -1,0 +1,52 @@
+---
+title: useViewerSequences
+---
+
+# useViewerSequences
+
+Connect this hook to ModelViewer's `onSequencesReady` to select,
+play, pause, scrub or stop authored `sceneConfig.sequences`. See [Visual sequence authoring](https://react-immersive.liveroom.dev/docs/reference/visual-sequences)
+for the data format and editor workflow.
+
+```tsx
+import { ModelViewer, useViewerSequences, type SceneConfig } from "@liveroom-tech/react-immersive";
+import "@liveroom-tech/react-immersive/styles.css";
+
+export function SequenceViewer({ modelUrl, sceneConfig }: { modelUrl: string; sceneConfig: SceneConfig }) {
+  const sequences = useViewerSequences();
+  return <>
+    <div style={{ height: 480 }}>
+      <ModelViewer licenseKey="your_license_key" modelUrl={modelUrl}
+        objectBindings="auto" sceneConfig={sceneConfig} showSequenceControls={false}
+        onSequencesReady={sequences.handleSequencesReady} />
+    </div>
+    <button onClick={() => sequences.play("reveal")}>Play reveal</button>
+    <button onClick={() => sequences.pause()}>Pause</button>
+    <button onClick={() => sequences.seek(1.5)}>Preview at 1.5s</button>
+    <button onClick={() => sequences.stop()}>Stop and restore</button>
+    <output>{sequences.playback.time.toFixed(2)}s</output>
+  </>;
+}
+```
+
+| Return field | Purpose |
+| --- | --- |
+| `handleSequencesReady` | Pass to `onSequencesReady`; accepts `SequenceControls` or null when disconnected. |
+| `controls` | The connected controller, or null before the viewer is ready. |
+| `playback` | `sequenceId`, `time`, `duration`, `status`, `previewing`, `ready`, and `issues`. |
+| `select(id)` | Select a sequence and restore the previous preview; returns false for an unknown ID. |
+| `play(id?)` | Resume the selected sequence, or select/play another ID. Starts at zero if already at the end. |
+| `pause()` | Hold the current preview frame. |
+| `seek(seconds)` | Clamp to the sequence duration and preview that absolute time. Paused unless already playing. |
+| `stop()` | Restore object/material/camera/clip state and return the playhead to zero. |
+
+`status` is `stopped`, `playing`, `paused` or `finished`. A finished non-looping
+sequence holds its final frame until Stop or another sequence is selected. UI
+subscriptions are throttled during playback; the renderer still evaluates each
+rendered frame. The hook stops its old controller when switching/disconnecting
+viewers and when unmounted.
+
+`controls.capture(target)` reads the current live value for an authoring capture.
+`controls.getState()` / `controls.subscribe(listener)` support custom playback
+interfaces without the React hook. Select/play/seek return whether the request was
+accepted; they return false for missing sequences or unavailable renderers.

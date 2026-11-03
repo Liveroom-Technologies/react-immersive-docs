@@ -1,0 +1,168 @@
+---
+title: Asset Diagnostics
+---
+
+# Asset diagnostics
+
+BindingBuilder includes a read-only asset-health report in
+**BindingBuilder → Scene → Model → Diagnostics**. It identifies geometry,
+UV, texture and resource issues, lists affected objects, and suggests fixes.
+`Rescan asset` inspects the current loaded scene. `Download report` exports JSON
+with the asset report and the latest runtime sample. Object links select and
+focus the corresponding model binding.
+
+`ModelViewer`
+and `BindingBuilder` retain their existing license requirements. Diagnostics do
+not modify or optimize the asset and do not send telemetry.
+
+## SDK callbacks and reusable panel
+
+```tsx filename="asset-diagnostics-viewer.tsx"
+"use client";
+import { useEffect, useState } from "react";
+import {
+  AssetDiagnosticsPanel,
+  ModelViewer,
+  type AssetDiagnosticsReport,
+  type ViewerRuntimeStats,
+} from "@liveroom-tech/react-immersive";
+import "@liveroom-tech/react-immersive/styles.css";
+
+export function DiagnosticViewer({ modelUrl, licenseKey }: {
+  modelUrl: string; licenseKey: string;
+}) {
+  const [report, setReport] = useState<AssetDiagnosticsReport | null>(null);
+  const [runtime, setRuntime] = useState<ViewerRuntimeStats | null>(null);
+  const [open, setOpen] = useState(false);
+  useEffect(() => { setReport(null); setRuntime(null); }, [modelUrl]);
+  return <>
+    <button onClick={() => setOpen((value) => !value)} aria-expanded={open}>
+      Asset diagnostics
+    </button>
+    <div style={{ height: 500 }}>
+      <ModelViewer modelUrl={modelUrl} licenseKey={licenseKey}
+        onAssetDiagnostics={open ? setReport : undefined}
+        onRuntimeStats={open ? setRuntime : undefined}
+        runtimeStatsIntervalMs={1000} />
+    </div>
+    {open && <AssetDiagnosticsPanel report={report} runtimeStats={runtime} />}
+  </>;
+}
+```
+
+| Prop | Behavior |
+| --- | --- |
+| `onAssetDiagnostics(report)` | Opt-in inspection of the active loaded asset and its merged nodes. Reports on load, active-model switches, when merged sources finish loading, and when enabled for an already loaded asset. Load failures produce a failed report. |
+| `onRuntimeStats(sample)` | Opt-in interval samples for the viewer's entire canvas, including independent models, lighting and effects. Omit the callback to stop sampling. |
+| `runtimeStatsIntervalMs` | Defaults to 1000 ms, clamped to 250–10000 ms. |
+
+Inline callback functions do not cause repeated asset scans or restart the
+runtime sampling timer. In BindingBuilder, scanning and live sampling start when
+the diagnostics section opens and stop when it closes or its tab unmounts.
+A cached report remains available while the editor is open; it is not serialized
+into scene settings, links, or autosave data.
+
+`AssetDiagnosticsPanel` accepts `report`, optional `runtimeStats`, optional
+`onRefresh`, and optional `onSelectObject(name)`. Supply your own scene inspection
+callback for its Rescan button. Failed reports disable rescanning until the asset
+can load again. The panel can be themed with `--ri-diagnostics-text` and
+`--ri-diagnostics-muted`, or you can render the data with your own UI.
+
+## Asset report
+
+`AssetDiagnosticsReport` is plain, serializable data with `version: 1`,
+`status: "ready" | "failed"`, `scope: "asset" | "resident-tiles"`, `source`,
+`units`, `bounds`, `statistics`, `textures`, `extensions`, and `issues`.
+
+The loaded scene inspection includes hidden meshes. Geometry/vertex/triangle
+counts deduplicate shared geometry; mesh and instance counts show repeated uses.
+Geometry byte counts deduplicate backing buffers, including interleaved and morph
+attributes. These are allocation estimates, not measured GPU memory usage or
+per-frame rendered triangles. Bounds describe the loaded world-space scene at
+inspection time. Rescan after changing transforms, materials, merged geometry,
+or a posed animation if you need an updated snapshot.
+
+Texture entries include dimensions, compression, and an estimated byte size.
+Ordinary textures use RGBA8 with a mipmap allowance; compressed textures use
+available mip byte lengths. Unknown sizes stay unknown. The report flags images
+larger than 4096 pixels on either side, more than one million unique triangles,
+and more than 100 materials as review recommendations, without blocking rendering.
+These thresholds are guidance, not device-specific limits or promises of speed.
+
+UV checks consider the UV channel actually requested by each texture. A solid
+material without UVs is an informational note; a texture without its required UV
+channel is a warning. Empty meshes, non-finite positions/bounds, resource failures,
+and unrecognized required glTF extensions receive stronger findings. Each issue
+has `code`, `severity`, `title`, `detail`, `suggestion`, and optional `count` and
+`objects`. Affected-object lists are limited to twenty names; the full count is
+retained.
+
+Source metadata includes the primary file format, a display name, known primary
+file bytes, initial load duration, glTF extension declarations, and resource
+failures captured by the loader. Size/duration remain `null` when unavailable.
+File bytes are not a sum of remote sidecars or an archive's compressed transfer
+size. Duration measures the initial loader fetch/parse/decode operation, not time
+to first visible frame; cached slot switches reuse that metadata.
+
+Extension recognition reflects the bundled loader and the SDK's material-variant
+support. Recognized compression extensions still need configured decoders and
+browser/device support. Unknown optional extensions can fall back to a different
+appearance. Reports inspect loaded data and loader metadata; they are not a full
+glTF validator and cannot recover information a loader discarded.
+
+Units show `"meters (glTF convention)"` for glTF/GLB and `"unknown"` otherwise.
+This does not verify that the author exported at the correct physical scale.
+Bounds remain scene units. Use measurement calibration when interpreting sizes.
+
+## Runtime samples
+
+`ViewerRuntimeStats` includes renderer backend, render mode, draw calls, triangles,
+renderer geometry/texture counts, active frame intervals, FPS, sample count,
+quality decisions, and optional streamed-tile statistics.
+
+Draw calls and triangles come from the **last completed renderer pass**. With
+post-processing or shadow passes they may describe a pass rather than the sum
+of all passes. Missing counters remain `null`. Asset unique triangle counts and
+runtime rendered triangles measure different things.
+
+Frame interval/FPS measure spacing between active frame callbacks, not CPU or GPU
+execution time. Long demand-loop idle gaps are excluded; idle or paused samples
+show `null` timing/FPS. Always-rendered slow frame intervals are retained. Sampling
+reads existing counters and never invalidates the canvas to manufacture frames.
+It does not benchmark the GPU or guarantee a target FPS.
+
+`quality` includes the requested performance profile, resolved GPU-load reduction,
+actual pixel ratio and shadow state, and whether the profile/backend permits the
+post-processing stack. `postProcessing` means **allowed**, not that a particular
+effect is currently enabled. The existing device/profile decisions are reported;
+diagnostics do not change DPR, effects or quality automatically.
+
+For streamed assets, `streaming` reports cached bytes, the base memory budget,
+cached/downloading/parsing tile counts, cache-full state, detail factor and the
+current screen-space error target. A detail factor above 1 indicates the existing
+memory-pressure safeguard reduced detail. A full cache is reported as a warning;
+this feature does not invent processing-job progress or a global completion
+percentage. Resident tile counts are explicitly partial, and a rescan is needed
+after moving to inspect a different resident set.
+
+## Inspect an existing three.js scene
+
+The main package and React-free `/utils` entry export `inspectAsset(scene, options?)`.
+It performs no network requests. You can override display metadata or mark the
+scope as resident tiles. The SDK loader's metadata follows loaded model clones.
+
+```ts filename="inspect-scene.ts"
+import type { Object3D } from "three";
+import { inspectAsset } from "@liveroom-tech/react-immersive/utils";
+
+export function inspectScene(scene: Object3D) {
+  return inspectAsset(scene, {
+    source: { name: "chair.glb", format: "glb" },
+    scope: "asset",
+  });
+}
+```
+
+Reports contain resource display names with URL query strings/fragments removed,
+and omit inline image data. They contain no renderer handles, adapter functions,
+or model buffers. JSON downloading is local to the browser.

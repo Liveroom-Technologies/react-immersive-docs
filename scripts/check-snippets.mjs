@@ -11,7 +11,7 @@ if (sdkPath && !existsSync(path.join(sdkPath, "dist/index.d.ts"))) throw new Err
 mkdirSync(fixture, { recursive: true });
 const pkg = {
   private: true,
-  dependencies: { [support.package]: support.version, ...support.peerDependencies, next: "16.2.7" },
+  dependencies: { [support.package]: "latest", ...support.peerDependencies, next: "16.2.7" },
   devDependencies: { typescript: "^5.9.0", "@types/node": "^22", "@types/react": "~19.2.0", "@types/react-dom": "~19.2.0", "@types/three": "^0.184.0" },
 };
 const packageFile = path.join(fixture, "package.json");
@@ -21,7 +21,7 @@ function run(command, args) {
   const result = spawnSync(command, args, { cwd: fixture, stdio: "inherit" });
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
-run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund"]);
+run("npm", ["install", `${support.package}@latest`, "--no-save", "--ignore-scripts", "--no-audit", "--no-fund"]);
 const ts = await import(path.join(fixture, "node_modules/typescript/lib/typescript.js"));
 const src = path.join(fixture, "src");
 rmSync(src, { recursive: true, force: true });
@@ -63,4 +63,4 @@ writeFileSync(path.join(fixture, "tsconfig.json"), JSON.stringify({
   include: ["src"],
 }, null, 2));
 run(process.execPath, [path.join(fixture, "node_modules/typescript/bin/tsc"), "-p", fixture]);
-console.log(`Compiled onboarding, Vite/Next.js guide files, sample bindings, complete reference examples, and ${counter} documented package imports against ${sdkPath ?? `npm ${support.version}`}.`);
+console.log(`Compiled onboarding, Vite/Next.js guide files, sample bindings, complete reference examples, and ${counter} documented package imports against ${sdkPath ?? "npm latest"}.`);

@@ -1,0 +1,137 @@
+---
+title: Configuration-preserving AR
+---
+
+# Configuration-preserving AR handoff
+
+BindingBuilder and ModelViewer can prepare the edited scene for Apple Quick Look
+and open that configuration in a phone's web viewer.
+ModelViewer and BindingBuilder require a valid license.
+
+## In the standalone editor
+
+Load a model, then click **AR handoff** in the preview's upper-left tools.
+Preparation starts automatically. The QR code appears as soon as its phone link
+is ready, while USDZ conversion can continue in the background. The dialog also
+offers **Download USDZ** when that file is ready. The preview's Download menu also
+opens this dialog. On iPhone/iPad, **View in AR** opens the prepared USDZ in Quick
+Look; launching remains a separate user gesture.
+
+Changing configuration invalidates the prepared result. While the dialog is open,
+it automatically updates for those edits; when closed, it waits until opened again.
+Completed results are reused when reopening without edits. Failed preparation does
+not retry in a loop; choose **Try again** to retry.
+Animation and direct scene mutations do not invalidate it automatically; pause at
+the desired pose and choose **Refresh AR**. Generated object URLs are released
+when the configuration changes, the feature is disabled, or the viewer unmounts.
+
+Locally uploaded models can be exported to USDZ without uploading them anywhere.
+Transfer the downloaded file to an Apple device for Quick Look. A phone link needs
+durable model/environment URLs and a page reachable from the phone; localhost is
+rejected. Uploading a model in this editor does not make its browser Blob URL
+accessible on another device.
+
+## Enable it in ModelViewer
+
+```tsx
+import { ModelViewer } from "@liveroom-tech/react-immersive";
+import "@liveroom-tech/react-immersive/styles.css";
+
+export function ConfiguredARViewer() {
+  return (
+    <ModelViewer
+      licenseKey="your_license_key"
+      modelUrl="https://assets.example.com/chair.glb"
+      objectBindings="auto"
+      xr={{ enabled: true, arHandoff: true, scaleMode: "real-world" }}
+    />
+  );
+}
+```
+
+The flat equivalent is `enableXR arHandoff`. Existing WebXR AR/VR continues to
+present the live scene. Without `arHandoff`, the existing `usdzUrl` and plain phone
+QR behavior remains available. With it enabled, a supplied static `usdzUrl` is not
+used as a fallback for failed snapshot generation, because it could omit edits.
+
+`mobileHandoffUrl` can point to a separate mobile page. That page must mount
+ModelViewer with `arHandoff` enabled, or the standalone BindingBuilder. The editor
+recognizes an incoming AR hash and opens the configured viewer directly.
+
+Phone links restore full bindings, model instances, placements, active variants,
+scene settings, isolation and AR scale. They use a compressed `ri-ar` hash,
+eliding unchanged scene defaults. Restored state is owned by the receiving viewer
+and remains editable; host callbacks still run. Removing the hash or changing the
+host's primary source exits restored state. Set `autoRestore: false` to read the
+link with `readARHandoffUrl` and apply it through your own controlled state.
+
+## Application adapters
+
+`ARHandoffOptions` is accepted by `arHandoff` or `xr.arHandoff`. The standalone
+BindingBuilder also accepts `arHandoff` (default `true`) and `mobileHandoffUrl`.
+
+| Option | Behavior |
+| --- | --- |
+| `assetVersion?: string` | Change when replacing an asset at the same URL or mutating the scene directly; invalidates prepared results. |
+| `maxTextureSize?: number` | Longest exported texture edge; integer 256–4096, default 2048. |
+| `storage?: ViewerStateStorage` | Application-owned save/load for larger configurations. Install the same adapter on the receiving page. |
+| `autoRestore?: boolean` | Read incoming AR hashes, default `true`. |
+| `createUSDZ?: (request: ARHandoffRequest) => Promise<Blob \| string>` | Return a USDZ Blob or HTTP(S) asset URL from your conversion/cache service. |
+| `createMobileUrl?: (request: ARHandoffRequest) => Promise<string>` | Return a reachable HTTP(S) viewer URL that restores this configuration, including any uploaded assets. |
+| `onStatusChange?: (status: ARHandoffStatus) => void` | Reports `idle`, `preparing`, `ready`, `error` or `stale`. Ready means at least one handoff path is available. |
+| `onError?: (error: Error) => void` | Reports preparation failures. USDZ and phone-link errors are shown independently. |
+
+Each request contains a detached `state`, a `configurationKey`, an abort `signal`,
+and `exportUSDZ(): Promise<ARSnapshot>`. The key is an opaque cache key and may
+contain configuration data; do not expose it as a public URL. The export function
+captures the currently loaded scene and is memoized within that request. Adapters
+should honor cancellation. App-owned remote URLs remain the application's
+responsibility; the SDK only revokes Blob URLs it creates.
+
+Built-in phone links embed local binding images as data URLs. Larger payloads
+require `storage`; no backend endpoint is supplied by the SDK. Stored IDs use
+`ri-ar-id`. Both inline and stored payloads are validated using the versioned
+viewer-state format. A QR URL is limited to 2200 characters, and viewer state to
+5 MiB. Do not put secrets in binding metadata: a handoff shares that metadata.
+
+## Export and link utilities
+
+The main and `/utils` entries export:
+
+- `exportConfiguredUSDZ(sources, options): Promise<ARSnapshot>`
+- `createARHandoffUrl(state, baseUrl, storage?, signal?): Promise<string>`
+- `readARHandoffUrl(url, storage?, signal?): Promise<ShareableViewerState | null>`
+
+`ARSnapshotSource` provides `scene: Object3D`, optional `instanceId`,
+`objectBindings`, and `materialOverrides` keyed by binding/model object IDs.
+Pass current rendered scenes/materials, not an unedited loader cache. The snapshot
+clones its resources and leaves source geometry and materials alive.
+`ARExportOptions` provides `scaleMode`, `maxTextureSize`, and `signal`.
+`ARSnapshot` returns `blob`, `meshCount`, `triangleCount`, `scale`, and `warnings`.
+Utilities that encode/decode JSON can run without React; textured USDZ export
+requires browser canvas/WebGL support. Resolve source asset URLs against their
+original page before passing a different mobile page as `baseUrl`.
+
+## What USDZ preserves
+
+Visible triangle meshes, node/asset world transforms, PBR material overrides,
+textures, selected material variants, projected image/text decals, multi-material
+geometry groups, instanced meshes, mirrored geometry, double-sided faces, and the
+current skinned/morph pose are included. The group is centered horizontally and
+rests on Y=0. Normalized scale fits its longest visible dimension to one metre;
+real-world scale keeps one scene unit per metre.
+
+USDZ is static. Viewer lighting, backgrounds, post-processing, annotations,
+measurement overlays, animation playback and browser UI stay in the web viewer.
+Phone links restore authored configuration; temporary viewport tools such as
+exploded view are not serialized. Rendering can differ between the browser and
+Quick Look, especially advanced PBR effects and texture transforms. Export uses
+Three.js's [USDZExporter](https://threejs.org/docs/pages/USDZExporter.html) with its
+Quick Look compatibility mode.
+
+Pending variants/merged models and unloaded textures produce a retryable error.
+Matcap, UV-checker, wireframe, vertex colors and unsupported materials require
+switching to supported PBR rendering or supplying `createUSDZ`. Streaming tiles
+need an application converter because only resident tiles are present locally.
+Cross-origin textures must permit canvas export. Real Quick Look appearance must
+be verified on the target Apple devices.
