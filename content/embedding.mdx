@@ -13,8 +13,8 @@ object bindings, materials, and scene settings saved in the project.
 1. Open your hosted project and choose **Share**.
 2. Set **General access** to **Anyone with the link**. This makes the project
    public; enable it only for content you want visitors to see.
-3. Under **Embed on your website**, choose **Copy embed code**.
-4. Paste the code into your site's HTML or embed block, then preview your page.
+3. Under **Embed on your website**, choose **HTML** or **React (JSX)** and select **Copy embed code**.
+4. Paste the snippet into your page, embed block, or React component and preview it.
 
 **Copy embed code** is disabled while access is restricted. A project configured
 for public editing can also be embedded, but the embed always shows the viewer.
@@ -45,6 +45,24 @@ website. The `/editor/projects/…` sharing link opens the project workspace and
 should not be used as an embed URL. Visitors do not need an account, and the
 embed does not rely on third-party sign-in cookies. License validation stays
 inside the hosted viewer; no account credentials belong in your HTML.
+
+## React and Vite example
+
+Choose **React (JSX)** when pasting the snippet into a React component such as
+`App.tsx`. JSX uses a style object and the `allowFullScreen` prop.
+
+```jsx
+<iframe
+  src="https://react-immersive.liveroom.dev/embed/projects/YOUR_PROJECT_ID"
+  title="Interactive 3D viewer"
+  width="100%"
+  height="600"
+  style={{ display: "block", width: "100%", height: 600, border: 0 }}
+  loading="lazy"
+  allow="fullscreen; xr-spatial-tracking"
+  allowFullScreen
+/>
+```
 
 ## Shopify
 
