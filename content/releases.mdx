@@ -42,3 +42,19 @@ editable React state to `Record<string, ObjectBinding>`. Follow
 the complete pattern. Then verify a browser render and your intended
 interactions. Back up authored bindings/scene data before changing an
 existing integration.
+
+
+## Dependency warnings during evaluation
+
+The validation environment uses the stable React Three Fiber 9.8.2 and XR
+6.6.32 releases. Two transitive warnings remain in these stable versions:
+
+- Fiber constructs `THREE.Clock`, which Three.js 0.184 deprecates. See the
+  [upstream tracking issue](https://github.com/pmndrs/react-three-fiber/issues/3741).
+- XR's `@pmndrs/xr` dependency loads the emulator UI `@iwer/devui@1.1.2`, which
+  pins `@fortawesome/react-fontawesome@0.2.2`. Updating XR alone does not remove it.
+
+These warnings are not suppressed. Replacing the emulator's pinned dependency
+or upgrading to a renderer prerelease solely to silence them has not been
+validated. The supported React 19 peer range is unchanged; React 19 compatibility
+is an existing requirement, rather than an unimplemented feature.

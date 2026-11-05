@@ -45,6 +45,8 @@ const {
 
 | Name                 | Type                                                 | Description                                                                   |
 | -------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `isRenderPaused` | `boolean` | Rendering is suspended; commands return false until it resumes |
+| `setCameraPresets` | `(presets: Record<string, ViewerCameraPreset>) => void` | Replace named views without moving the camera |
 | `cameraState`        | `ViewerCameraState \| null`                          | Latest camera `position`, `target`, `fov`, `zoom`                             |
 | `cameraPresets`      | `Record<string, ViewerCameraPreset>`                 | Current named views                                                           |
 | `resetView`          | `() => Promise<boolean>`                             | Resets the controls to their initial saved state                              |
