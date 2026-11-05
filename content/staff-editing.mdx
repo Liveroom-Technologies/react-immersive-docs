@@ -1,0 +1,58 @@
+---
+title: Staff editing and publishing
+---
+
+# Staff editing and publishing
+
+Use a hosted project when staff need to change labels, annotations and camera
+views without maintaining a React application. The hosted editor owns persistence
+and access; an embedded viewer reads the saved scene.
+
+## Set up the project
+
+1. Open [Projects](https://react-immersive.liveroom.dev/editor), create a project,
+   and upload the venue model. Wait for model processing to finish.
+2. Open the project. Use **Annotations** to create hotspots and edit their text.
+   Configure camera views and guided stops using the annotation controls; the
+   **Scene → Camera** inspector controls the starting camera. Preview navigation
+   before sharing. See the [editor guide](https://react-immersive.liveroom.dev/docs/reference/binding-builder).
+3. Wait for the status bar to confirm saving. If it reports an error, resolve it
+   before treating the edit as published. The hosted editor saves automatically;
+   exporting JSON is a separate workflow.
+
+## Give staff editing access
+
+1. Have each staff member sign in once.
+2. As the owner, open **Share**, enter their email and choose **Can edit**, then
+   select **Add**. They accept the invitation from their projects page.
+3. Keep **General access** restricted while preparing private content. Staff use
+   the editor link, not the iframe URL. Project and collaborator limits follow
+   the owner's [plan](https://react-immersive.liveroom.dev/docs/licensing).
+
+## Publish and verify
+
+1. In **Share**, set **General access** to **Anyone with the link** only when the
+   project is ready to be public. Choose view-only access for visitors.
+2. Copy the embed code and install it using the
+   [embedding guide](https://react-immersive.liveroom.dev/docs/embedding).
+3. Open the page in a signed-out browser. Confirm the labels and camera stops.
+4. Have staff edit a label, wait for saving, and verify it in the embedded page.
+   Saved changes normally appear within about a minute; model processing must
+   finish first. See [update behavior](https://react-immersive.liveroom.dev/docs/embedding#updates-and-access).
+
+The hosted workflow has no separate draft/publish approval stage: saved edits to
+a public project become visible to visitors. Keep a separate private project for
+staging if edits need review. To withdraw access, set General access back to
+Restricted; embeds recheck within about a minute. Previously downloaded public
+asset data cannot be recalled.
+
+## Application-owned editing
+
+For a custom React application, the npm viewer and standalone BindingBuilder do
+not provide your application's staff accounts, database or publishing API.
+Persist bindings, scene config and named camera presets through authenticated,
+authorized server endpoints. Validate the data on the server, version published
+snapshots, and load those snapshots into ModelViewer. Use
+`camera.setCameraPresets(savedPresets)` to load changed views. Never embed database
+or service credentials in a browser. Choose this path when your own review,
+commerce or deployment workflow requires it.

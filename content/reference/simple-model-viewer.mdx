@@ -62,11 +62,15 @@ type SimpleModelViewerProps = {
   highlightOnHover?: boolean;
   showLoadingOverlay?: boolean;
   refitOnResize?: boolean;
+  cameraLimits?: CameraLimits;
+  showResetButton?: boolean; // default true
   reducedMotion?: "user" | "always" | "never";
   // Initial values for the scene settings (environment) panel
   backgroundEnabled?: boolean;
   autoRotate?: boolean;
   envPreset?: PresetsType; // @react-three/drei environment preset
+  environmentUrl?: string; // self-hosted HDR; overrides envPreset
+  environmentEnabled?: boolean; // default true; false skips environment loading
   exposure?: number;
   ambientIntensity?: number;
   ambientColor?: string;
@@ -76,7 +80,8 @@ type SimpleModelViewerProps = {
   envRotation?: number;
   backgroundBlur?: number;
   toneMapping?: "aces" | "agx" | "neutral" | "none";
-  groundShadow?: boolean;
+  groundShadows?: boolean;
+  groundShadow?: boolean; // legacy alias, wins when both are supplied
   groundShadowOpacity?: number;
   showFloorGrid?: boolean;
   wireframe?: boolean;
@@ -323,3 +328,36 @@ Optional callback fired if the model fails to load or render.
 ```ts
 onLoadError?: (error: unknown) => void
 ```
+
+
+### Self-hosted or disabled environment lighting
+
+Set `environmentUrl="/lighting/studio.hdr"` to load an HDR from your own origin
+instead of the remote preset. The preset selector is hidden while a custom URL
+is supplied. Use `environmentEnabled={false}` to make no environment-map request;
+ambient and directional lights continue to work. Environment failures are isolated
+from model loading, so an unavailable lighting asset does not remove the model.
+Serve cross-origin environments with appropriate CORS headers.
+
+
+### Camera limits and reset
+
+`cameraLimits` accepts the same scene-unit distances, degree-based angles and
+pan boundary as ModelViewer. Without distance overrides, the zoom range is 5%
+to 10 times the model bounding-box diagonal. A camera reset button is shown by
+default after fitting; it restores the original viewing direction and fits the
+current viewport. Set `showResetButton={false}` to hide it.
+
+
+### Failed model loads
+
+A failed download or invalid file displays an accessible error with a retry
+button. Retrying clears the failed loader cache entry and attempts the same URL
+again. `onLoadError` still reports the underlying error for application logging.
+The error remains visible when `showLoadingOverlay={false}`; that prop controls
+loading progress only. Override the `retryModelLoad` label for translated text.
+
+
+`groundShadows` is the plural alias matching scene configuration terminology.
+Existing `groundShadow` props remain supported and take precedence when both
+are supplied, including `false`. No migration is required for existing apps.

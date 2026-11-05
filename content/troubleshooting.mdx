@@ -61,3 +61,19 @@ reproduction steps, and a small redistributable model or public sample. Use the
 [public issue tracker](https://github.com/Liveroom-Technologies/react-immersive-docs/issues).
 Send license keys, private models, account information and security reports
 through private support rather than a public issue.
+
+
+## Viewer sizing inside grid and flex layouts
+
+Give the viewer a real height and let its grid/flex item shrink below its content
+width. Otherwise a wide canvas can force the entire page to overflow:
+
+```css
+.viewer-layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); }
+.viewer-cell { min-width: 0; min-height: 0; height: 500px; }
+.flex-viewer-cell { flex: 1 1 0; min-width: 0; min-height: 0; height: 500px; }
+@media (max-width: 640px) { .viewer-layout { grid-template-columns: minmax(0, 1fr); } }
+```
+
+Place the viewer in `.viewer-cell` or `.flex-viewer-cell`. For full-height apps,
+define the height of every ancestor rather than relying on an unbounded `100%`.

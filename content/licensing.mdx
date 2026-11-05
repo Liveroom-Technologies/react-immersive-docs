@@ -7,7 +7,7 @@ title: Licensing
 React Immersive is proprietary software. The
 [package license](https://react-immersive.liveroom.dev/LICENSE.txt) and your
 plan terms govern use. **SimpleModelViewer needs no license key in local or
-production applications.** ModelViewer and BindingBuilder require a key and
+production applications.** ModelViewer, CompareViewer and BindingBuilder require a key and
 the appropriate plan. The remaining proprietary package terms still apply.
 
 ## Component and environment requirements
@@ -16,12 +16,13 @@ the appropriate plan. The remaining proprietary package terms still apply.
 | ----------------- | ------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | SimpleModelViewer | None                      | No key required                                                           | No key or paid plan required                                                            |
 | ModelViewer       | Required                  | Create a Free or paid key in the console; Free supports local development | A production-enabled plan and a registered domain are required                          |
+| CompareViewer     | Required                  | Create a Free or paid key; both panes use ModelViewer                     | A production-enabled plan and a registered domain are required                          |
 | BindingBuilder    | Required                  | Create a Free or paid key; some authoring features depend on tier         | A production-enabled plan and a registered domain are required; features depend on tier |
 
 SimpleModelViewer can be deployed to production without creating an account,
 generating a key, or choosing a paid plan.
 
-For ModelViewer and BindingBuilder, the Free plan is for local development.
+For ModelViewer, CompareViewer and BindingBuilder, the Free plan is for local development.
 Starter supports one production domain; Growth supports up to five.
 Consult [current pricing](https://react-immersive.liveroom.dev/pricing) for
 the available plans and feature entitlements for those licensed components.
@@ -86,3 +87,16 @@ to this documentation repository.
 
 For account-specific or contractual questions, contact
 [developers@liveroom.xyz](mailto:developers@liveroom.xyz).
+
+## Showing license status in your interface
+
+`ModelViewer`, `CompareViewer` and `BindingBuilder` accept
+`onLicenseStatusChange(result)`. The exported `LicenseResult` type reports
+`status` (`"checking"`, `"valid"`, or `"invalid"`), an optional `reason`,
+`environment`, `tier`, and `isLocalDomain`. It never contains the license key.
+Use this callback to show application-owned status or support instructions.
+
+On localhost, a missing-key error links directly to the console. Sign in, create
+a Free development key, and pass it as `licenseKey`. Production deployments
+continue to require the appropriate plan and registered domain. This does not
+change key validation or introduce a no-account trial.

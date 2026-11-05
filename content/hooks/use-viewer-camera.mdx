@@ -85,3 +85,21 @@ Compose `camera` with [`useViewerConnection`](https://react-immersive.liveroom.d
 to capture PNGs or record cinematic/turntable video while keeping camera controls
 connected. After [WebGL recovery](https://react-immersive.liveroom.dev/docs/reference/model-viewer#webgl-context-recovery),
 `handleViewerReady` reconnects to the rebuilt viewer.
+
+## Offscreen rendering and interrupted moves
+
+The viewer suspends rendering when it is offscreen. `isRenderPaused` on
+`useViewerCamera()` reports this state. Camera commands return `false` when
+called while suspended, or when an in-progress move is interrupted by suspension
+or disconnection; `true` means the command completed. Check the result before
+advancing an external guided tour. Bring the viewer back onscreen before retrying.
+Animation hooks expose `isRenderPaused` separately from playback intent: a clip
+can remain `isPlaying` while its clock is suspended, then continue on return.
+
+## Loading edited presets
+
+`presets` initializes the hook once, like a React state initializer. Rerendering
+with new options preserves views saved during the session. To replace them after
+fetching staff edits, call `camera.setCameraPresets(savedPresets)`. This replaces
+all named views, without moving the camera; pass `{}` to clear them. Call
+`goToPreset(name)` explicitly to open one of the loaded views.

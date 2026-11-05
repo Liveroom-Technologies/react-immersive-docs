@@ -21,8 +21,9 @@ Changing configuration invalidates the prepared result. While the dialog is open
 it automatically updates for those edits; when closed, it waits until opened again.
 Completed results are reused when reopening without edits. Failed preparation does
 not retry in a loop; choose **Try again** to retry.
-Animation and direct scene mutations do not invalidate it automatically; pause at
-the desired pose and choose **Refresh AR**. Generated object URLs are released
+Live animation frames and direct scene mutations do not invalidate it automatically.
+For a captured skin/morph pose, pause at the desired pose and choose **Refresh AR**.
+Generated object URLs are released
 when the configuration changes, the feature is disabled, or the viewer unmounts.
 
 Locally uploaded models can be exported to USDZ without uploading them anywhere.
@@ -103,7 +104,8 @@ The main and `/utils` entries export:
 - `readARHandoffUrl(url, storage?, signal?): Promise<ShareableViewerState | null>`
 
 `ARSnapshotSource` provides `scene: Object3D`, optional `instanceId`,
-`objectBindings`, and `materialOverrides` keyed by binding/model object IDs.
+`objectBindings`, `materialOverrides` keyed by binding/model object IDs, and
+`sceneConfig` containing authored animation and sequence settings.
 Pass current rendered scenes/materials, not an unedited loader cache. The snapshot
 clones its resources and leaves source geometry and materials alive.
 `ARExportOptions` provides `scaleMode`, `maxTextureSize`, and `signal`.
@@ -121,8 +123,38 @@ current skinned/morph pose are included. The group is centered horizontally and
 rests on Y=0. Normalized scale fits its longest visible dimension to one metre;
 real-world scale keeps one scene unit per metre.
 
-USDZ is static. Viewer lighting, backgrounds, post-processing, annotations,
-measurement overlays, animation playback and browser UI stay in the web viewer.
+Authored autoplay clips and the first autoplay sequence export object and skeletal
+motion into USDZ at 30 frames per second. Skeletal exports retain the bind geometry,
+joint hierarchy and vertex weights, with shared skeletons for material submeshes.
+Native clip speed and loop mode determine the sampled cycle. Multiple clips are
+baked into one timeline; Quick Look controls playback rather than the browser's
+animation controls. The exported asset explicitly enables autoplay. Morph-target
+animation remains at the captured pose and produces an export warning. Use
+`createUSDZ` with an application converter when morph animation is required.
+Standalone `exportConfiguredUSDZ` callers supply the authored `sceneConfig` on each
+`ARSnapshotSource` to include animation.
+
+WebXR presents the live scene, including skeletal/morph clips and sequence object,
+material and visibility tracks. Sequence camera tracks are skipped during AR so
+they do not override the phone's tracked camera.
+
+The WebXR overlay offers an animation selector and play/pause button when clips
+or sequences are available. Choosing an animation starts it; pause/resume retains
+its position, and playing a finished clip starts it again. Clips are grouped by
+visible model, with authored display names and hidden clips respected. Changing
+the selection stops the previous playback, including any active sequence, to
+avoid competing transforms. These controls belong to the WebXR DOM overlay;
+Apple Quick Look uses its own native interface and cannot display this toolbar.
+On the iPhone/iPad handoff page, choose a clip or sequence in the animation selector
+before tapping **Start AR**. Changing the selection prepares a new USDZ; the AR
+launch waits until it is ready. The saved animation appears by name; **Default**
+represents combined saved animations, and **No animation** indicates no saved autoplay.
+Choosing a phone animation does not change the saved project. To choose a different
+clip after launching Quick Look, return to the page, choose it and start AR again.
+
+Viewer lighting, backgrounds, post-processing, annotations, measurement overlays
+and browser UI stay in the web viewer. USDZ also omits sequence camera, visibility
+and appearance tracks.
 Phone links restore authored configuration; temporary viewport tools such as
 exploded view are not serialized. Rendering can differ between the browser and
 Quick Look, especially advanced PBR effects and texture transforms. Export uses

@@ -192,3 +192,13 @@ BindingBuilder's **Compare** includes this panel automatically. **Object
 matching** chooses model ID, binding ID, or a metadata key. **Pin** keeps the
 current configuration as the before baseline for subsequent edits. Both sides
 use the current section cut while you inspect the active asset.
+
+## Programmatic camera control
+
+Connect a `useViewerCamera()` hook to a pane's `onViewerReady` and
+`onCameraChange` callbacks (or use that pane's `useViewer().props`). Explicit
+hook commands such as `lookAt`, `setCameraTarget`, `dollyTo`, `fitScene` and
+`goToPreset` make that pane the leader for the command, so both cameras move.
+Dragging either pane transfers leadership to it again. Automatic follower refits
+continue to follow the current leader. Direct calls on `viewer.raw.controls`
+bypass this ownership behavior; prefer the hook commands for linked views.

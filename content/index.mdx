@@ -13,6 +13,26 @@ Requires **React 19**. [Compatibility and upgrade notes](https://react-immersive
 
 A React 3D model viewer for interactive 3D assets, mesh selection, object bindings, built-in UI panels, and a full suite of hooks for camera, animations, visibility, and more.
 
+## Choose your starting point
+
+| Need | Start here | Key |
+| --- | --- | --- |
+| Display a model with orbit controls | [SimpleModelViewer](https://react-immersive.liveroom.dev/docs/reference/simple-model-viewer) | None, including production |
+| Configure products, annotations, animations or custom controls | [ModelViewer](https://react-immersive.liveroom.dev/docs/reference/model-viewer) | Required |
+| Compare two models | [CompareViewer](https://react-immersive.liveroom.dev/docs/reference/compare-viewer) | Required |
+| Let staff edit a hosted scene and embed it | [Staff editing workflow](https://react-immersive.liveroom.dev/docs/staff-editing) | Hosted project owner's plan |
+
+For a free embed in a React app, start with the dedicated entry point:
+
+```tsx
+import { SimpleModelViewer } from "@liveroom-tech/react-immersive/simple-model-viewer";
+import "@liveroom-tech/react-immersive/simple-model-viewer.css";
+
+export function ModelEmbed() {
+  return <div style={{ height: 400 }}><SimpleModelViewer modelUrl="/model.glb" /></div>;
+}
+```
+
 ## Features
 
 - **GLB/GLTF, OBJ/MTL, FBX, USDZ, STL, and PLY rendering** via React Three Fiber

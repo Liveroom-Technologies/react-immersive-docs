@@ -3183,3 +3183,21 @@ for complete examples, field definitions and measurement limits.
 model URL. Existing unique-URL integrations remain supported.
 See [Multi-asset composition](https://react-immersive.liveroom.dev/docs/reference/multi-asset-composition)
 for the `AssetTransform` contract, callback identities and `useViewerModels` helpers.
+
+
+## Related names and compatibility aliases
+
+| Name | Meaning |
+| --- | --- |
+| `preset` | A component UI preset such as `minimal`; it does not store a camera view |
+| `useViewerCamera({ presets })` | Initial named camera positions/targets; replace with `setCameraPresets` |
+| `cameraState` | A complete runtime camera snapshot, including position, target and projection |
+| `cameraView` on an annotation | That annotation's authored destination view |
+| `selectedObjectBinding` | The selected `ObjectBinding`, not a three.js scene object |
+| `viewer.raw.nodes` | Actual three.js objects by binding key and node name |
+
+`selectedObject` remains supported as an alias for `selectedObjectBinding` and
+wins if both are supplied, including an explicit `null`. The `useViewer()` spread
+continues to use that existing name. Scene camera configuration controls initial
+position; use `useViewerCamera({ initialTarget })` for an initial orbit target,
+or `setCameraTarget()` for a runtime change.

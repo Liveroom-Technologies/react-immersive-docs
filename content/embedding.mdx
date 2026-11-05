@@ -103,6 +103,13 @@ If you add iframe sandboxing, the viewer needs scripts and its original origin
 
 ## Updates and access
 
+Growth's **live updates for public-link viewers** refers to the hosted project
+workspace's live collaboration connection. An iframe embed uses a separate
+refresh mechanism: it polls saved project snapshots rather than streaming every
+editing gesture. The interval below applies to embeds; it is not a promise of
+instant publication or a separate Growth-only embed entitlement.
+
+
 The embed loads the saved project and checks for updates and public access every
 30 seconds, and when its tab becomes visible. Responses are cached briefly, so
 saved scene edits and completed model processing appear within about a minute.

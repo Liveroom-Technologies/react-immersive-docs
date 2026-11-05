@@ -41,6 +41,7 @@ const {
 |------|------|-------------|
 | `clips` | `string[]` | Animation clip names found in the model file |
 | `currentClip` | `string \| null` | The clip played most recently, while it's active, or `null` |
+| `isRenderPaused` | `boolean` | Rendering is suspended offscreen; playback intent is preserved but time does not advance |
 | `isPlaying` | `boolean` | `true` while any clip is playing (not paused, finished, or stopped) |
 | `speed` | `number` | Playback speed of `currentClip` (default `1`) |
 | `time` | `number` | Live playback position of `currentClip` in seconds (updates while playing) |
@@ -138,3 +139,33 @@ display-name collisions there. Those combined display names are not the names
 to send to another model's controls. The original asset provides the animation
 data; JSON/TypeScript bindings do not contain clips. See the
 [complete playback and multi-select component](https://react-immersive.liveroom.dev/docs/reference/model-viewer#controlled-group-selection-and-playback).
+
+
+## Setting a clip's loop mode
+
+`loopMode` belongs in `sceneConfig.animations.clips`, not in `play()` options.
+Configure it using the exact source clip name, then call `play` normally:
+
+```tsx
+import { ModelViewer, useViewer } from "@liveroom-tech/react-immersive";
+
+export function DoorDemo({ licenseKey }: { licenseKey: string }) {
+  const viewer = useViewer();
+  function openDoor() {
+    viewer.scene.updateSceneConfig({ animations: { clips: [{
+      sourceName: "DoorOpen", displayName: "Open door", hidden: false,
+      loopMode: "once", speed: 1,
+    }] } });
+    viewer.animations.play("DoorOpen");
+  }
+  return <>
+    <button onClick={openDoor}>Open door</button>
+    <div style={{ height: 400 }}>
+      <ModelViewer modelUrl="/door.glb" licenseKey={licenseKey} {...viewer.props} />
+    </div>
+  </>;
+}
+```
+
+Use `"repeat"`, `"once"`, or `"ping-pong"`. A clips array replaces the previous
+array, so preserve entries for other clips when editing a multi-clip scene.
