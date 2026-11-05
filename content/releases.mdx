@@ -43,6 +43,35 @@ the complete pattern. Then verify a browser render and your intended
 interactions. Back up authored bindings/scene data before changing an
 existing integration.
 
+## Changes in 6.2.0
+
+New:
+
+- `SimpleModelViewer`: `environmentUrl` (self-hosted HDR), `environmentEnabled`,
+  `cameraLimits`, `showResetButton` and `showLoadError`.
+- `useViewerCamera()`: `setCameraPresets` and `isRenderPaused`.
+  `useViewerAnimations()`: `isRenderPaused`.
+- `onLicenseStatusChange` on `ModelViewer`, `CompareViewer` and `BindingBuilder`,
+  with exported `LicenseResult` and `LicenseStatus` types.
+
+Behavior changes to check in an existing integration:
+
+- Hidden objects, and objects under a hidden parent, no longer receive clicks,
+  hover or the context menu, so objects behind them can be picked. Streamed
+  models also honour `selectable` and `hoverable`.
+- Camera commands from `useViewerCamera()` now always settle while the viewer is
+  offscreen: they jump to their end instead of waiting for it to scroll back.
+  They return `false` only when the camera is disconnected from the viewer.
+- `SimpleModelViewer` shows a reset button in the bottom-right corner and a load
+  error with a retry button by default. Pass `showResetButton={false}` or
+  `showLoadError={false}` to keep your own interface.
+- `showObjectBindingDataPanel={false}`, and the `minimal` and `showcase` presets,
+  no longer render the object panel at all. A closed panel is now `inert`.
+- In `CompareViewer`, a camera command from either pane's hook makes that pane
+  lead both cameras.
+- OBJ, MTL, FBX and USDZ loaders load on demand, so apps that only show glTF
+  download less JavaScript.
+
 
 ## Dependency warnings during evaluation
 

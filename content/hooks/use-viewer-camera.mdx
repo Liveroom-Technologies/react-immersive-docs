@@ -45,7 +45,7 @@ const {
 
 | Name                 | Type                                                 | Description                                                                   |
 | -------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `isRenderPaused` | `boolean` | Rendering is suspended; commands return false until it resumes |
+| `isRenderPaused` | `boolean` | The viewer is offscreen and not rendering; commands jump instead of animating |
 | `setCameraPresets` | `(presets: Record<string, ViewerCameraPreset>) => void` | Replace named views without moving the camera |
 | `cameraState`        | `ViewerCameraState \| null`                          | Latest camera `position`, `target`, `fov`, `zoom`                             |
 | `cameraPresets`      | `Record<string, ViewerCameraPreset>`                 | Current named views                                                           |
@@ -90,11 +90,15 @@ connected. After [WebGL recovery](https://react-immersive.liveroom.dev/docs/refe
 
 ## Offscreen rendering and interrupted moves
 
-The viewer suspends rendering when it is offscreen. `isRenderPaused` on
-`useViewerCamera()` reports this state. Camera commands return `false` when
-called while suspended, or when an in-progress move is interrupted by suspension
-or disconnection; `true` means the command completed. Check the result before
-advancing an external guided tour. Bring the viewer back onscreen before retrying.
+The viewer stops rendering while it is offscreen, and `isRenderPaused` on
+`useViewerCamera()` reports this. Camera commands still complete while it is
+paused: a move jumps straight to its end instead of animating, and a move that
+is animating when the viewer scrolls away finishes the same way. The camera is
+where you asked when the viewer comes back, so an external guided tour, an
+initial position or a restored shared view never waits for the user to scroll.
+
+Commands return `false` only when the camera is disconnected from the viewer,
+for example after it unmounts or switches to a first-person controller.
 Animation hooks expose `isRenderPaused` separately from playback intent: a clip
 can remain `isPlaying` while its clock is suspended, then continue on return.
 
@@ -102,6 +106,6 @@ can remain `isPlaying` while its clock is suspended, then continue on return.
 
 `presets` initializes the hook once, like a React state initializer. Rerendering
 with new options preserves views saved during the session. To replace them after
-fetching staff edits, call `camera.setCameraPresets(savedPresets)`. This replaces
+fetching saved edits, call `camera.setCameraPresets(savedPresets)`. This replaces
 all named views, without moving the camera; pass `{}` to clear them. Call
 `goToPreset(name)` explicitly to open one of the loaded views.

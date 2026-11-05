@@ -6,7 +6,7 @@ export default {
   frameworks: "Framework Setup",
   examples: "Examples",
   embedding: "Embedding outside React",
-  "staff-editing": "Staff Editing and Publishing",
+  "content-editing": "Content Editing and Publishing",
   troubleshooting: "Troubleshooting",
   licensing: "Licensing",
   releases: "Compatibility and Upgrading",

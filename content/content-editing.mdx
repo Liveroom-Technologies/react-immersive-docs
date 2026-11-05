@@ -1,11 +1,12 @@
 ---
-title: Staff editing and publishing
+title: Content editing and publishing
 ---
 
-# Staff editing and publishing
+# Content editing and publishing
 
-Use a hosted project when staff need to change labels, annotations and camera
-views without maintaining a React application. The hosted editor owns persistence
+Use a hosted project when people on your team, not only developers, need to
+change labels, annotations and camera views without maintaining a React
+application. The hosted editor owns persistence
 and access; an embedded viewer reads the saved scene.
 
 ## Set up the project
@@ -20,12 +21,12 @@ and access; an embedded viewer reads the saved scene.
    before treating the edit as published. The hosted editor saves automatically;
    exporting JSON is a separate workflow.
 
-## Give staff editing access
+## Give your team editing access
 
-1. Have each staff member sign in once.
+1. Have each editor sign in once.
 2. As the owner, open **Share**, enter their email and choose **Can edit**, then
    select **Add**. They accept the invitation from their projects page.
-3. Keep **General access** restricted while preparing private content. Staff use
+3. Keep **General access** restricted while preparing private content. Editors use
    the editor link, not the iframe URL. Project and collaborator limits follow
    the owner's [plan](https://react-immersive.liveroom.dev/docs/licensing).
 
@@ -36,7 +37,7 @@ and access; an embedded viewer reads the saved scene.
 2. Copy the embed code and install it using the
    [embedding guide](https://react-immersive.liveroom.dev/docs/embedding).
 3. Open the page in a signed-out browser. Confirm the labels and camera stops.
-4. Have staff edit a label, wait for saving, and verify it in the embedded page.
+4. Have an editor change a label, wait for saving, and verify it in the embedded page.
    Saved changes normally appear within about a minute; model processing must
    finish first. See [update behavior](https://react-immersive.liveroom.dev/docs/embedding#updates-and-access).
 
@@ -49,10 +50,13 @@ asset data cannot be recalled.
 ## Application-owned editing
 
 For a custom React application, the npm viewer and standalone BindingBuilder do
-not provide your application's staff accounts, database or publishing API.
+not provide your application's user accounts, database or publishing API.
 Persist bindings, scene config and named camera presets through authenticated,
 authorized server endpoints. Validate the data on the server, version published
 snapshots, and load those snapshots into ModelViewer. Use
 `camera.setCameraPresets(savedPresets)` to load changed views. Never embed database
 or service credentials in a browser. Choose this path when your own review,
-commerce or deployment workflow requires it.
+commerce or deployment workflow requires it. The
+[venue tour starter](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/venue-tour-demo) shows the
+browser side: it loads stops from JSON, has an editor mode for changing text and
+capturing camera views, and hands the result to a `publishTour` function you point at your API.

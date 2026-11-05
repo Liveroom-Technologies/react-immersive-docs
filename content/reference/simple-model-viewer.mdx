@@ -64,6 +64,7 @@ type SimpleModelViewerProps = {
   refitOnResize?: boolean;
   cameraLimits?: CameraLimits;
   showResetButton?: boolean; // default true
+  showLoadError?: boolean; // default true
   reducedMotion?: "user" | "always" | "never";
   // Initial values for the scene settings (environment) panel
   backgroundEnabled?: boolean;
@@ -80,8 +81,7 @@ type SimpleModelViewerProps = {
   envRotation?: number;
   backgroundBlur?: number;
   toneMapping?: "aces" | "agx" | "neutral" | "none";
-  groundShadows?: boolean;
-  groundShadow?: boolean; // legacy alias, wins when both are supplied
+  groundShadow?: boolean;
   groundShadowOpacity?: number;
   showFloorGrid?: boolean;
   wireframe?: boolean;
@@ -345,8 +345,9 @@ Serve cross-origin environments with appropriate CORS headers.
 `cameraLimits` accepts the same scene-unit distances, degree-based angles and
 pan boundary as ModelViewer. Without distance overrides, the zoom range is 5%
 to 10 times the model bounding-box diagonal. A camera reset button is shown by
-default after fitting; it restores the original viewing direction and fits the
-current viewport. Set `showResetButton={false}` to hide it.
+default in the bottom-right corner after fitting; it restores the original
+viewing direction and fits the current viewport. Set `showResetButton={false}`
+to hide it.
 
 
 ### Failed model loads
@@ -354,10 +355,9 @@ current viewport. Set `showResetButton={false}` to hide it.
 A failed download or invalid file displays an accessible error with a retry
 button. Retrying clears the failed loader cache entry and attempts the same URL
 again. `onLoadError` still reports the underlying error for application logging.
-The error remains visible when `showLoadingOverlay={false}`; that prop controls
-loading progress only. Override the `retryModelLoad` label for translated text.
+The message names the cause, such as a missing file (404), an HTML page served
+at the model URL, or a network failure. It remains visible when
+`showLoadingOverlay={false}`; that prop controls loading progress only. Set
+`showLoadError={false}` when you show your own error from `onLoadError`.
+Override the `retryModelLoad` label for translated text.
 
-
-`groundShadows` is the plural alias matching scene configuration terminology.
-Existing `groundShadow` props remain supported and take precedence when both
-are supplied, including `false`. No migration is required for existing apps.

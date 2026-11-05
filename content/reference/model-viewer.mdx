@@ -3185,7 +3185,7 @@ See [Multi-asset composition](https://react-immersive.liveroom.dev/docs/referenc
 for the `AssetTransform` contract, callback identities and `useViewerModels` helpers.
 
 
-## Related names and compatibility aliases
+## Similar names
 
 | Name | Meaning |
 | --- | --- |
@@ -3193,11 +3193,12 @@ for the `AssetTransform` contract, callback identities and `useViewerModels` hel
 | `useViewerCamera({ presets })` | Initial named camera positions/targets; replace with `setCameraPresets` |
 | `cameraState` | A complete runtime camera snapshot, including position, target and projection |
 | `cameraView` on an annotation | That annotation's authored destination view |
-| `selectedObjectBinding` | The selected `ObjectBinding`, not a three.js scene object |
+| `selectedObject` | The selected `ObjectBinding`, not a three.js scene object |
 | `viewer.raw.nodes` | Actual three.js objects by binding key and node name |
 
-`selectedObject` remains supported as an alias for `selectedObjectBinding` and
-wins if both are supplied, including an explicit `null`. The `useViewer()` spread
-continues to use that existing name. Scene camera configuration controls initial
-position; use `useViewerCamera({ initialTarget })` for an initial orbit target,
-or `setCameraTarget()` for a runtime change.
+`useViewer().selection.selectedObjectBinding` is the same binding the `useViewer()`
+spread passes to `selectedObject`. `SimpleModelViewer`'s `groundShadow` prop and
+`sceneConfig.groundShadows` both control the contact shadow under the model.
+Scene camera configuration controls the initial position; use
+`useViewerCamera({ initialTarget })` for an initial orbit target, or
+`setCameraTarget()` for a runtime change.
