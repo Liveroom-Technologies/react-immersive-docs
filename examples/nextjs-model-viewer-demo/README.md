@@ -1,6 +1,6 @@
 # Next.js model viewer starter
 
-Targets `@liveroom-tech/react-immersive@5.2.0`, React 19.2.4 and Next.js 16.2.7.
+Targets `@liveroom-tech/react-immersive@6.2.0`, React 19.2.4 and Next.js 16.2.7.
 Use Node 22.12+.
 
 ```bash

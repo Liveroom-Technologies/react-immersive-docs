@@ -32,6 +32,14 @@ These examples are safe-to-share public starters for `@liveroom-tech/react-immer
 - `texture-upload-demo` shows `onTextureUpload` routing an uploaded image
   through a storage step and applying it as a product's material texture across
   the whole garment.
+- `retail-configurator-demo` is a Next.js App Router sofa product page:
+  click-to-choose parts, swatches from `useProductConfigurator`, prices, share
+  links that restore choices, and AR handoff of the configured sofa.
+- `venue-tour-demo` tours an event hall with external stop navigation and
+  hotspots. Stops load from JSON at runtime, and an editor mode changes their
+  text and camera views and publishes them.
+- `before-after-demo` compares two aligned kitchen models with `CompareViewer`
+  in slider and side-by-side layouts, with camera buttons moving both panes.
 
 When adding examples, keep them minimal and avoid committing proprietary models,
 textures, or private customer data.

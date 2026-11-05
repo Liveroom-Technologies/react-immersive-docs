@@ -1,0 +1,110 @@
+:root {
+  --ink: #23221f;
+  --muted: #6c6860;
+  --line: #e2ddd3;
+  --surface: #ffffff;
+  --canvas: #f3f0ea;
+  --accent: #2f5d50;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  min-height: 100vh;
+}
+
+/* The viewer needs a real height. min-width: 0 lets the grid track shrink. */
+.viewer {
+  position: relative;
+  min-width: 0;
+  height: 100vh;
+  background: var(--canvas);
+}
+
+.notice {
+  position: absolute;
+  z-index: 10;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #e3c98f;
+  border-radius: 8px;
+  background: #fff8e8;
+  font-size: 14px;
+}
+
+.panel {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  padding: 32px 28px;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.panel header { display: grid; gap: 6px; }
+.eyebrow { margin: 0; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.panel h1 { margin: 0; font-size: 26px; line-height: 1.2; }
+.price { margin: 0; font-size: 20px; font-variant-numeric: tabular-nums; }
+.hint { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+.group {
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.group.is-active { border-color: var(--accent); box-shadow: 0 0 0 3px rgb(47 93 80 / 0.15); }
+.group legend { padding: 0 6px; font-weight: 600; font-size: 15px; }
+
+.swatches { display: grid; gap: 6px; }
+.swatch {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.swatch:hover { background: var(--canvas); }
+/* The radio stays focusable for keyboard users; the chip shows its state. */
+.swatch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.chip { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgb(0 0 0 / 0.15); }
+.swatch input:checked + .chip { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.swatch input:focus-visible + .chip { outline: 2px solid var(--accent); outline-offset: 4px; }
+.swatch input:disabled ~ * { opacity: 0.4; }
+.delta { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.actions button {
+  padding: 10px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+.actions button.secondary { background: transparent; color: var(--accent); }
+.actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.loading { padding: 24px; }
+
+@media (max-width: 820px) {
+  .page { grid-template-columns: minmax(0, 1fr); }
+  .viewer { height: 60vh; }
+  .panel { max-height: none; border-left: 0; border-top: 1px solid var(--line); }
+}

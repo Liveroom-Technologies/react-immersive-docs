@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "stops": [
+    {
+      "id": 1,
+      "title": "Stage",
+      "description": "An 8 m stage with a full PA. Seats 180 theatre-style or 120 at tables.",
+      "position": [0, 1.6, -5.1],
+      "view": { "position": [0, 2.6, 2.5], "target": [0, 1.2, -5] }
+    },
+    {
+      "id": 2,
+      "title": "Bar",
+      "description": "A 6 m bar with four stools, open until midnight on event nights.",
+      "position": [-8.6, 1.6, 0],
+      "view": { "position": [-3.5, 2.4, 3.5], "target": [-8.6, 1, 0] }
+    },
+    {
+      "id": 3,
+      "title": "Entrance",
+      "description": "Step-free entrance from the street, with a cloakroom to the right.",
+      "position": [0, 2.2, 6.9],
+      "view": { "position": [0, 2.2, -1.5], "target": [0, 1.4, 7] }
+    }
+  ]
+}

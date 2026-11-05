@@ -28,6 +28,7 @@ jobs:
         example:
           - animation-studio-demo
           - ar-product-viewer-demo
+          - before-after-demo
           - binding-builder-demo
           - cinematic-tour-demo
           - exploded-view-demo
@@ -36,11 +37,13 @@ jobs:
           - model-viewer-demo
           - mouse-controller-demo
           - nextjs-model-viewer-demo
+          - retail-configurator-demo
           - shareable-view-demo
           - simple-model-viewer-demo
           - switch-room-demo
           - texture-upload-demo
           - vehicle-configurator-demo
+          - venue-tour-demo
     defaults:
       run:
         working-directory: examples/${{ matrix.example }}
