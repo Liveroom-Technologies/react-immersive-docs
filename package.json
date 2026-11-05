@@ -7,6 +7,7 @@
     "docs:generate": "node scripts/generate-agent-docs.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "check:snippets": "node scripts/check-snippets.mjs",
-    "check:published": "node scripts/check-docs.mjs --published"
+    "check:published": "node scripts/check-docs.mjs --published",
+    "starters:update": "node scripts/update-starters.mjs"
   }
 }

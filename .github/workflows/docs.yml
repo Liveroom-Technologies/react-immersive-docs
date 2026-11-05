@@ -3,6 +3,7 @@ name: Documentation and starters
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
