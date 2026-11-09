@@ -43,6 +43,68 @@ the complete pattern. Then verify a browser render and your intended
 interactions. Back up authored bindings/scene data before changing an
 existing integration.
 
+## Changes in 6.2.1
+
+New:
+
+- `SimpleModelViewer`: `fitPadding`, `zoom` and `pageScroll`, for embedding a
+  viewer in a page. See the
+  [landing-page embed](https://react-immersive.liveroom.dev/docs/reference/simple-model-viewer#landing-page-embed)
+  example.
+- `ModelViewer` and `CompareViewer`: `controls.pageScroll` (flat prop
+  `pageScroll`). The mouse wheel scrolls the page unless Ctrl or ⌘ is held,
+  and on touch screens a vertical swipe scrolls while a sideways drag rotates.
+- A built-in `"neutral"` lighting preset, generated in the browser, so the
+  default lighting downloads nothing from any host.
+- Smaller downloads: about 445 KiB of gzipped JavaScript for a page with
+  `SimpleModelViewer` (from 518) and 785 KiB with `ModelViewer` (from 952).
+  WebXR, streaming 3D Tiles, KTX2 decoding, HDR lighting loaders, the STL and
+  PLY loaders, the GLB exporter, the AR QR code and the colour picker now load
+  only when used. See
+  [JavaScript download size](https://react-immersive.liveroom.dev/docs/troubleshooting#javascript-download-size).
+
+Fixes:
+
+- `SimpleModelViewer`: the loading overlay no longer stays up after the model
+  loads for visitors with reduced motion turned on. The first framing now jumps
+  straight into place behind the overlay instead of animating.
+- `SimpleModelViewer` and `ModelViewer` redraw once the environment lighting
+  arrives, so a model that loaded first is no longer left under-lit until
+  someone touches the viewer.
+- `useViewerCamera().focusObject` moves to the binding's `cameraState` when it
+  has a position and target, as selecting the object in the viewer does.
+- Animated `useViewerCamera()` commands always settle once the camera arrives.
+  A move that finished within a single frame, such as the first command after
+  the viewer had been idle, could leave its promise pending.
+- A binding on a group node now hides and shows everything under it, and
+  hovering it outlines all of its meshes.
+- Off local hosts, a license denial now logs its reason to the console
+  (for example, a plan that doesn't allow production domains). Visitors still
+  see only a generic message.
+
+Behavior changes to check in an existing integration:
+
+- `ModelViewer`'s `controls.zoom: false` (`disableZoom`) now also turns off
+  wheel, pinch and middle-drag zoom. Before, it only stopped zooming to a
+  selected object.
+- The default lighting is now `"neutral"` in both viewers (it was `"city"` in
+  `SimpleModelViewer` and `"apartment"` in `ModelViewer`, both downloaded from
+  `raw.githack.com`). It's a soft studio light, about as bright as before.
+  Pass `envPreset` or `sceneConfig.environment.preset` to keep the old look;
+  saved projects that name a preset keep it.
+- With `xr.enabled`, the viewer loads its WebXR code before creating the 3D
+  view, so the model appears a moment later than without XR.
+- The loading overlay takes the viewer's background colour instead of a dark
+  panel, shows a light card on light backgrounds, and leaves a `poster`
+  visible underneath.
+- `SimpleModelViewer` frames the model with space scaled to its size (a tenth
+  of its largest dimension) instead of a fixed half scene unit on each side.
+  Small products now fill the view, and a spinning model stays fully in view.
+  Set `fitPadding` to adjust.
+- Switching `CompareViewer`'s `layout` keeps both viewers mounted and keeps the
+  camera view. `CompareViewer` now defaults `refitOnResize` to `false`, so a
+  resize no longer reframes the model; pass `refitOnResize` to restore that.
+
 ## Changes in 6.2.0
 
 New:
@@ -71,7 +133,6 @@ Behavior changes to check in an existing integration:
   lead both cameras.
 - OBJ, MTL, FBX and USDZ loaders load on demand, so apps that only show glTF
   download less JavaScript.
-
 
 ## Dependency warnings during evaluation
 

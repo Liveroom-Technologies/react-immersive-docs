@@ -50,7 +50,7 @@ const {
 | `cameraState`        | `ViewerCameraState \| null`                          | Latest camera `position`, `target`, `fov`, `zoom`                             |
 | `cameraPresets`      | `Record<string, ViewerCameraPreset>`                 | Current named views                                                           |
 | `resetView`          | `() => Promise<boolean>`                             | Resets the controls to their initial saved state                              |
-| `focusObject`        | `(id: string) => Promise<boolean>`                   | Fits the camera to a binding by key, `binding.id`, or `binding.modelObjectId` |
+| `focusObject`        | `(id: string) => Promise<boolean>`                   | Moves to a binding (by key, `binding.id`, or `binding.modelObjectId`): to its `cameraState` view when it has a position and target, otherwise a fit around the object |
 | `fitScene`           | `() => Promise<boolean>`                             | Fits the camera to the whole loaded scene                                     |
 | `setCameraTarget`    | `(target, transition?) => Promise<boolean>`          | Sets the camera target to a given `[x, y, z]`                                 |
 | `setCameraState`     | `(state, transition?) => Promise<boolean>`            | Restores a complete camera state                                              |

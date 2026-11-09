@@ -77,3 +77,26 @@ width. Otherwise a wide canvas can force the entire page to overflow:
 
 Place the viewer in `.viewer-cell` or `.flex-viewer-cell`. For full-height apps,
 define the height of every ancestor rather than relying on an unbounded `100%`.
+
+## JavaScript download size
+
+Measured in a production Vite build (gzip, everything loaded before and while
+the first model appears, including three.js, React and React Three Fiber):
+
+| Page uses                      | JavaScript |
+| ------------------------------ | ---------- |
+| `SimpleModelViewer`            | ~445 KiB   |
+| `ModelViewer`                  | ~785 KiB   |
+| Both                           | ~795 KiB   |
+
+Features you don't use aren't downloaded. These load only when needed:
+
+- WebXR, when `xr.enabled` (`enableXR`) is on and the browser supports it
+- Streaming 3D Tiles, for a `tilesetUrl`
+- KTX2 texture decoding, for a model with KTX2 textures
+- OBJ, FBX, USDZ, STL and PLY loaders, for those formats
+- HDR lighting loaders, for a downloadable preset or `environmentUrl`
+- The GLB exporter, the AR QR code and the colour picker, when first used
+
+To keep the viewer off a page's first load, import it with `React.lazy` (or
+`next/dynamic`) and show a `poster` until the visitor reaches it.

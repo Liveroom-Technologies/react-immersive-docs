@@ -30,7 +30,7 @@ export default function App() {
 - Renders a left-side environment/scene settings panel (background color, environment preset, auto-rotate, exposure, ambient + directional light color/intensity), each seedable via props
 - Can swap `modelUrl` for a built-in drag-and-drop / file-picker upload flow
 - Lets users click a mesh or panel row to select and focus it. Panel rows are buttons, so the keyboard can select from the panel too
-- Fits the full scene on initial load, and re-fits when the canvas is resized (window resize, device rotation, or a panel opening/closing), set `refitOnResize={false}` to instead preserve the user's orbit/zoom
+- Fits the full scene on initial load, with space around it scaled to the model (`fitPadding`), and re-fits when the canvas is resized (window resize, device rotation, or a panel opening/closing). Set `refitOnResize={false}` to instead preserve the user's orbit/zoom
 - Uses built-in ambient, directional, and environment lighting
 - Renders on demand: frames are only drawn when something changes (camera movement, hover, auto-rotate, panel edits), so an idle viewer costs no GPU time or battery
 - Degrades gracefully on very large models (above roughly 12 million triangles): viewport click/hover picking is disabled for performance, a dismissible banner explains this to the user, and selection stays available through the scene objects panel
@@ -64,12 +64,15 @@ type SimpleModelViewerProps = {
   refitOnResize?: boolean;
   cameraLimits?: CameraLimits;
   showResetButton?: boolean; // default true
+  fitPadding?: number; // default 0.1, a fraction of the model's largest dimension
+  zoom?: boolean; // default true
+  pageScroll?: boolean; // default false
   showLoadError?: boolean; // default true
   reducedMotion?: "user" | "always" | "never";
   // Initial values for the scene settings (environment) panel
   backgroundEnabled?: boolean;
   autoRotate?: boolean;
-  envPreset?: PresetsType; // @react-three/drei environment preset
+  envPreset?: EnvironmentPreset; // default "neutral", built in
   environmentUrl?: string; // self-hosted HDR; overrides envPreset
   environmentEnabled?: boolean; // default true; false skips environment loading
   exposure?: number;
@@ -197,7 +200,7 @@ The following optional props seed the initial values of the scene settings (envi
 | ---------------------- | ------------- | ----------------------- | ----------- |
 | `backgroundEnabled`    | `boolean`     | Show as background      | `false`     |
 | `autoRotate`           | `boolean`     | Auto Rotate             | `false`     |
-| `envPreset`            | `PresetsType` | Environment preset      | `"city"`    |
+| `envPreset`            | `EnvironmentPreset` | Environment preset | `"neutral"` |
 | `exposure`             | `number`      | Exposure                | `1`         |
 | `ambientIntensity`     | `number`      | Ambient Light Intensity | `0.6`       |
 | `ambientColor`         | `string`      | Ambient Light Color     | `"#ffffff"` |
@@ -216,7 +219,11 @@ The following optional props seed the initial values of the scene settings (envi
 
 The panel also lists the model's objects, triangles, materials and size, and **Reset Settings** returns every control to these starting values.
 
-`envPreset` accepts any `@react-three/drei` `PresetsType` (for example `"city"`, `"sunset"`, `"dawn"`, `"night"`, `"warehouse"`, `"forest"`, `"apartment"`, `"studio"`, `"park"`, `"lobby"`).
+`envPreset` defaults to `"neutral"`, a studio light built into the package that
+downloads nothing. The other presets (`"apartment"`, `"city"`, `"dawn"`,
+`"forest"`, `"lobby"`, `"night"`, `"park"`, `"studio"`, `"sunset"`,
+`"warehouse"`) are HDR files that `@react-three/drei` downloads from a public
+CDN (`raw.githack.com`) when one is chosen, here or in the settings panel.
 
 ```tsx
 <SimpleModelViewer
@@ -261,6 +268,9 @@ false;
 ### `showLoadingOverlay`
 
 Optional boolean controlling whether the built-in loading overlay is shown while the model is loading, uploaded files are being prepared, and the initial camera fit is settling.
+
+The overlay takes `backgroundColor`, with a light card on a light background,
+and leaves a `poster` visible underneath.
 
 Default:
 
@@ -332,8 +342,10 @@ onLoadError?: (error: unknown) => void
 
 ### Self-hosted or disabled environment lighting
 
-Set `environmentUrl="/lighting/studio.hdr"` to load an HDR from your own origin
-instead of the remote preset. The preset selector is hidden while a custom URL
+The default `"neutral"` lighting is generated in the browser, so a viewer makes
+no lighting request unless you choose a downloadable preset. Set
+`environmentUrl="/lighting/studio.hdr"` to use an HDR from your own origin
+instead. The preset selector is hidden while a custom URL
 is supplied. Use `environmentEnabled={false}` to make no environment-map request;
 ambient and directional lights continue to work. Environment failures are isolated
 from model loading, so an unavailable lighting asset does not remove the model.
@@ -348,6 +360,52 @@ to 10 times the model bounding-box diagonal. A camera reset button is shown by
 default in the bottom-right corner after fitting; it restores the original
 viewing direction and fits the current viewport. Set `showResetButton={false}`
 to hide it.
+
+### Framing: `fitPadding`
+
+The viewer frames the model with space around it on each side, as a fraction
+of the model's largest dimension: `0.1` (the default) leaves a tenth of it, so
+a 30 cm product and a 10 m room fill the view alike. Use `0` for the tightest
+fit, or a larger value for more room. While the model auto-rotates, the
+framing also allows for its spin, so no part leaves the view as it turns.
+
+### Zoom and page scrolling: `zoom` / `pageScroll`
+
+`zoom={false}` turns off wheel, pinch and middle-drag zoom; dragging still
+rotates and pans. The mouse wheel then scrolls the page.
+
+`pageScroll` is for a viewer inside a scrolling page, such as a landing-page
+hero. The mouse wheel scrolls the page, and holding Ctrl or ⌘ zooms (a
+trackpad pinch still zooms). On touch screens a vertical swipe scrolls the
+page, a sideways drag rotates the model, and two fingers zoom and pan.
+
+### Landing-page embed
+
+A spinning product that sits in a page, without the inspection interface:
+
+```tsx
+<div style={{ height: "60vh" }}>
+  <SimpleModelViewer
+    modelUrl="/product.glb"
+    poster="/product-poster.jpg"
+    backgroundColor="#f4f1ec"
+    showSceneObjectsPanel={false}
+    showSceneSettingsPanel={false}
+    showResetButton={false}
+    autoRotate
+    groundShadow
+    pageScroll
+  />
+</div>
+```
+
+- The three `show…={false}` props remove the side panels and the reset button.
+- `pageScroll` keeps the wheel and vertical swipes scrolling the page.
+- `poster` shows a picture of the model until its 3D view is drawn; the
+  loading progress appears over it.
+- The default lighting is built in, so the page makes no third-party
+  requests. On a light `backgroundColor` the loading card is light too.
+- Auto-rotate stops for visitors who ask for reduced motion.
 
 
 ### Failed model loads

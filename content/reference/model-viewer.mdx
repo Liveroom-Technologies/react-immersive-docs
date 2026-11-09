@@ -41,7 +41,7 @@ readable:
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ui`       | `objectPanel` (`showObjectBindingDataPanel`), `sceneObjects` (`showSceneObjectsPanel`), `download` (`showDownloadButton`; a string also sets `downloadFilename`), `reset` (`showResetButton`), `fullscreen` (`showFullscreenButton`), `loadingOverlay` (`showLoadingOverlay`), `viewGizmo` (`showViewGizmo`), `mouseController` (`showMouseController`; `{ position, opacity }` also sets `mouseControllerPosition` and `mouseControllerOpacity`), `annotationNavigation` (`showAnnotationNavigation`), `annotationOnHover` (`showAnnotationOnHover`), `annotationFilters` (`showAnnotationFilters`), `highlightOnHover`, `materialVariants` (`showMaterialVariants`), `objectNavigator` (`showObjectNavigator`) |
 | `tools`    | `measure` (`showMeasureTools`; `{ unit }` also sets `measurementUnit`), `uvChecker` (`showUvCheckerButton`), `explode` (`showExplodeControls`), `section` (`showSectionTools`), `sequences` (`showSequenceControls`), `isolate` (`showIsolateControls`), `texturePositioning` (`texturePositioning`)                                                                                                                                                                                                                                                                                                                                                                                            |
-| `controls` | `enabled` (`enableCameraControls`), `keyboard` (`enableKeyboardNavigation`), `zoom` (the opposite of `disableZoom`), `zoomOnSelect` (`zoomOnSelected`), `autoRotate` (a number also sets `autoRotateSpeed`), `refitOnResize`, `limits` (`cameraLimits`), `moveSensitivity`, `zoomSensitivity`, `reducedMotion`                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `controls` | `enabled` (`enableCameraControls`), `keyboard` (`enableKeyboardNavigation`), `zoom` (the opposite of `disableZoom`), `pageScroll`, `zoomOnSelect` (`zoomOnSelected`), `autoRotate` (a number also sets `autoRotateSpeed`), `refitOnResize`, `limits` (`cameraLimits`), `moveSensitivity`, `zoomSensitivity`, `reducedMotion`                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `perf`     | `renderMode`, `maxDpr`, `profile` (`performanceProfile`), `preserveDrawingBuffer`, `webgpu`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `tiles`    | `url` (`tilesetUrl`), `errorTarget` (`tilesErrorTarget`), `cacheSize` (`tilesCacheSize`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `xr`       | `enabled` (`enableXR`), `usdzUrl`, `scaleMode` (`arScaleMode`), `mobileHandoffUrl`, `arHandoff`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -163,6 +163,7 @@ type Props = {
   zoomSensitivity?: number;
   sceneConfig?: SceneConfig;
   disableZoom?: boolean;
+  pageScroll?: boolean;
   zoomOnSelected?: boolean;
   highlightOnHover?: boolean;
   enableCameraControls?: boolean;
@@ -403,11 +404,11 @@ and the viewer logs the duplicate-name mapping to the console.
 
 | Field                                         | Effect                                                                        |
 | --------------------------------------------- | ----------------------------------------------------------------------------- |
-| `visible`                                     | Controls mesh visibility                                                      |
+| `visible`                                     | Shows or hides the object; on a group node, everything under it               |
 | `style.material.baseColor`                    | Sets mesh color (committed by the built-in color picker on close)             |
 | `style.material.texture.path`                 | Sets the base color (albedo) texture                                          |
 | `style.material.*`                            | Per-object `MeshPhysicalMaterial` overrides, see below                        |
-| `cameraState.position` / `cameraState.target` | Camera view to use when this object is focused or selected from the viewer UI |
+| `cameraState.position` / `cameraState.target` | Camera view used when this object is selected, or focused with `focusObject`  |
 
 All visual overrides live under `style.material` (an `ObjectBindingMaterial`).
 It covers base color/PBR, emission, opacity & blending, normal/bump,
@@ -416,6 +417,15 @@ transmission/volume, and face sidedness, plus a texture-map slot for each.
 See [`ObjectBindingMaterial`](https://react-immersive.liveroom.dev/docs/reference/types#objectbindingmaterial) for the
 full field list and the per-slot color-space handling (color maps are decoded
 as sRGB, data maps stay linear).
+
+#### Parts made of several meshes
+
+Bind the part's parent (group) node to treat it as one object: a gear made of
+13 meshes needs one binding, not 13. A click or hover on any mesh under it
+resolves to the nearest bound ancestor, the hover outline covers all of its
+meshes, and `visible: false` (or `hideObject`) hides the whole part. Material
+overrides under `style.material` apply to meshes only, so bind the meshes
+themselves (they can share a `group`) to recolor a part.
 
 #### Generating bindings automatically
 
@@ -1557,6 +1567,9 @@ request displays an error beside the button.
 
 Controls whether the built-in loading overlay is shown while the model is loading and the initial camera fit is settling, and the load-error message if the model fails to load (see [`onLoadError`](#onloaderror)). Default: `true`.
 
+The overlay takes the viewer's background colour, with a light card on a light
+background, and leaves a `poster` visible underneath.
+
 ---
 
 ### `showMouseController`
@@ -1662,6 +1675,12 @@ annotations, and a cinematic camera path. This is the same `SceneConfig` shape
 authored by `BindingBuilder`'s **Scene** tab. If omitted, the viewer uses its
 built-in default scene config.
 
+The default environment is `preset: "neutral"`, a studio light built into the
+package that downloads nothing. The other presets (`"apartment"`, `"city"`,
+`"studio"` and so on) are HDR files downloaded from a public CDN
+(`raw.githack.com`) when chosen; `source: "custom"` with
+`customEnvironmentUrl` uses an HDR from your own origin.
+
 Use it to define the experience around the model, rather than individual model
 objects. For example, a guided tour can use `annotations` and saved camera
 views to direct the camera through a scene without requiring
@@ -1708,8 +1727,21 @@ onSceneConfigChange?: (config: SceneConfig) => void
 
 ### `disableZoom`
 
-Optional boolean. When `true`, the viewer never zooms the camera to an object
-on selection (selection still highlights and fires callbacks). Default: `false`.
+Optional boolean. When `true`, wheel, pinch and middle-drag zoom are off, so
+the mouse wheel scrolls the page, and the viewer never zooms the camera to an
+object on selection (selection still highlights and fires callbacks).
+Dragging still rotates and pans. Default: `false`. The grouped form is
+`controls={{ zoom: false }}`.
+
+---
+
+### `pageScroll`
+
+Optional boolean for a viewer inside a scrolling page. The mouse wheel scrolls
+the page, and holding Ctrl or ⌘ zooms (a trackpad pinch still zooms). On touch
+screens a vertical swipe scrolls the page, a sideways drag rotates the model,
+and two fingers zoom and pan. Default: `false`. The grouped form is
+`controls={{ pageScroll: true }}`; on `CompareViewer` it applies to both sides.
 
 ---
 

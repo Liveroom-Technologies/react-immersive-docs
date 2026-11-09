@@ -100,3 +100,8 @@ On localhost, a missing-key error links directly to the console. Sign in, create
 a Free development key, and pass it as `licenseKey`. Production deployments
 continue to require the appropriate plan and registered domain. This does not
 change key validation or introduce a no-account trial.
+
+Off local hosts, visitors see only "Failed to load. Please contact the site
+administrator." The reason goes to the browser console instead, for example
+`[react-immersive] The viewer is not licensed for staging.example.com: Plan does
+not allow production domains.`

@@ -35,6 +35,9 @@ import { CompareViewer } from "@liveroom-tech/react-immersive";
 - **`layout="side-by-side"`** shows the two views next to each other, each half
   the width.
 
+Changing `layout` keeps both viewers loaded and keeps the camera where the
+visitor left it, so a layout toggle doesn't reset their view.
+
 ```tsx
 <CompareViewer
   modelUrl="/car.glb"
@@ -92,6 +95,10 @@ Callbacks run per side: give `before.onObjectSelect` and
 with no panels or buttons, so their interfaces don't overlap; pass `preset`
 or `ui` to change that. Pass `split` to control the divider yourself;
 without it, `CompareViewer` keeps the position.
+
+`refitOnResize` defaults to `false` here, unlike on `ModelViewer`: when the
+panes change size (a layout switch or a window resize) the camera keeps its
+view instead of reframing the model. Pass `refitOnResize` to reframe instead.
 
 <Callout type="info">
   Each side has its own WebGL (or
