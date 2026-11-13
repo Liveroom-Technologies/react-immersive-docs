@@ -922,6 +922,8 @@ onViewerReady?: (viewer: ViewerReadyState) => void
 type ViewerReadyState = {
   objectBindings: Record<string, ObjectBinding>;
   homeCameraState: { position: Vec3; target: Vec3 } | null;
+  goToAnnotation: (annotationId: number) => Promise<boolean>;
+  startAR: () => Promise<boolean>;
   captureImage: (options?: CaptureImageOptions) => Promise<string>;
   isLoadingTiles: () => boolean;
   captureVideo: (options?: CaptureVideoOptions) => Promise<Blob>;
@@ -2047,6 +2049,14 @@ type AnnotationMarker = SceneAnnotationMarker;
 
 ### Rich annotations
 
+Hotspot markers expose `title` as a native tooltip and include it in their
+accessible name. To fly to a marker and open its card from an application button,
+call `await viewer.connection.goToAnnotation(id)` using
+[`useViewer`](https://react-immersive.liveroom.dev/docs/hooks/use-viewer), or call
+`goToAnnotation(id)` on the `ViewerReadyState` received through `onViewerReady`.
+See [annotation navigation](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-connection#annotation-navigation)
+for return values and controlled state behavior.
+
 Annotations can include a saved camera view, images, links, a category, and
 camera-distance limits. New annotations use automatic close-up tour framing
 toward the marker, including following animated anchors. A custom `cameraView`
@@ -2988,6 +2998,14 @@ is confirmed. On iPhone/iPad, WebXR AR is not available, but if you also pass
 [`usdzUrl`](#usdzurl), the viewer shows a **"View in AR"**
 button that launches Apple Quick Look instead. You can also use
 [`arHandoff`](#arhandoff), which generates a USDZ from the current edits without a static `usdzUrl`.
+
+To launch AR from your app's own button, call
+`await viewer.connection.startAR()` with `enableXR` enabled, or call `startAR()`
+on the `ViewerReadyState` received through `onViewerReady`. The command uses
+WebXR, Quick Look, or the configured/phone handoff as available. Invoke it
+directly from the click handler and catch permission/session errors. See
+[app-owned AR buttons](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-connection#start-ar-from-your-own-button)
+for return values and platform behavior.
 
 Default: `false`.
 

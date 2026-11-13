@@ -116,6 +116,14 @@ original page before passing a different mobile page as `baseUrl`.
 
 ## What USDZ preserves
 
+The built-in exporter retains shared indexed vertices within each material group
+and reuses shared materials. UV seams, hard edges, mirrored winding and separate
+front/back normals for double-sided surfaces are preserved. This avoids repeating
+the full vertex payload for every triangle, without reducing triangle count,
+texture resolution or animation sampling. USDZ entries remain uncompressed and
+64-byte aligned for Quick Look, so a USDZ can still be larger than a compressed GLB.
+Use `maxTextureSize` to opt into smaller textures when appropriate for the model.
+
 Visible triangle meshes, node/asset world transforms, PBR material overrides,
 textures, selected material variants, projected image/text decals, multi-material
 geometry groups, instanced meshes, mirrored geometry, double-sided faces, and the

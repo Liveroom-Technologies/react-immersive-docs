@@ -50,7 +50,7 @@ const {
 | `cameraState`        | `ViewerCameraState \| null`                          | Latest camera `position`, `target`, `fov`, `zoom`                             |
 | `cameraPresets`      | `Record<string, ViewerCameraPreset>`                 | Current named views                                                           |
 | `resetView`          | `() => Promise<boolean>`                             | Resets the controls to their initial saved state                              |
-| `focusObject`        | `(id: string) => Promise<boolean>`                   | Moves to a binding (by key, `binding.id`, or `binding.modelObjectId`): to its `cameraState` view when it has a position and target, otherwise a fit around the object |
+| `focusObject`        | `(id: string, options?: FocusObjectOptions) => Promise<boolean>` | Moves to a binding (by key, `binding.id`, or `binding.modelObjectId`): to its `cameraState` view when it has a position and target, otherwise a fit around the object with optional padding |
 | `fitScene`           | `() => Promise<boolean>`                             | Fits the camera to the whole loaded scene                                     |
 | `setCameraTarget`    | `(target, transition?) => Promise<boolean>`          | Sets the camera target to a given `[x, y, z]`                                 |
 | `setCameraState`     | `(state, transition?) => Promise<boolean>`            | Restores a complete camera state                                              |
@@ -80,6 +80,30 @@ const {
 
 Each initial position or target is optional and is applied once for every loaded model. Set `initialTransition: true` to animate into it. The default is `false`. `cameraPresets` contains the current named preset record.
 
+## Object focus padding
+
+Pass `FocusObjectOptions` as the optional second argument to `focusObject`:
+
+```tsx
+await camera.focusObject("door", { padding: 0 }); // Tight fit.
+await camera.focusObject("door", {
+  padding: 0.2,
+  paddingRight: 1, // Override the right side to leave extra room.
+  paddingTop: 0,
+});
+// With useViewer: viewer.camera.focusObject("door", options).
+```
+
+Padding is measured in scene units along the fitted view's axes. `padding` sets
+all four sides; `paddingTop`, `paddingBottom`, `paddingLeft`, and `paddingRight`
+override individual sides. Omitted values default to `0.5`, preserving existing
+calls. Zero is supported. Negative or non-finite effective padding returns
+`false` without moving the camera.
+
+A binding's saved `cameraState` still takes precedence. Padding affects only
+automatic object fitting, so it does not alter an authored camera view. It does
+not change `fitScene`, reset framing, or selection behavior.
+
 ## Viewer-ready capture methods
 
 `ViewerReadyState` includes `captureImage`, `captureVideo`, and `invalidate`.
@@ -97,8 +121,8 @@ is animating when the viewer scrolls away finishes the same way. The camera is
 where you asked when the viewer comes back, so an external guided tour, an
 initial position or a restored shared view never waits for the user to scroll.
 
-Commands return `false` only when the camera is disconnected from the viewer,
-for example after it unmounts or switches to a first-person controller.
+Camera commands return `false` when the viewer disconnects,
+for example after unmounting or switching to a first-person controller.
 Animation hooks expose `isRenderPaused` separately from playback intent: a clip
 can remain `isPlaying` while its clock is suspended, then continue on return.
 

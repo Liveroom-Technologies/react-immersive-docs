@@ -4,7 +4,7 @@ title: useViewerConnection
 
 # `useViewerConnection`
 
-Combines every feature that needs `ModelViewer.onViewerReady` into one typed connection. Camera, runtime effects, screenshots, video export, and custom setup callbacks can share the same viewer without manual callback wiring.
+Combines every feature that needs `ModelViewer.onViewerReady` into one typed connection. Camera, runtime effects, AR launch, screenshots, video export, and custom setup callbacks can share the same viewer without manual callback wiring.
 
 ## Usage
 
@@ -60,6 +60,87 @@ and rejects with a clear error before the viewer is ready or when framebuffer
 preservation is disabled. `invalidate` returns `false` before connection and
 `true` after requesting a frame.
 
+## Annotation navigation
+
+`goToAnnotation(annotationId: number): Promise<boolean>` flies to an annotation
+and opens its card in one call. Use the ID from `sceneConfig.annotations`:
+
+```tsx
+const connection = useViewerConnection();
+
+<ModelViewer
+  modelUrl="/model.glb"
+  licenseKey={licenseKey}
+  sceneConfig={sceneConfig}
+  onViewerReady={connection.handleViewerReady}
+/>;
+<button onClick={() => void connection.goToAnnotation(7)}>
+  Show engine details
+</button>;
+```
+
+It restores the annotation's saved camera view, including field of view and zoom,
+or automatically frames its live marker position when no view is saved. It
+keeps the requested card readable even when geometry obscures its anchor and
+interrupts a running guided tour without returning to the home view. The promise
+resolves `true` when the camera move completes, or `false` before connection, for
+an unknown or category-filtered ID, or when the camera is disconnected. Offscreen
+viewers jump to the destination; reduced-motion preferences are respected.
+
+When `activeAnnotation` is controlled, update it in `onActiveAnnotationChange`,
+just as for marker clicks. Setting `activeAnnotation` alone opens a card without
+moving the camera. The command is also available directly as
+`ViewerReadyState.goToAnnotation` through `onViewerReady`.
+With `useViewer`, call `viewer.connection.goToAnnotation(id)`.
+
+## Start AR from your own button
+
+`startAR(): Promise<boolean>` uses the viewer's existing AR entry paths. Enable
+XR on `ModelViewer`, then call it directly from a click or tap handler:
+
+```tsx
+const viewer = useViewer();
+
+<ModelViewer
+  modelUrl="/model.glb"
+  licenseKey={licenseKey}
+  {...viewer.props}
+  xr={{ enabled: true, arHandoff: true }}
+/>;
+<button onClick={async () => {
+  try {
+    const started = await viewer.connection.startAR();
+    if (!started) console.info("AR is unavailable or the viewer is not ready.");
+  } catch (error) {
+    console.error("Could not start AR", error);
+  }
+}}>
+  View in my space
+</button>;
+```
+
+With the individual hook, use `connection.startAR()` after wiring
+`onViewerReady={connection.handleViewerReady}`. The same method is available on
+`ViewerReadyState` through `onViewerReady`.
+
+The command prefers WebXR AR when supported by the browser and active renderer.
+Otherwise it opens configured AR when `arHandoff` is enabled, launches the supplied
+`usdzUrl` with Apple Quick Look on iPhone/iPad, or opens the desktop phone-handoff
+dialog. Configured AR prepares the current edits in its dialog; the visitor then
+taps its AR link after preparation. WebGPU uses the available handoff paths.
+
+`true` means an AR session started (or is already active), Quick Look was
+requested, or a handoff dialog opened. A handoff does not confirm that AR started
+on the phone. `false` means XR is disabled, capability checks/model loading are
+still pending, the viewer is disconnected or recording video, or no AR path is
+available. Native permission/session errors reject the promise so the app can
+display them. Repeated clicks during a session request share that request; an
+active VR session must be ended before starting AR.
+
+Call it before awaiting any other work in the handler: browsers require user
+activation for immersive sessions and Quick Look. The command does not enable
+XR automatically or load XR code for a viewer with XR disabled.
+
 ## Video recording
 
 `captureVideo(options?: CaptureVideoOptions): Promise<Blob>` records one
@@ -104,6 +185,8 @@ use those fresh references instead of retaining objects from the old scene.
 | --- | --- |
 | `handleViewerReady` | The single callback to pass to `ModelViewer.onViewerReady` |
 | `getViewer` | Return the latest `ViewerReadyState`, or `null` |
+| `goToAnnotation` | Fly to a visible annotation by numeric ID and open its card |
+| `startAR` | Start AR from a user gesture, or open the platform's AR handoff |
 | `captureImage` | Capture an image data URL (PNG by default) from the connected viewer |
 | `captureVideo` | Record one cinematic pass or turntable revolution as a video `Blob` |
 | `invalidate` | Request a render frame from the connected viewer |

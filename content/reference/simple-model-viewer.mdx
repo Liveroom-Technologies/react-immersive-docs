@@ -45,6 +45,8 @@ export default function App() {
 
 ```ts
 type SimpleModelViewerProps = {
+  "aria-label"?: string; // default: localized "3D model viewer"
+  "aria-labelledby"?: string; // ID(s) of naming text; takes precedence
   modelUrl: string;
   poster?: string;
   loading?: "lazy" | "eager"; // default "lazy"
@@ -407,6 +409,25 @@ A spinning product that sits in a page, without the inspection interface:
   requests. On a light `backgroundColor` the loading card is light too.
 - Auto-rotate stops for visitors who ask for reduced motion.
 
+
+### Accessible names
+
+The viewer is a named region, including when both panels are disabled. Its default
+name is "3D model viewer"; translate it with `labels.modelViewer`. Prefer a name
+that describes the model on pages with several viewers:
+
+```tsx
+<SimpleModelViewer modelUrl="/chair.glb" aria-label="Chair preview" />
+
+<h2 id="chair-heading">Chair preview</h2>
+<SimpleModelViewer modelUrl="/chair.glb" aria-labelledby="chair-heading" />
+```
+
+`aria-labelledby` takes precedence over `aria-label` when its IDs reference naming
+text. The region preserves access to its child controls. Collapsed panel buttons
+have localized names and reference their panels through `aria-controls`.
+Translate `openSceneSettingsPanel`, `closeSceneSettingsPanel`,
+`openSceneObjectsPanel`, and `closeSceneObjectsPanel` through `labels` as needed.
 
 ### Failed model loads
 
