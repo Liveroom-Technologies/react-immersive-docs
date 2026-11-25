@@ -21,6 +21,7 @@ type ObjectBinding = {
   visible?: boolean;
   selectable?: boolean;
   hoverable?: boolean;
+  blocksPointer?: boolean;
   transform?: ObjectBindingTransform;
   style?: ObjectBindingStyle;
   decals?: ObjectBindingDecal[]; // images and text on the surface; see ModelViewer's "Decals"
@@ -38,7 +39,7 @@ type ObjectBinding = {
 - `status` stores the authoring/domain status assigned in `BindingBuilder`
 - `transform` stores persistent local-space position, rotation, and scale overrides; rotation values use radians
 - `visible` is live render state, not just an initial default
-- `selectable: false` and `hoverable: false` make the mesh inert to viewport picking; clicks resolve the front-most surface under the pointer, so a non-selectable mesh does **not** pass the click through to meshes behind it
+- `selectable: false` and `hoverable: false` make the mesh inert to viewport picking. Clicks and hover pass through it to the nearest usable mesh behind, as through glass. Add `blocksPointer: true` to stop them there instead, as a wall would (BindingBuilder: **Blocks clicks to what's behind**)
 - `style.material.baseColor` is the committed source of truth for color picks
 - `style.material.texture.path` is the committed source of truth for texture uploads
 - If no `texture.path` and no `style.material.baseColor` are set, the viewer falls back to the original model material
@@ -307,10 +308,23 @@ type ObjectBindingAction = {
   label: string;
   type: "command";
   effects?: ObjectActionEffect[];
+  triggers?: ObjectActionTrigger[]; // what runs it besides its button
+  button?: boolean; // show it in the object panel; default true
 };
+
+type ObjectActionTrigger =
+  | { on: "click"; select?: boolean }
+  | { on: "double-click" }
+  | { on: "hover-start" }
+  | { on: "hover-end" }
+  | { on: "load" }
+  | { on: "key"; key: string }
+  | { on: "state-end"; object?: string; state?: string | null };
 ```
 
-`effects` are executed in declaration order by `useViewerActions`. Each effect updates one concern through the corresponding library controller:
+See [triggers](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-actions#triggers).
+
+`effects` run in declaration order, by `useViewerActions` or, without `onAction`, by the viewer itself. Each effect updates one concern through the corresponding library controller:
 
 ```ts
 type ObjectActionEffect =

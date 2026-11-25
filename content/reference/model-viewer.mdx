@@ -842,10 +842,12 @@ actions turn the object's light on and off, open a color picker, and open a
 control those, updating `sceneConfig.lighting` (through `onSceneConfigChange` if
 you pass it, otherwise inside the viewer); otherwise they control the object's
 own glow, saved on its binding as `style.material.emissive` and
-`emissiveIntensity`. Any other action id does something only when
-you handle it here (pass `useViewerActions().handleAction` to run an action's
-declared `effects`). Without `onAction`, those buttons do nothing, and the
-viewer logs a console warning naming each one. `ACTION_CATALOG` and
+`emissiveIntensity`. For any other action, the viewer runs its declared
+`effects` itself when you don't pass `onAction`, so a project authored in
+`BindingBuilder` works as it is. With `onAction`, your handler owns them: pass
+`useViewerActions().handleAction` (as `useViewer` does) to run them. An action
+with neither effects nor a handler does nothing, and the viewer logs a console
+warning naming it. `ACTION_CATALOG` and
 `findCatalogAction`, from `@liveroom-tech/react-immersive/utils`, list the ids
 `BindingBuilder` offers and whether the viewer or your app handles each one.
 
@@ -924,6 +926,8 @@ type ViewerReadyState = {
   homeCameraState: { position: Vec3; target: Vec3 } | null;
   goToAnnotation: (annotationId: number) => Promise<boolean>;
   startAR: () => Promise<boolean>;
+  runAction: (objectId: string, actionId: string) => boolean;
+  runEffects: (effects: ObjectActionEffect[], objectId?: string) => void;
   captureImage: (options?: CaptureImageOptions) => Promise<string>;
   isLoadingTiles: () => boolean;
   captureVideo: (options?: CaptureVideoOptions) => Promise<Blob>;
@@ -946,6 +950,14 @@ type CaptureImageOptions = {
 ```
 
 `isLoadingTiles` says whether a streamed model is still fetching tiles for the current view.
+
+`runAction` runs one of an object's actions as its triggers do, including
+actions with `button: false`, and returns `false` for an unknown object or
+action, or a picker action such as `change-color`, which only its button runs.
+`runEffects` runs effects as an action would; effects without a target apply
+to `objectId`. Both go through `onAction` when you pass one, and otherwise the
+viewer runs the effects itself. With `useViewer`, `viewer.actions.runAction`
+does the same.
 
 `raw` holds the live three.js scene, the camera-controls instance, and the
 model's nodes, for integrations the rest of the API doesn't cover. You don't
@@ -1255,6 +1267,41 @@ local space (the origin is often at its base, not its center). Lighting set up
 in `BindingBuilder`'s scene inspector exports as the same `sceneConfig`.
 
 ---
+
+### Live data
+
+`sceneConfig.dataSources` lists JSON endpoints the viewer fetches on a timer
+(every `refreshSeconds`, at least 5, default 30) while the page is visible.
+Each mapping reads a dot path from the response into a metric on some objects,
+which [style rules](#style-rules) can colour by, or into a
+[scene variable](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-actions#variables-and-conditions):
+
+```tsx
+dataSources: [{
+  id: "plant",
+  url: "https://api.example.com/plant.json",
+  refreshSeconds: 10,
+  mappings: [
+    { path: "pumps.0.temperature", target: { group: "pump-1" }, metric: "temperature" },
+    { path: "mode", variable: "mode" },
+  ],
+}]
+```
+
+The endpoint must allow requests from the viewer's page (CORS). Anyone who
+can open the project can see these URLs, so keep secrets out of them and put a
+proxy of your own in front of private data. In a project hosted on
+react-immersive.liveroom.dev, tick **Keep the address and headers private** on
+a source instead: its address and headers (an API key, say) are stored
+encrypted, and the server fetches the source for viewers, so the scene only
+holds the server's address and `private: true`. Private sources must use
+https and a public address, can't redirect, and may return up to 1 MB of JSON;
+each is fetched at most once every 5 seconds however many people are watching.
+Only invited editors can see or change them. A failed fetch keeps the last
+values and logs one warning. Live data doesn't run inside `BindingBuilder`,
+where it would be saved as authored values; use **Rules → Live data → Test
+now** there. `readDataMappings` and `valueAtPath`, from
+`@liveroom-tech/react-immersive/utils`, do the mapping on their own.
 
 ### Style rules
 
@@ -1590,6 +1637,23 @@ Renders an on-screen joystick/zoom controller for moving the camera with a mouse
 ```
 
 ---
+
+### Camera feel
+
+Two `sceneConfig.camera` settings, also under **Scene → Camera → Feel** in
+`BindingBuilder`:
+
+- `hoverOrbit`: degrees the camera turns to follow a mouse moving over the
+  viewer, easing back when it leaves. A drag takes over. Off when reduced
+  motion is on.
+- `oneFinger`: `"pan"` makes one finger pan on touch screens instead of
+  rotating. Two fingers still pinch to zoom.
+- `limits.soft`: `"ease"` lets a drag go a little past the distance and angle
+  limits (15°, or 15% of the distance) and glides back onto the limit when
+  it's released; `"bounce"` overshoots slightly on the way back. It applies to
+  manual limits, not `aroundModel`, `insideModel` or `floorOutline`, and with
+  reduced motion the camera returns at once. BindingBuilder sets it under
+  **Camera → Limits → At a limit**.
 
 ### `cameraLimits`
 
@@ -2921,6 +2985,61 @@ instances and editor helpers remain whole. Cut surfaces are double-sided but
 have no generated solid caps; cuts do not modify exported mesh geometry.
 Disabling a cut restores the material's clipping, side, shadow, and intersection
 settings. WebGPU does not expose section controls.
+
+### Dragging objects
+
+A binding's `drag` lets people move the object by dragging it. When they drop
+it, its new place is saved to the binding's `transform.position` and reported
+through `onObjectBindingsChange`:
+
+```tsx
+Chair: {
+  id: "chair",
+  modelObjectId: "Chair",
+  drag: { plane: "floor", range: 3, snapTo: { group: "chair-spots" }, snapDistance: 0.4 },
+}
+```
+
+`plane` is `"floor"` (slide horizontally, the default), `"wall"` (up, down and
+sideways, facing the camera) or `"screen"` (follow the pointer). `range` keeps
+it within that distance of where it started, in its parent's units. Dropped
+within `snapDistance` world units (default 0.5) of a `snapTo` object, it moves
+onto that object's position; dropped away from every target, it stays, or with
+`onMiss: "return"` goes back. With the object selected and the viewer focused,
+**[** and **]** step it between its snap targets from the keyboard. The camera
+doesn't orbit while an object is dragged, and the drop doesn't select it.
+Dragging doesn't run inside `BindingBuilder`, which has its own move gizmo.
+On streamed 3D Tiles models the object's tiles follow it as it moves; this
+needs a model processed with the current pipeline, whose catalog marks its
+objects as editable.
+
+### Scroll-driven scenes
+
+`sceneConfig.scroll` lets page scroll drive the scene, with no code. As the
+page scrolls, progress runs from 0 to 1 over `distance` pixels (default: the
+window's height) and moves one of three things:
+
+```tsx
+// The camera along the cinematic path (it needs two or more waypoints, and
+// doesn't have to be enabled to play on its own)
+scroll: { enabled: true, drive: "cinematic", distance: 1200 }
+// An animation clip, scrubbed from start to end
+scroll: { enabled: true, drive: "animation", clip: "Assemble" }
+// Objects stepping through their states, one step per equal slice of scroll
+scroll: { enabled: true, drive: "states",
+  steps: { target: { group: "drawers" }, states: [null, "half", "open"] } }
+```
+
+Progress starts when the viewer's `edge` (`"top"`, `"middle"` or `"bottom"`)
+comes into the window, plus `offset` pixels, or with `from: "page"` at `at`
+pixels down the page. With reduced motion the camera and clip jump between a
+few still views instead of following the scroll. Inside an iframe the viewer
+can't see the page around it, so drive it from your own page instead.
+
+To drive it yourself, pass `scrollProgress` (0 to 1); it replaces the scroll
+the viewer measures. `useScrollProgress(ref, options)` gives that value for
+any element, with the same options, and `scrollProgress()` from
+`@liveroom-tech/react-immersive/utils` is the calculation on its own.
 
 ### `cinematic`
 

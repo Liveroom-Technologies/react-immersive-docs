@@ -91,6 +91,11 @@ const initialBindings = {
 
 | Category | Shape | Controller used |
 | --- | --- | --- |
+| State | `{ target?, state }` | `useObjectBindings` (see [States](#states)) |
+| Variable | `{ variable: { name, set \| add \| toggle } }` | `useSceneConfig` (see [Variables](#variables-and-conditions)) |
+| Link | `{ link: { url, newTab? } }` | Opens an http or https page, in a new tab unless `newTab` is `false` |
+| Sound | `{ sound: { url, volume?, loop? } }` or `{ sound: { stop: true, url? } }` | Plays or stops a sound file. Browsers play sound only after a click or key press. `muted` (on `ModelViewer`, `useViewer` and `useViewerActions`) silences them |
+| Reset | `{ reset: true }` | Every object to its base state, isolation off, and the camera back to its starting view |
 | Object bindings | `{ target, objectBindings: patch }` | `useObjectBindings` |
 | Scene | `{ sceneConfig: patch }` | `useSceneConfig` |
 | Visibility | `{ target, visibility: "show" \| "hide" \| "toggle" }` | `useObjectBindings` |
@@ -100,7 +105,136 @@ const initialBindings = {
 
 Object and visibility targets accept an object id, an array of ids, `{ group }`, `{ tag }`, or `{ type }`, just like `useObjectBindings`.
 
-Camera actions are `focus-object`, `fit-scene`, `reset`, `set-target`, and `set-state`. Animation actions are `play`, `pause`, `stop`, `set-speed`, and `seek`. `play` takes the same `alongside`, `fade`, and `reverse` options as `useViewerAnimations().play`, so an action can open a door without stopping other clips: `{ animation: { type: "play", clip: "DoorOpen", alongside: true } }`. The others take an optional `clip`, and act on every active clip without one.
+Camera actions are `focus-object`, `fit-scene`, `reset`, `set-target`, `set-state`, and `preset` (`{ type: "preset", name }`, a view from `useViewer`'s `camera.presets`). Animation actions are `play`, `pause`, `stop`, `set-speed`, and `seek`. `play` takes the same `alongside`, `fade`, and `reverse` options as `useViewerAnimations().play`, so an action can open a door without stopping other clips: `{ animation: { type: "play", clip: "DoorOpen", alongside: true } }`. The others take an optional `clip`, and act on every active clip without one.
+
+## States
+
+A state is a named look for an object, such as an open door or a lamp that's
+on. Its `values` use the binding's own shape (`transform`, `style.material`,
+`visible`) and merge over the binding, which is the base state. `state` names
+the active one:
+
+```tsx
+{
+  id: "door",
+  modelObjectId: "Door_L",
+  states: {
+    open: {
+      values: { transform: { rotation: [0, 1.4, 0] } },
+      transition: { duration: 600, easing: "ease-out" },
+    },
+  },
+  actions: [
+    {
+      id: "open-close",
+      label: "Open / Close",
+      type: "command",
+      triggers: [{ on: "click" }],
+      effects: [{ state: { toggle: "open" } }],
+    },
+  ],
+}
+```
+
+Whenever a binding's `state` changes, from an effect or from your own
+`updateObjectBindings(id, { state: "open" })`, the viewer animates from what's
+on screen to the new look. Position, rotation, scale, material numbers and
+colours move; other changes apply at the start, and an object being hidden
+disappears at the end. Going into a state uses its `transition` (duration and
+delay in milliseconds, easing `linear`, `ease-in`, `ease-out`, `ease-in-out`
+or `{ cubicBezier: [x1, y1, x2, y2] }`). Going back to base uses the
+transition of the state being left. A saved or shared view opens already in
+its state, and `reducedMotion` makes changes instant.
+
+A transition can loop: `loop: "repeat"` plays it again from the old look, and
+`loop: "alternate"` goes back and forth, `loopCount` times in all, or forever
+when it's left out. An alternating loop always ends on the new state, so an
+even count plays once more. Loops only play on the way into a state; going back
+to base plays once, and reduced motion turns them off.
+
+```tsx
+spin: {
+  values: { transform: { rotation: [0, 3.14, 0] } },
+  transition: { duration: 500, loop: "alternate", loopCount: 3 },
+},
+```
+
+The state effect takes `state` as a name, `null` for base, `{ toggle: name }`,
+or `{ cycle: [null, "half", "open"] }`. Its `target` defaults to the action's
+own object, and objects that don't define the state are left alone.
+`applyObjectStates` and `resolveObjectState`, from
+`@liveroom-tech/react-immersive/utils`, give the look a binding's state
+resolves to.
+
+## Variables and conditions
+
+Actions can remember values in `sceneConfig.variables`, such as a count of
+clicks or a chosen finish, and any effect can run only when a variable
+compares a certain way:
+
+```tsx
+effects: [
+  { variable: { name: "clicks", add: 1 } },
+  { target: "Lid", visibility: "show", when: { variable: "clicks", greaterThan: 2 } },
+  { variable: { name: "lightsOn", toggle: true } },
+  { animation: { type: "play", clip: "Glow" }, when: { variable: "lightsOn", equals: true } },
+]
+```
+
+A variable effect sets a value (`set`), adds to a number (`add`) or flips a
+true/false value (`toggle`). A variable that isn't set yet counts as 0, or as
+false. `when` takes `equals`, `notEquals`, `greaterThan` and `lessThan`, or a
+list of conditions that must all hold. Effects later in an action see values
+set earlier in it. Variables are part of the scene config, so
+`onSceneConfigChange` (or `useViewer().scene.sceneConfig.variables`) reports
+them, and a scene config you pass can set their starting values.
+
+## Triggers
+
+An action can also run from the model itself. List what runs it in `triggers`,
+and set `button: false` to leave it out of the object panel:
+
+```tsx
+{
+  id: "open-lid",
+  label: "Open lid",
+  type: "command",
+  button: false,
+  triggers: [{ on: "click" }, { on: "key", key: "o" }],
+  effects: [{ animation: { type: "play", clip: "LidOpen", alongside: true } }],
+}
+```
+
+| Trigger | Runs when |
+| --- | --- |
+| `{ on: "click" }` | The object is clicked, or activated with the keyboard. It runs instead of selecting the object; add `select: true` to do both. |
+| `{ on: "double-click" }` | The object is double-clicked, unless `onObjectDoubleClick` returned `true`. |
+| `{ on: "hover-start" }`, `{ on: "hover-end" }` | A mouse or pen pointer moves onto or off the object. Not on touch, and not for `hoverable: false`. |
+| `{ on: "load" }` | The model finishes loading. |
+| `{ on: "key", key }` | A key is pressed while the viewer has focus. The viewer becomes focusable when any action has a key trigger. W, A, S, D, C, Space, Enter, Escape, Tab, Home, End and the arrows are reserved. |
+| `{ on: "state-end", object?, state? }` | An object finishes moving into a state: its transition ended, or it changed with no transition. `object` is the one to watch (the action's own by default); `state` limits it to arriving in one state, with `null` for base. A transition that loops forever never ends, and one cut short by another change doesn't count. |
+
+`state-end` chains changes: a lid that opens, then a tray that slides out once
+the lid is open.
+
+```tsx
+// On the tray's binding:
+{
+  id: "slide-out",
+  label: "Slide out",
+  type: "command",
+  button: false,
+  triggers: [{ on: "state-end", object: "Lid", state: "open" }],
+  effects: [{ state: "out" }],
+}
+```
+
+Triggered actions go through the same path as their buttons: `onAction` gets
+the event, with `event.trigger` set to the trigger that ran it. Triggers don't
+run inside `BindingBuilder`, where a click selects the object to edit. The
+picker actions (`change-color`, `change-material`, `add-text`, `add-image`,
+`change-light-color`, `set-brightness`) open UI under their button, so only
+their button runs them.
 
 ## Parameters
 

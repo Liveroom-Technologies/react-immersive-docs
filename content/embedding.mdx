@@ -64,6 +64,86 @@ Choose **React (JSX)** when pasting the snippet into a React component such as
 />
 ```
 
+## One-line element
+
+Instead of the iframe, you can load `embed.js` once and place a
+`<ri-viewer>` element. It creates the same iframe, lazy loads it, and tells it
+where it sits on your page, so a [scroll-driven scene](https://react-immersive.liveroom.dev/docs/reference/model-viewer#scroll-driven-scenes)
+follows your page's scroll. A plain iframe can't see the page around it.
+
+```html
+<script src="https://react-immersive.liveroom.dev/embed.js" defer></script>
+<ri-viewer project="YOUR_PROJECT_ID" height="600" label="Studio chair"></ri-viewer>
+```
+
+| Attribute | Meaning |
+| --- | --- |
+| `project` | The hosted project's ID. Required. |
+| `height` | Pixels, or any CSS length. Default `600`. |
+| `label` | The frame's accessible name. Default "Interactive 3D viewer". |
+| `options` | A starting [product configuration](#product-options-in-an-embed), such as `finish:walnut,seat:leather`. |
+| `eager` | Load right away instead of when the viewer nears the screen. |
+
+The element fires `ri-ready` when the model is on screen, `ri-select` when a
+visitor selects an object or clears the selection (`event.detail.object` and
+`event.detail.label`, or `null`), and `ri-configuration` when a visitor changes
+product options, with `event.detail.configuration` and
+`event.detail.checkoutUrl`:
+
+```js
+document.querySelector("ri-viewer").addEventListener("ri-configuration", (event) => {
+  console.log(event.detail.configuration.sku);
+});
+```
+
+Until a visitor first touches the viewer, it shows a small "Drag to look
+around" hint.
+
+## Control the viewer from your page
+
+Your page can run the project's actions, such as a button beside the viewer
+that opens a door. `runAction(object, action)` runs one of an object's
+actions as clicking it would, including actions that have no button in the
+viewer. `runEffects(effects, object)` runs [effects](https://react-immersive.liveroom.dev/docs/hooks/use-viewer-actions#declare-effects)
+written as in an action, such as switching a state or moving the camera;
+effects with no target apply to `object`. Both wait for the model to load,
+and resolve once the viewer has run them or reject with the reason it couldn't:
+
+```html
+<button id="open">Open the door</button>
+<script>
+  const viewer = document.querySelector("ri-viewer");
+  document.querySelector("#open").addEventListener("click", () => {
+    viewer.runAction("Door", "open-close").catch((error) => console.warn(error.message));
+  });
+  // Or, without an action set up in the editor:
+  viewer.runEffects([{ state: "open", target: "Door" }, { camera: { type: "focus-object", objectId: "Door" } }]);
+</script>
+```
+
+Objects and actions are named by their IDs from the editor. Your page can do
+what a visitor's click can, and nothing more: it can't read or save the
+project. A plain iframe takes the same commands as messages, and answers each
+one that has an `id`:
+
+```js
+const frame = document.querySelector("iframe");
+frame.contentWindow.postMessage(
+  { source: "react-immersive-host", type: "run-action", id: "1", object: "Door", action: "open-close" },
+  "https://react-immersive.liveroom.dev",
+);
+window.addEventListener("message", (event) => {
+  if (event.origin !== "https://react-immersive.liveroom.dev") return;
+  if (event.data?.source !== "react-immersive") return;
+  // { type: "result", id: "1", ok: true }, or ok: false with a message.
+  // { type: "select", object, label } when a visitor selects an object.
+});
+```
+
+Send commands after the frame's `ready` message; earlier ones are answered
+with `ok: false`. `type: "run-effects"` takes `effects` and an optional
+`object` instead of `action`.
+
 ## Shopify
 
 If your theme provides a **Custom Liquid** section or block, add it to the page
@@ -85,6 +165,18 @@ Add a **Code Embed** element, paste the iframe code, and save it. Check the
 preview and published page. Your workspace or site plan must support custom
 code embeds. See Webflow's
 [Code Embed documentation](https://help.webflow.com/hc/en-us/articles/33961332238611-Custom-code-embed).
+
+## Framer
+
+Add an **Embed** component, choose **HTML**, and paste either the iframe or the
+`<ri-viewer>` code. Give the component a fixed height.
+
+## Wix
+
+Add an **Embed code** element (**Embed HTML**), paste the iframe code, and set
+the element's size in the editor. Wix places custom HTML in its own frame, so
+use the iframe code there. See Wix's
+[embed documentation](https://support.wix.com/en/article/wix-editor-embedding-a-site-or-a-widget).
 
 ## Size and loading
 
@@ -127,7 +219,7 @@ loaded public asset data cannot be recalled from a visitor's browser.
 No first-party marketing analytics scripts or analytics consent dialog run in
 the embed. React callbacks such as `onEngagement` remain part of the
 [React API](https://react-immersive.liveroom.dev/docs/reference/model-viewer#onengagement--debugengagement);
-this iframe does not expose any other parent-page JavaScript API.
+the iframe's only page API is the messages described here.
 
 ## Product options in an embed
 
@@ -141,7 +233,8 @@ Open the embed on a particular configuration by adding its choices to `src`:
 <iframe src="https://react-immersive.liveroom.dev/embed/projects/YOUR_PROJECT_ID?options=finish:walnut,seat:leather" ...></iframe>
 ```
 
-When a choice changes, the frame tells the page around it. Use this to update your
+When a choice changes, the frame tells the page around it. When the model has
+loaded, it posts `{ source: "react-immersive", type: "ready" }`. Use this to update your
 own price, cart or add-to-cart button. Check `event.origin` before trusting it, and
 always validate the choices and price on your server:
 

@@ -12,8 +12,63 @@ with the asset report and the latest runtime sample. Object links select and
 focus the corresponding model binding.
 
 `ModelViewer`
-and `BindingBuilder` retain their existing license requirements. Diagnostics do
-not modify or optimize the asset and do not send telemetry.
+and `BindingBuilder` retain their existing license requirements. Diagnostics
+don't send telemetry, and they change the asset only when you choose to use an
+optimised copy (below).
+
+## Optimise
+
+In `BindingBuilder`, **Scene → Diagnostics → Optimise** makes a smaller copy of
+a GLB model in the browser. Nothing is uploaded to optimise it.
+
+- **Compress geometry** merges duplicate meshes and materials and compresses
+  geometry and animation with Meshopt (`EXT_meshopt_compression`). The viewer
+  decodes it by default (`meshopt`).
+- **Shrink and convert textures** resizes PNG, JPEG and WebP textures to at most the size
+  you choose (2048 pixels by default) and saves them in the format you pick:
+  - **WebP** (`EXT_texture_webp`), for smaller files. Where the browser can't
+    write WebP (Safari), a bundled WebP encoder does it instead.
+  - **KTX2** (`KHR_texture_basisu`), which stays compressed on the graphics
+    card, so textures take far less memory; good for phones and large scenes.
+    Colour textures use ETC1S and normal and data maps UASTC. The file can come
+    out larger, which this option accepts, and encoding takes a while. The
+    viewer reads it with its KTX2 transcoder (`ktx2TranscoderPath`).
+  - **Keep their format**, only resized.
+
+  Textures already in KTX2 are left as they are.
+
+Every object keeps its name and its place in the hierarchy, node transforms
+don't change, and no vertex attribute is removed, so bindings, decals and
+images applied later keep working. Positions and texture coordinates stay full
+precision for the same reason; only normals, tangents and colours are
+quantized.
+
+Apart from KTX2, optimising never makes a file bigger. A texture keeps its new image only if
+it's smaller than the original, and a step that doesn't shrink the whole file
+is undone and marked so. When nothing helps, the panel says the model is no
+smaller with those settings and offers nothing to use.
+
+The WebP and KTX2 encoders' WebAssembly loads from jsDelivr, pinned to the
+installed versions, only when it's needed. To host it yourself, copy
+`dist/decoders/encoders` and pass its URL as `optimizeGlb`'s `encoderPath`.
+
+The panel shows the size before and after each step. **Compare with the
+original** puts the optimised copy beside the current model on a slider.
+**Download optimised GLB** saves it, and **Use the optimised model** swaps it in
+for the active model's file. Its bindings, undo history, placement and any other
+models in the scene stay as they are; in a hosted project the file is uploaded
+like any new model.
+
+A Draco-compressed model is read with the same decoder files as the viewer
+(`dracoDecoderPath`) and re-compressed with Meshopt. Draco often packs geometry
+more tightly, so the result is kept only if the whole file comes out smaller;
+otherwise the panel says so and the original stays. Streamed (3D Tiles) models
+can't be optimised here, and other formats need exporting as GLB first.
+
+The viewer's download menu also offers **Download optimised GLB**: the usual
+export, with both steps applied. `optimizeGlb(bytes, options)` from
+`@liveroom-tech/react-immersive` does the same in your own code, loading
+glTF-Transform only when it's called.
 
 ## SDK callbacks and reusable panel
 

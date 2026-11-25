@@ -113,6 +113,22 @@ The viewers use the same variables, alongside the
   image map fields are turned off with a note, and the starter actions leave out
   **Change Material** (see [STL and PLY](https://react-immersive.liveroom.dev/docs/reference/model-viewer#stl-and-ply))
 - Edit binding fields: identity, label, type, status, booleans, style, actions, metrics, metadata, and saved camera state
+- For each action, choose what runs it (its button, a click, double-click,
+  hover, the model loading, a key, or an object finishing a change of state)
+  and what it does: show or hide objects,
+  move the camera, play an animation, isolate objects, or any other effect as
+  JSON. The viewer runs these with no code, including in embeds
+- Give an object named states under **Interaction**: **Add state**, then
+  move, recolour or hide the object and **Save state**; only what changed is
+  kept. Set each state's duration, delay, easing and loop (once, repeating,
+  or back and forth, a number of times or forever), choose which state the
+  object **Shows**, and switch states from an action with **Change state**
+- Let people drag an object in the viewer under **Interaction → Drag**: along
+  the floor, up and down, or with the pointer, within a range, snapping onto
+  other objects
+- Under **Cinematic → Scroll**, let page scroll move the camera along the
+  path, scrub an animation clip, or step objects through their states,
+  exported as `sceneConfig.scroll`
 - Add decals from the **Decals** panel: upload an image or add text to place it
   automatically at the centre of the camera-facing surface. Set its size,
   rotation, and opacity; **Move** lets you drag it across the object's surface.
@@ -218,6 +234,18 @@ range (scene units); blank fields mean no limit. These fields persist in exporte
 
 - Live preview of the selected node in an embedded `ModelViewer`, including
   loading progress and orbit/pointer-lock camera modes
+
+### Versions of hosted projects
+
+In a hosted project, **Versions** in the top bar saves the project as it is now
+under a name, and lists saved versions newest first. **Restore** puts a version
+back as a new revision, after saving the current content as a version called
+"Before restoring …", so a restore can always be undone. Anyone who can edit
+the project can save, restore, compare and delete versions; viewers can't.
+**Compare** puts a version on the compare slider beside the project as it is
+now, or beside any other saved version. A plan keeps
+5 (Free), 30 or 200 versions per project. Models and images a version uses are
+kept in storage until no version or project uses them.
 
 ### Autosave and restoring a session
 
