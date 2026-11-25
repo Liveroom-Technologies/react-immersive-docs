@@ -1,0 +1,11 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #0b1220; color: #e2e8f0; font: 1rem/1.5 system-ui, sans-serif; }
+main { max-width: 75rem; margin: auto; padding: 1.25rem; }
+h1, h2, p { margin: 0 0 0.65rem; }
+a { color: #7dd3fc; }
+button, input, select { font: inherit; }
+button, select { padding: 0.35rem 0.65rem; }
+.viewer { height: clamp(20rem, 64vh, 46rem); position: relative; background: #07111f; }
+.controls { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.75rem; margin: 0.75rem 0; }
+.credit { margin-top: 0.75rem; color: #cbd5e1; font-size: 0.875rem; }
+.setup { max-width: 42rem; padding-top: 3rem; }

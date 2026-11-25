@@ -41,5 +41,19 @@ These examples are safe-to-share public starters for `@liveroom-tech/react-immer
 - `before-after-demo` compares two aligned kitchen models with `CompareViewer`
   in slider and side-by-side layouts, with camera buttons moving both panes.
 
+- `engineering-tools-demo` combines section cuts, exploded view, isolation,
+  object navigation and calibrated measurements with CSV export.
+- `media-export-demo` records the viewer as WebM, MP4 or an animated GIF.
+- `asset-qa-demo` inspects sample and local models and shows diagnostics with
+  live renderer statistics.
+- `multiple-models-demo` places separate GLBs in one scene and edits their
+  visibility, active selection and transforms.
+- `embedded-page-demo` uses posters, lazy loading and click-to-reveal viewers
+  in a scrolling product page.
+- `analytics-localisation-demo` logs SDK engagement events and localises both
+  viewer labels and scene content.
+- `reveal-sequences-demo` plays authored camera and object keyframes with a
+  custom timeline.
+
 When adding examples, keep them minimal and avoid committing proprietary models,
 textures, or private customer data.

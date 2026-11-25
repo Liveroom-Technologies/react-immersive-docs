@@ -1,0 +1,13 @@
+{
+  "$schema": "https://codesandbox.io/schemas/tasks.json",
+  "tasks": {
+    "dev": {
+      "name": "Run starter",
+      "command": "npm run dev",
+      "runAtStart": true,
+      "preview": {
+        "port": 2222
+      }
+    }
+  }
+}

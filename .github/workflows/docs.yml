@@ -26,18 +26,25 @@ jobs:
       fail-fast: false
       matrix:
         example:
+          - analytics-localisation-demo
           - animation-studio-demo
           - ar-product-viewer-demo
+          - asset-qa-demo
           - before-after-demo
           - binding-builder-demo
           - cinematic-tour-demo
+          - embedded-page-demo
+          - engineering-tools-demo
           - exploded-view-demo
           - guided-tour-demo
           - light-flicker-demo
+          - media-export-demo
           - model-viewer-demo
           - mouse-controller-demo
+          - multiple-models-demo
           - nextjs-model-viewer-demo
           - retail-configurator-demo
+          - reveal-sequences-demo
           - shareable-view-demo
           - simple-model-viewer-demo
           - switch-room-demo
