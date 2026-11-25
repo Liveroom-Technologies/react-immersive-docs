@@ -128,7 +128,7 @@ An inspection workbench that combines the viewer's engineering tools:
 - Model and display units, and calibration against a known length with `calibrateMeasurements`
 - CSV export with `measurementsToCsv`
 
-[Live Demo](https://react-immersive.liveroom.dev/examples/engineering-tools)
+[Live Demo](https://react-immersive.liveroom.dev/examples/engineering-tools) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/engineering-tools-demo) · [Open in CodeSandbox](https://codesandbox.io/p/devbox/github/liveroom-technologies/react-immersive-docs/tree/main/examples/engineering-tools-demo)
 
 ### `Media Export`
 
@@ -141,7 +141,7 @@ Record the motorbike as a video or GIF, without a screen recorder:
 - A progress bar while recording, and cancel through an `AbortSignal`
 - Preview the result, download it, and keep several recordings side by side
 
-[Live Demo](https://react-immersive.liveroom.dev/examples/media-export)
+[Live Demo](https://react-immersive.liveroom.dev/examples/media-export) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/media-export-demo) · [Open in CodeSandbox](https://codesandbox.io/p/devbox/github/liveroom-technologies/react-immersive-docs/tree/main/examples/media-export-demo)
 
 ### `Asset QA`
 
@@ -149,7 +149,7 @@ Inspect a bundled sample or drop a standalone GLB, glTF, OBJ, FBX, USDZ, STL,
 or PLY file. Check geometry and texture findings, focus affected
 objects, and download the diagnostics report with live renderer statistics.
 
-[Live Demo](https://react-immersive.liveroom.dev/examples/asset-qa) · [Asset Diagnostics API](https://react-immersive.liveroom.dev/docs/reference/asset-diagnostics)
+[Live Demo](https://react-immersive.liveroom.dev/examples/asset-qa) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/asset-qa-demo) · [Open in CodeSandbox](https://codesandbox.io/p/devbox/github/liveroom-technologies/react-immersive-docs/tree/main/examples/asset-qa-demo) · [Asset Diagnostics API](https://react-immersive.liveroom.dev/docs/reference/asset-diagnostics)
 
 ### `Multiple Models`
 
@@ -161,7 +161,7 @@ Compose one scene from several GLB files, with the red room as the primary model
 - Move and Scale modes (`moveModeEnabled`, `scaleModeEnabled`) with multi-select (`multiSelectedKeys`) to transform several parts together
 - The view gizmo (`showViewGizmo`) snaps the camera to an axis
 
-[Live Demo](https://react-immersive.liveroom.dev/examples/multiple-models)
+[Live Demo](https://react-immersive.liveroom.dev/examples/multiple-models) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/multiple-models-demo) · [Open in CodeSandbox](https://codesandbox.io/p/devbox/github/liveroom-technologies/react-immersive-docs/tree/main/examples/multiple-models-demo)
 
 ### `Embedded on a Page`
 
@@ -175,7 +175,7 @@ Compose one scene from several GLB files, with the red room as the primary model
 - `webgpu` switch, with the renderer in use shown from `rendererBackend` in `onViewerReady`
 - A fullscreen button through `showFullscreenButton`
 
-[Live Demo](https://react-immersive.liveroom.dev/examples/embedded-page)
+[Live Demo](https://react-immersive.liveroom.dev/examples/embedded-page) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/embedded-page-demo) · [Open in CodeSandbox](https://codesandbox.io/p/devbox/github/liveroom-technologies/react-immersive-docs/tree/main/examples/embedded-page-demo)
 
 ### `Analytics & Localisation`
 
@@ -188,7 +188,7 @@ Track what visitors do in the viewer, and show its built-in text in their langua
 - Switching scenes loads a new model, which starts a new analytics session
 - One language switch (English, French, Spanish, German) changes everything without reloading the model: `labels` translates the viewer's buttons, tooltips and messages, and the app swaps in its own translated text for the panel, the car's part names (binding `label`) and the tour stops (annotation titles, descriptions and links)
 
-[Live Demo](https://react-immersive.liveroom.dev/examples/analytics-localisation)
+[Live Demo](https://react-immersive.liveroom.dev/examples/analytics-localisation) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/analytics-localisation-demo) · [Open in CodeSandbox](https://codesandbox.io/p/devbox/github/liveroom-technologies/react-immersive-docs/tree/main/examples/analytics-localisation-demo)
 
 ### `Mouse Controller`
 
@@ -243,7 +243,7 @@ GLB; sequences are authored separately and need no animation in the model:
 - A custom picker, play / pause, scrubbable timeline and Stop & restore, with the
   built-in player hidden via `showSequenceControls={false}`
 
-[Live Demo](https://react-immersive.liveroom.dev/examples/reveal-sequences)
+[Live Demo](https://react-immersive.liveroom.dev/examples/reveal-sequences) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/reveal-sequences-demo) · [Open in CodeSandbox](https://codesandbox.io/p/devbox/github/liveroom-technologies/react-immersive-docs/tree/main/examples/reveal-sequences-demo)
 
 ### `Texture Upload / Custom Print`
 
@@ -332,5 +332,7 @@ from its own folder.
 <Callout type="info">
   Some examples require a valid license key. Create a free key at
   [react-immersive.liveroom.dev/console](https://react-immersive.liveroom.dev/console)
-  before running gated demos locally.
+  before running gated demos locally. In CodeSandbox, set the starter's license
+  key environment variable to a production-enabled key registered for the
+  preview domain.
 </Callout>
