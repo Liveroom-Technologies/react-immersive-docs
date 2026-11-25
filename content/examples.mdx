@@ -33,12 +33,14 @@ The fuller `ModelViewer` experience used for the richer hosted demo:
 
 ### `Guided Tour`
 
-A guided walkthrough demo that uses scene annotations as tour stops instead of
+A gallery walkthrough that uses scene annotations as tour stops instead of
 per-object bindings:
 
-- SceneAnnotationMarker stops
-- Built-in annotation navigation
-- Camera flies to saved world positions
+- Each stop carries a title, description, `category`, `images` and `links`
+- A saved `cameraView` per stop: the camera flies to stand in front of the artwork
+- Previous / next through every stop, or jump to any stop from the list
+- Visitors bookmark their own camera views with `savePreset` and `goToPreset` from `useViewerCamera`
+- Camera limits through `cameraLimits`: stay inside the room (`insideModel`) or move freely
 - Position-only markers, no object binding needed
 
 [Live Demo](https://react-immersive.liveroom.dev/examples/guided-tour) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/guided-tour-demo) · [Open in CodeSandbox](https://codesandbox.io/s/github/liveroom-technologies/react-immersive-docs/tree/main/examples/guided-tour-demo)
@@ -113,18 +115,80 @@ bindings can drive grouped customization flows:
 
 [Live Demo](https://react-immersive.liveroom.dev/examples/vehicle-configurator) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/vehicle-configurator-demo) · [Open in CodeSandbox](https://codesandbox.io/s/github/liveroom-technologies/react-immersive-docs/tree/main/examples/vehicle-configurator-demo)
 
-### `Exploded View`
+### `Engineering Tools`
 
-An assembly-inspection demo that separates a multi-part model into its
-components with a single slider:
+An inspection workbench that combines the viewer's engineering tools:
 
-- `showExplodeControls` renders the built-in explode slider in the viewer
-- Every bound mesh slides outward from the model center along its own direction
-- Nested parts ride their exploding parent instead of being displaced twice
-- Fully reversible, dragging back to zero reassembles the model exactly
-- Best suited to static product / CAD models (engines, gadgets, vehicles)
+- An exploded view with `showExplodeControls`: every bound part slides outward from the model center along its own direction, and dragging back to zero reassembles it exactly (best for static product / CAD models)
+- Section cuts on `sceneConfig.section`: one plane, up to six `planes`, or a section `box`, kept in sync with `showSectionTools` through `onSceneConfigChange`
+- Angled cuts: any plane can face a custom `normal` instead of the X, Y or Z axis, set from tilt and turn angles
+- Isolation with x-ray via `useViewerIsolation`: ghost the rest at a chosen `ghostOpacity`, or hide it
+- An object navigator grouped by binding group, with fly-to (`focusObject`) and isolate per part or group, plus the keyboard `showObjectNavigator`
+- Distance, angle, area, point-to-plane and circumference measurements with `showMeasureTools`, held as controlled `measurements`
+- Model and display units, and calibration against a known length with `calibrateMeasurements`
+- CSV export with `measurementsToCsv`
 
-[Live Demo](https://react-immersive.liveroom.dev/examples/exploded-view) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/exploded-view-demo) · [Open in CodeSandbox](https://codesandbox.io/s/github/liveroom-technologies/react-immersive-docs/tree/main/examples/exploded-view-demo)
+[Live Demo](https://react-immersive.liveroom.dev/examples/engineering-tools)
+
+### `Media Export`
+
+Record the motorbike as a video or GIF, without a screen recorder:
+
+- `captureVideo` from `onViewerReady` records only the canvas: no toolbar, panels or cursor
+- **Turntable** spins once around the model; **Cinematic** flies a hand-written `cinematic` waypoint path (with `autoPlay: false`, so the camera only moves while recording)
+- Export as WebM, MP4 or a looping GIF; formats this browser can't write are disabled
+- Short, medium or full-loop length through `duration`; frame rate and GIF width through `fps` and `gifWidth`
+- A progress bar while recording, and cancel through an `AbortSignal`
+- Preview the result, download it, and keep several recordings side by side
+
+[Live Demo](https://react-immersive.liveroom.dev/examples/media-export)
+
+### `Asset QA`
+
+Inspect a bundled sample or drop a standalone GLB, glTF, OBJ, FBX, USDZ, STL,
+or PLY file. Check geometry and texture findings, focus affected
+objects, and download the diagnostics report with live renderer statistics.
+
+[Live Demo](https://react-immersive.liveroom.dev/examples/asset-qa) · [Asset Diagnostics API](https://react-immersive.liveroom.dev/docs/reference/asset-diagnostics)
+
+### `Multiple Models`
+
+Compose one scene from several GLB files, with the red room as the primary model:
+
+- `models` entries managed by `useViewerModels`: add, duplicate, hide and remove floor lamps inside the room
+- Click a model to make it the active one (`activeModelId`); parked models stay visible
+- Each new lamp gets an asset `transform`: `snapAssetToGrid` lines its spot up on a 0.5 m grid and `groundAsset` stands it on the floor
+- Move and Scale modes (`moveModeEnabled`, `scaleModeEnabled`) with multi-select (`multiSelectedKeys`) to transform several parts together
+- The view gizmo (`showViewGizmo`) snaps the camera to an axis
+
+[Live Demo](https://react-immersive.liveroom.dev/examples/multiple-models)
+
+### `Embedded on a Page`
+
+3D viewers placed in a long, scrolling product page instead of a full-screen app:
+
+- Every viewer shows a `poster` image until its 3D view is drawn
+- `loading="lazy"` (the default) starts a viewer only when it comes near the screen; the room further down starts as you scroll to it
+- A product range with `reveal="interaction"`: each card keeps its poster and a **View in 3D** button, so no model downloads until a visitor asks
+- `pageScroll` lets the mouse wheel and vertical swipes scroll the page over the viewer; Ctrl or ⌘ + wheel zooms
+- `reducedMotion` switch on the hero (follow the device, always or never), which stops its auto-rotate
+- `webgpu` switch, with the renderer in use shown from `rendererBackend` in `onViewerReady`
+- A fullscreen button through `showFullscreenButton`
+
+[Live Demo](https://react-immersive.liveroom.dev/examples/embedded-page)
+
+### `Analytics & Localisation`
+
+Track what visitors do in the viewer, and show its built-in text in their language:
+
+- `onEngagement` hands the page a typed `ViewerEngagementEvent` for each action; the viewer sends nothing anywhere itself
+- A live event log with counts per type, the session ID, time since load and Copy JSON; `debugEngagement` also logs to the console
+- Car scene: `part-viewed` from the canvas, the Scene Objects panel and the keyboard, and `ar-launch-requested` from Open on phone
+- Art gallery scene: `tour-started`, `tour-completed` and `tour-stopped` from the built-in guided tour
+- Switching scenes loads a new model, which starts a new analytics session
+- One language switch (English, French, Spanish, German) changes everything without reloading the model: `labels` translates the viewer's buttons, tooltips and messages, and the app swaps in its own translated text for the panel, the car's part names (binding `label`) and the tour stops (annotation titles, descriptions and links)
+
+[Live Demo](https://react-immersive.liveroom.dev/examples/analytics-localisation)
 
 ### `Mouse Controller`
 
@@ -166,16 +230,37 @@ A playback studio for a rigged, animated GLB, driven entirely by
 
 [Live Demo](https://react-immersive.liveroom.dev/examples/animation-studio) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/animation-studio-demo) · [Open in CodeSandbox](https://codesandbox.io/s/github/liveroom-technologies/react-immersive-docs/tree/main/examples/animation-studio-demo)
 
+### `Keyframe Sequences`
+
+Keyframed object and camera tracks authored as data on `sceneConfig.sequences`
+and driven by `useViewerSequences`. Animation Studio plays clips baked into the
+GLB; sequences are authored separately and need no animation in the model:
+
+- An exploded-view reveal that autoplays on load (`autoPlay: true` on the sequence)
+- Position, colour and emissive tracks on individual parts, plus a camera track
+- `linear`, `ease-in`, `ease-out`, `ease-in-out` and `step` easings side by side
+- A looping showroom orbit (`loop: true`)
+- A custom picker, play / pause, scrubbable timeline and Stop & restore, with the
+  built-in player hidden via `showSequenceControls={false}`
+
+[Live Demo](https://react-immersive.liveroom.dev/examples/reveal-sequences)
+
 ### `Texture Upload / Custom Print`
 
-A custom-apparel demo where shoppers upload their own artwork onto a product:
+A custom-apparel demo where shoppers upload artwork, add text and logo decals, and pick a fabric:
 
 - The built-in Upload Artwork action hands the file to `onTextureUpload`
 - A real app uploads it to storage and returns a durable URL (here a data URL)
 - The returned URL is committed to `style.material.texture.path`
-- `copyMaterial` and the `shirt` binding group broadcast the print without a manual ID array
-- `texturePositioning` lets shoppers drag, scale, and rotate the print; the result lands in `style.material.texture`, so it's broadcast the same way
-- `setBaseColor` and `clearTexture` drive the same grouped binding state
+- `texturePositioning` lets shoppers drag, scale, and rotate the print; the result lands in `style.material.texture`
+- `clearTexture` removes the print from the `shirt` binding group
+- Add text or a logo in one click; it lands on the front and is selected for editing
+- Ready-made spots (front chest, bottom, pocket, back) put a decal on the shirt without clicking the model
+- Decals live on `binding.decals` in the shirt's own space: text with colour, font and weight, or an image (a sample logo or your own upload), edited live
+- `decalMove` drags a decal across the fabric and returns the new surface point through `onCommit`; double-clicking a decal (`onDecalDoubleClick`) picks it up
+- Size and rotation per decal
+- Fabric colours are glTF material variants (`KHR_materials_variants`) on `sceneConfig.model.activeVariants`, switched from the page's own swatches
+- The shirt is one mesh node, so a print or decal covers the whole garment
 - The viewer download menu exports the shirt's editable UV layout as SVG
 
 [Live Demo](https://react-immersive.liveroom.dev/examples/texture-upload) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/texture-upload-demo) · [Open in CodeSandbox](https://codesandbox.io/s/github/liveroom-technologies/react-immersive-docs/tree/main/examples/texture-upload-demo)
@@ -184,13 +269,12 @@ A custom-apparel demo where shoppers upload their own artwork onto a product:
 
 A Next.js App Router product page for a sofa, built on `useProductConfigurator`:
 
-- Click a cushion, the frame or a leg to jump to its choices
 - Accessible swatches that recolour every part in a binding group
-- Prices from the product definition
+- Price and SKU update with the selected finishes
 - Share links that reopen the same configuration
-- AR handoff of the configured sofa to a phone
+- Configured USDZ export and phone handoff with animated seat cushions
 
-[Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/retail-configurator-demo) · [Open in CodeSandbox](https://codesandbox.io/s/github/liveroom-technologies/react-immersive-docs/tree/main/examples/retail-configurator-demo)
+[Live Demo](https://react-immersive.liveroom.dev/examples/retail-configurator) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/retail-configurator-demo) · [Open in CodeSandbox](https://codesandbox.io/s/github/liveroom-technologies/react-immersive-docs/tree/main/examples/retail-configurator-demo)
 
 ### `Venue Tour`
 
@@ -212,7 +296,15 @@ A kitchen before and after a renovation in `CompareViewer`:
 - Keyboard-operable divider
 - View-only rooms, with no inspection panels
 
-[Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/before-after-demo) · [Open in CodeSandbox](https://codesandbox.io/s/github/liveroom-technologies/react-immersive-docs/tree/main/examples/before-after-demo)
+The hosted demo compares a bedroom before and after a redesign:
+
+- The "after" room is a BindingBuilder export: new colours, a wood floor, printed bedding and curtains, moved furniture and removed lights
+- `semanticComparison` builds a change report with `compareViewerConfigurations`, delivered through `onComparisonChange`
+- The report lists every recolored, retextured, moved or removed part
+- Comparison highlights outline changed parts, toggled with `showComparisonOutlines` (off by default)
+- Extra changes can be tried on the "after" room live, and the report updates
+
+[Live Demo](https://react-immersive.liveroom.dev/examples/before-after-compare) · [Starter App](https://github.com/liveroom-technologies/react-immersive-docs/tree/main/examples/before-after-demo) · [Open in CodeSandbox](https://codesandbox.io/s/github/liveroom-technologies/react-immersive-docs/tree/main/examples/before-after-demo)
 
 ### `BindingBuilder`
 
